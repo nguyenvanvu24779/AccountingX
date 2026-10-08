@@ -170,6 +170,7 @@ pub async fn connect_codex(event_sink: Arc<dyn EventSink>) -> Result<Arc<CodexAp
                     }
                 }
                 Some(ServerMessage::Error { id, error }) => {
+                    log::error!("codex request failed (id {:?}): {}", id, error);
                     let Some(id) = id.as_pending_key() else { continue };
                     if let Some(tx) = client_clone.pending.lock().await.remove(&id) {
                         let _ = tx.send(Err(format!("Request failed: {}", error)));
@@ -181,6 +182,14 @@ pub async fn connect_codex(event_sink: Arc<dyn EventSink>) -> Result<Arc<CodexAp
                 Some(ServerMessage::Notification { method, raw }) => {
                     if is_reasoning_notification(&method, &raw) {
                         continue;
+                    }
+                    // Method names only: params can contain user content.
+                    log::info!("codex notification: {}", method);
+                    if method.to_lowercase().contains("error")
+                        || method.to_lowercase().contains("fail")
+                        || method.to_lowercase().contains("warning")
+                    {
+                        log::warn!("codex notification detail: {}", raw);
                     }
                     sync_automation_run_status(&raw);
                     event_sink_clone.emit("codex:notification", raw);
