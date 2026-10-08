@@ -1,8 +1,9 @@
-import { EDITION } from '@/lib/edition';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { I18nextProvider } from 'react-i18next';
+import { AppErrorBoundary } from '@/components/common/AppErrorBoundary';
+import { EDITION } from '@/lib/edition';
 
 import './App.css';
 
@@ -115,7 +116,9 @@ function AppShell() {
 
   return (
     <>
-      <AppLayout />
+      <AppErrorBoundary>
+        <AppLayout />
+      </AppErrorBoundary>
       <TodoCaptureHint />
       <HistoryProjectsDialog />
       {EDITION.telemetry && <TelemetryConsentDialog />}
