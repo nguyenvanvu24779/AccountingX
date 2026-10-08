@@ -23,7 +23,7 @@ export interface SlashCommand {
 /**
  * Commands available in the composer, ordered by expected frequency the way
  * codex-rs orders its own popup (see `tui/src/slash_command.rs`, which notes
- * the enum order is the presentation order). Only commands Codexia can
+ * the enum order is the presentation order). Only commands AccountingX can
  * actually carry out are listed.
  */
 export const SLASH_COMMANDS: SlashCommand[] = [

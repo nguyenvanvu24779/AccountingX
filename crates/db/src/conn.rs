@@ -4,9 +4,9 @@ use std::path::PathBuf;
 /// Get the path to the SQLite database
 fn get_db_path() -> Result<PathBuf, String> {
     let home_dir = dirs::home_dir().ok_or("Could not get home directory")?;
-    let codexia_dir = home_dir.join(".codexia");
+    let codexia_dir = home_dir.join(".accountingx");
     std::fs::create_dir_all(&codexia_dir)
-        .map_err(|e| format!("Failed to create .codexia directory: {}", e))?;
+        .map_err(|e| format!("Failed to create .accountingx directory: {}", e))?;
     Ok(codexia_dir.join("cache.db"))
 }
 

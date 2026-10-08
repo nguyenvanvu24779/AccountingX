@@ -2,8 +2,8 @@ import { useDeepLink } from '@/hooks/useDeepLink';
 import { navigateToAgentSession } from '@/lib/agentNav';
 
 // Parses and routes incoming deep links, e.g.
-// codexia://open?agent=codex&thread=<id>&cwd=<path>
-// codexia://open?agent=cc&session=<id>&cwd=<path>
+// accountingx://open?agent=codex&thread=<id>&cwd=<path>
+// accountingx://open?agent=cc&session=<id>&cwd=<path>
 function handleDeepLinkUrl(url: string) {
   let parsed: URL;
   try {

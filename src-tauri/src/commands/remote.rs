@@ -44,7 +44,7 @@ impl RemoteState {
 }
 
 fn settings_path() -> Option<std::path::PathBuf> {
-    dirs::home_dir().map(|home| home.join(".codexia").join("settings.json"))
+    dirs::home_dir().map(|home| home.join(".accountingx").join("settings.json"))
 }
 
 /// Whether the user left remote access switched on.

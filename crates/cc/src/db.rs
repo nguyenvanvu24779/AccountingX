@@ -23,9 +23,9 @@ pub struct SessionCache {
 impl SessionCache {
     pub fn new() -> Result<Self, String> {
         let home = dirs::home_dir().ok_or("Failed to get home directory")?;
-        let db_dir = home.join(".codexia");
+        let db_dir = home.join(".accountingx");
         std::fs::create_dir_all(&db_dir)
-            .map_err(|e| format!("Failed to create .codexia directory: {}", e))?;
+            .map_err(|e| format!("Failed to create .accountingx directory: {}", e))?;
 
         let db_path = db_dir.join("cache.db");
         let conn = Connection::open(db_path)
@@ -109,7 +109,7 @@ impl SessionCache {
         include_worktrees: bool,
     ) -> Result<(), String> {
         let normalized_directory = directory.trim_end_matches('/');
-        let worktree_prefix = format!("{}/.codexia/worktrees/%", normalized_directory);
+        let worktree_prefix = format!("{}/.accountingx/worktrees/%", normalized_directory);
 
         let tx = self
             .conn
@@ -230,12 +230,12 @@ impl SessionCache {
 
         let rows = match (directory, include_worktrees) {
             (Some(directory), true) => {
-                let worktree_prefix = format!("{}/.codexia/worktrees/%", directory.trim_end_matches('/'));
+                let worktree_prefix = format!("{}/.accountingx/worktrees/%", directory.trim_end_matches('/'));
                 stmt.query_map(params![directory, worktree_prefix], parse_row_with_total)
             }
             (Some(directory), false) => stmt.query_map(params![directory], parse_row_with_total),
             (None, true) => stmt.query_map([], parse_row_with_total),
-            (None, false) => stmt.query_map(params!["%/.codexia/worktrees/%"], parse_row_with_total),
+            (None, false) => stmt.query_map(params!["%/.accountingx/worktrees/%"], parse_row_with_total),
         }
         .map_err(|e| format!("Failed to query cc_sessions cache: {}", e))?;
 

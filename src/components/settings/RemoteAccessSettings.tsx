@@ -67,7 +67,7 @@ function PairingCode({ uri }: { uri: string }) {
           {/* Fixed white background: a QR code has to stay light-on-dark-free to scan. */}
           <QRCodeSVG value={uri} size={192} bgColor="#ffffff" fgColor="#000000" marginSize={2} />
           <p className="text-center text-xs text-muted-foreground">
-            In the Codexia mobile app, tap “Scan QR code”.
+            In the AccountingX mobile app, tap “Scan QR code”.
           </p>
         </div>
       ) : (
@@ -150,7 +150,7 @@ export function RemoteAccessSettings() {
                 <div className="text-xs text-muted-foreground">
                   {status?.running
                     ? `Listening on ${status.host}:${status.port}`
-                    : 'Serves this desktop’s sessions to the Codexia iOS app over Tailscale.'}
+                    : 'Serves this desktop’s sessions to the AccountingX iOS app over Tailscale.'}
                 </div>
               </div>
               <Switch
@@ -232,7 +232,7 @@ export function RemoteAccessSettings() {
             </div>
           ) : (
             <p className="text-xs text-muted-foreground">
-              Enter the hostname, port and token in the Codexia mobile app to pair this machine. The
+              Enter the hostname, port and token in the AccountingX mobile app to pair this machine. The
               token grants full access to this computer — treat it like an SSH key. Requests from
               this machine itself never need it.
             </p>

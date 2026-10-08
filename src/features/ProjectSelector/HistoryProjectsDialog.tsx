@@ -144,7 +144,7 @@ export function HistoryProjectsDialog() {
           <DialogDescription>
             {browseMode
               ? 'Browse and select a folder to add as a new project.'
-              : 'Codexia will be able to edit files and run commands in selected folders. You can select multiple history projects and continue.'}
+              : 'AccountingX will be able to edit files and run commands in selected folders. You can select multiple history projects and continue.'}
           </DialogDescription>
         </DialogHeader>
         {browseMode ? (

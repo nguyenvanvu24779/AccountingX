@@ -12,7 +12,7 @@ pub fn show_window(app: &AppHandle, args: Vec<String>) {
     if args.len() > 1 {
         let url = args[1].clone();
 
-        if url.starts_with("codexia://") {
+        if url.starts_with("accountingx://") {
             let _ = main_window.emit("deep-link-received", url);
         }
     }

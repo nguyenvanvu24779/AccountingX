@@ -1,7 +1,7 @@
 //! Anonymous, opt-in usage counters.
 //!
 //! One consent and one once-per-day dedupe per machine, kept in
-//! `~/.codexia/telemetry.json` and shared by every client (desktop, browser,
+//! `~/.accountingx/telemetry.json` and shared by every client (desktop, browser,
 //! phone). Only an event name, the app version, the OS and the CPU architecture
 //! are ever sent, to the endpoint compiled in via `CODEXIA_TELEMETRY_URL`.
 //! Nothing is sent, and no prompt is shown, until the user has at least one bot.
@@ -79,7 +79,7 @@ pub struct Status {
 }
 
 fn state_path() -> Option<PathBuf> {
-    Some(dirs::home_dir()?.join(".codexia").join("telemetry.json"))
+    Some(dirs::home_dir()?.join(".accountingx").join("telemetry.json"))
 }
 
 fn load_state() -> State {
@@ -92,7 +92,7 @@ fn load_state() -> State {
 fn save_state(state: &State) -> Result<(), String> {
     let path = state_path().ok_or("Failed to get home directory")?;
     let dir = path.parent().ok_or("Invalid telemetry path")?;
-    fs::create_dir_all(dir).map_err(|e| format!("Failed to create .codexia directory: {e}"))?;
+    fs::create_dir_all(dir).map_err(|e| format!("Failed to create .accountingx directory: {e}"))?;
     let content = serde_json::to_string_pretty(state)
         .map_err(|e| format!("Failed to serialize telemetry state: {e}"))?;
     // Atomic replace: write a sibling temp file, then rename over the target.

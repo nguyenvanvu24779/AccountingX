@@ -236,7 +236,7 @@ impl AcpClient {
                     "fs": { "readTextFile": true, "writeTextFile": true },
                     "terminal": false
                 },
-                "clientInfo": { "name": "codexia", "version": env!("CARGO_PKG_VERSION") }
+                "clientInfo": { "name": "accountingx", "version": env!("CARGO_PKG_VERSION") }
             }),
         );
         let init = if client.policy.strict_mcp {

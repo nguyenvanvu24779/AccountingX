@@ -129,7 +129,7 @@ export function PairingView({
       const current = await checkPermissions();
       const permission = current === 'granted' ? current : await requestPermissions();
       if (permission !== 'granted') {
-        setError('Camera access is off for Codexia. Enable it in iOS Settings and try again.');
+        setError('Camera access is off for AccountingX. Enable it in iOS Settings and try again.');
         return;
       }
 
@@ -139,7 +139,7 @@ export function PairingView({
       const desktop = parsePairingUri(result.content);
       if (!desktop) {
         setError(
-          'That is not a Codexia pairing code. Open Settings → Remote access on the desktop.'
+          'That is not a AccountingX pairing code. Open Settings → Remote access on the desktop.'
         );
         return;
       }

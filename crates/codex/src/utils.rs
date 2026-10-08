@@ -67,6 +67,6 @@ pub fn codex_home() -> PathBuf {
 
 pub fn codexia_history_path() -> PathBuf {
     dirs::home_dir()
-        .map(|home| home.join(".codexia").join("history.jsonl"))
-        .unwrap_or_else(|| PathBuf::from(".codexia/history.jsonl"))
+        .map(|home| home.join(".accountingx").join("history.jsonl"))
+        .unwrap_or_else(|| PathBuf::from(".accountingx/history.jsonl"))
 }

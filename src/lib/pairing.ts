@@ -5,7 +5,7 @@ import type { PairedDesktop } from '@/stores/usePairingStore';
  * The pairing payload encoded in the desktop's QR code.
  *
  * A custom scheme rather than a URL so a code scanned by the system camera app
- * offers to open Codexia instead of a browser. The token travels in the clear
+ * offers to open AccountingX instead of a browser. The token travels in the clear
  * inside it, which is why the desktop keeps the code hidden until asked.
  */
 export function buildPairingUri(desktop: PairedDesktop): string {
@@ -15,7 +15,7 @@ export function buildPairingUri(desktop: PairedDesktop): string {
     token: desktop.token,
   });
   if (desktop.name) params.set('name', desktop.name);
-  return `codexia://pair?${params.toString()}`;
+  return `accountingx://pair?${params.toString()}`;
 }
 
 /**
@@ -24,7 +24,7 @@ export function buildPairingUri(desktop: PairedDesktop): string {
  */
 export function parsePairingUri(raw: string): PairedDesktop | null {
   const text = raw.trim();
-  if (!text.toLowerCase().startsWith('codexia://pair')) return null;
+  if (!text.toLowerCase().startsWith('accountingx://pair')) return null;
 
   // `URL` refuses to expose searchParams for unknown schemes on some engines,
   // so the query is split off by hand.

@@ -52,9 +52,9 @@ export const en = {
     telemetryToggle: 'Anonymous usage statistics',
     telemetryToggleDescription:
       'Share event names, app version, OS and CPU architecture, at most once a day. No ID, code, prompts, paths or names.',
-    telemetryDialogTitle: 'Help improve Codexia?',
+    telemetryDialogTitle: 'Help improve AccountingX?',
     telemetryDialogBody:
-      'Codexia can send anonymous usage counts to the maintainer\'s own server. Sent: event names (such as "bot created"), app version, OS and CPU architecture, at most once a day. Never sent: any ID, code, prompts, file paths or names. The server stores only daily totals.',
+      'AccountingX can send anonymous usage counts to the maintainer\'s own server. Sent: event names (such as "bot created"), app version, OS and CPU architecture, at most once a day. Never sent: any ID, code, prompts, file paths or names. The server stores only daily totals.',
     telemetryLearnMore: 'Read the privacy details',
     telemetryAccept: 'Share anonymous usage',
     telemetryDecline: "Don't share",

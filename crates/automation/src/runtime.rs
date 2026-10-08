@@ -78,7 +78,7 @@ impl AutomationHandle {
 
 pub(super) fn resolve_storage_path() -> Result<PathBuf, String> {
     let mut base = dirs::home_dir().ok_or_else(|| "failed to resolve home directory".to_string())?;
-    base.push(".codexia");
+    base.push(".accountingx");
     std::fs::create_dir_all(&base).map_err(|err| err.to_string())?;
     Ok(base.join("automations.json"))
 }

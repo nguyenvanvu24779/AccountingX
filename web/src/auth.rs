@@ -22,7 +22,7 @@ pub struct DeviceToken {
 
 fn token_path() -> Result<PathBuf, String> {
     let home = dirs::home_dir().ok_or_else(|| "Failed to resolve home directory".to_string())?;
-    Ok(home.join(".codexia").join("device-token"))
+    Ok(home.join(".accountingx").join("device-token"))
 }
 
 fn generate_token() -> String {

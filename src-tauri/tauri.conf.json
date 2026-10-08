@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "codexia",
+  "productName": "AccountingX",
   "version": "../package.json",
-  "identifier": "dev.milisp.codexia",
+  "identifier": "vn.accountingx.desktop",
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
     "macOSPrivateApi": true,
     "windows": [
       {
-        "title": "Codexia",
+        "title": "AccountingX",
         "width": 1200,
         "height": 800,
         "minWidth": 400,
@@ -50,21 +50,19 @@
     "deep-link": {
       "desktop": {
         "schemes": [
-          "codexia"
+          "accountingx"
         ]
       }
     },
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNCM0Q1ODU3RTRGMkJFRgpSV1R2SzA5K2hkV3pBNHI0NlpIYzYyb2tvR09wWFJIMWhsRE5teHRCL0RzQWsvY1F4WWZzdGtXdwo=",
-      "endpoints": [
-        "https://github.com/milisp/codexia/releases/latest/download/latest.json"
-      ]
+      "endpoints": []
     }
   },
   "bundle": {
     "active": true,
     "targets": "all",
-    "createUpdaterArtifacts": true,
+    "createUpdaterArtifacts": false,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -90,5 +88,6 @@
     "iOS": {
       "minimumSystemVersion": "16.0"
     }
-  }
+  },
+  "mainBinaryName": "AccountingX"
 }

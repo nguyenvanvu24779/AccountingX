@@ -52,9 +52,9 @@ export const zh = {
     telemetryToggle: '匿名使用统计',
     telemetryToggleDescription:
       '最多每天一次发送事件名称、应用版本、操作系统和 CPU 架构。不包含 ID、代码、提示词、路径或名称。',
-    telemetryDialogTitle: '帮助改进 Codexia？',
+    telemetryDialogTitle: '帮助改进 AccountingX？',
     telemetryDialogBody:
-      'Codexia 可以向维护者自己的服务器发送匿名使用计数。会发送：事件名称（如“创建机器人”）、应用版本、操作系统和 CPU 架构，每天最多一次。绝不发送：任何 ID、代码、提示词、文件路径或名称。服务器只保存每日总数。',
+      'AccountingX 可以向维护者自己的服务器发送匿名使用计数。会发送：事件名称（如“创建机器人”）、应用版本、操作系统和 CPU 架构，每天最多一次。绝不发送：任何 ID、代码、提示词、文件路径或名称。服务器只保存每日总数。',
     telemetryLearnMore: '查看隐私详情',
     telemetryAccept: '分享匿名使用数据',
     telemetryDecline: '不分享',

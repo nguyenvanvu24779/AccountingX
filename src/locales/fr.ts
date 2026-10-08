@@ -54,9 +54,9 @@ export const fr = {
     telemetryToggle: "Statistiques d'usage anonymes",
     telemetryToggleDescription:
       "Envoie les noms d'événements, la version, l'OS et l'architecture CPU, au plus une fois par jour. Aucun identifiant, code, prompt, chemin ni nom.",
-    telemetryDialogTitle: 'Aider à améliorer Codexia ?',
+    telemetryDialogTitle: 'Aider à améliorer AccountingX ?',
     telemetryDialogBody:
-      "Codexia peut envoyer des compteurs d'usage anonymes au serveur du mainteneur. Envoyé : noms d'événements (par ex. « bot créé »), version, OS et architecture CPU, au plus une fois par jour. Jamais envoyé : identifiant, code, prompts, chemins ou noms. Le serveur ne conserve que des totaux quotidiens.",
+      "AccountingX peut envoyer des compteurs d'usage anonymes au serveur du mainteneur. Envoyé : noms d'événements (par ex. « bot créé »), version, OS et architecture CPU, au plus une fois par jour. Jamais envoyé : identifiant, code, prompts, chemins ou noms. Le serveur ne conserve que des totaux quotidiens.",
     telemetryLearnMore: 'Lire les détails de confidentialité',
     telemetryAccept: "Partager l'usage anonyme",
     telemetryDecline: 'Ne pas partager',

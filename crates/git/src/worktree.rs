@@ -27,7 +27,7 @@ fn acquire_path_lock(path: &Path) -> Arc<Mutex<()>> {
 // Path helpers
 // ---------------------------------------------------------------------------
 
-/// Returns `~/.codexia/worktrees/{repo_name}-{short_hash}/`.
+/// Returns `~/.accountingx/worktrees/{repo_name}-{short_hash}/`.
 fn worktrees_base_dir(repo_root: &Path) -> Result<PathBuf, String> {
     let home = std::env::var("HOME")
         .map(PathBuf::from)
@@ -45,7 +45,7 @@ fn worktrees_base_dir(repo_root: &Path) -> Result<PathBuf, String> {
         .fold(0u32, |acc, b| acc.wrapping_mul(31).wrapping_add(b as u32));
 
     Ok(home
-        .join(".codexia")
+        .join(".accountingx")
         .join("worktrees")
         .join(format!("{}-{:06x}", repo_name, hash & 0xFF_FFFF)))
 }
@@ -515,7 +515,7 @@ fn worktree_has_uncommitted_changes(worktree_path: &Path) -> bool {
     }
 }
 
-/// Scans all of `~/.codexia/worktrees/` at startup and removes directories
+/// Scans all of `~/.accountingx/worktrees/` at startup and removes directories
 /// that look like worktrees (contain a `.git` file) but whose backing repo no
 /// longer has them registered — typically left over from a crash.
 ///
@@ -535,7 +535,7 @@ pub fn scan_all_orphan_worktrees() {
         return;
     }
 
-    // ~/.codexia/worktrees/{repo}-{hash}/{worktree_key}/
+    // ~/.accountingx/worktrees/{repo}-{hash}/{worktree_key}/
     let repo_dirs = match std::fs::read_dir(&base) {
         Ok(d) => d,
         Err(_) => return,
@@ -627,7 +627,7 @@ fn global_worktrees_base() -> Option<PathBuf> {
         .map(PathBuf::from)
         .or_else(|_| std::env::var("USERPROFILE").map(PathBuf::from))
         .ok()?;
-    Some(home.join(".codexia").join("worktrees"))
+    Some(home.join(".accountingx").join("worktrees"))
 }
 
 // ---------------------------------------------------------------------------

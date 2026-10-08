@@ -14,14 +14,14 @@ describe('pairing uri', () => {
   });
 
   it('falls back to the default port and an empty name', () => {
-    const parsed = parsePairingUri('codexia://pair?host=mac.ts.net&token=abc');
+    const parsed = parsePairingUri('accountingx://pair?host=mac.ts.net&token=abc');
     expect(parsed).toEqual({ name: '', host: 'mac.ts.net', port: 7420, token: 'abc' });
   });
 
   it('rejects codes that are not pairings', () => {
     expect(parsePairingUri('https://example.com')).toBeNull();
-    expect(parsePairingUri('codexia://pair?host=mac.ts.net')).toBeNull();
-    expect(parsePairingUri('codexia://pair?token=abc')).toBeNull();
+    expect(parsePairingUri('accountingx://pair?host=mac.ts.net')).toBeNull();
+    expect(parsePairingUri('accountingx://pair?token=abc')).toBeNull();
     expect(parsePairingUri('')).toBeNull();
   });
 });

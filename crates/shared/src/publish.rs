@@ -36,7 +36,7 @@ fn http() -> reqwest::Client {
 }
 
 // ---------------------------------------------------------------------------
-// Publish token storage (~/.codexia/productship.json)
+// Publish token storage (~/.accountingx/productship.json)
 // ---------------------------------------------------------------------------
 
 #[derive(Serialize, Deserialize)]
@@ -46,7 +46,7 @@ struct StoredToken {
 
 fn token_path() -> Result<PathBuf, String> {
     dirs::home_dir()
-        .map(|home| home.join(".codexia").join("productship.json"))
+        .map(|home| home.join(".accountingx").join("productship.json"))
         .ok_or_else(|| "Cannot resolve home directory".to_string())
 }
 

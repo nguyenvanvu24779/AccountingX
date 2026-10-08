@@ -6,7 +6,7 @@ use super::to_error_response;
 
 fn settings_path() -> Result<std::path::PathBuf, String> {
     let home = dirs::home_dir().ok_or("Could not find home directory")?;
-    Ok(home.join(".codexia").join("settings.json"))
+    Ok(home.join(".accountingx").join("settings.json"))
 }
 
 pub(crate) async fn api_get_settings_file() -> Result<Json<Value>, ErrorResponse> {

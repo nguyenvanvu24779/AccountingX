@@ -213,7 +213,7 @@ pub async fn initialize_codex(
     log::info!("Initializing codex app-server session");
     let params_value = serde_json::json!({
         "clientInfo": {
-            "name": "codexia",
+            "name": "accountingx",
             "title": "Codexia",
             "version": env!("CARGO_PKG_VERSION"),
         },

@@ -20,7 +20,7 @@ export function QuitDialog({ open, onOpenChange }: QuitDialogProps) {
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Quit Codexia?</AlertDialogTitle>
+          <AlertDialogTitle>Quit AccountingX?</AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to quit? All running agents will be stopped.
           </AlertDialogDescription>

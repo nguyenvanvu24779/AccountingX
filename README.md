@@ -1,162 +1,24 @@
-<div align="center">
-  <img src="src-tauri/icons/icon.png" alt="Codexia Logo" width="120" height="120">
+# AccountingX
 
-  <h1>Codexia</h1>
+Ứng dụng desktop **AI-first cho kế toán doanh nghiệp SME Việt Nam** — trải nghiệm như Codex / ChatGPT / Claude desktop,
+nhưng chuyên cho nghiệp vụ kế toán trên **MISA AMIS** (thao tác qua trình duyệt), giao việc và duyệt qua **Zalo**.
 
-  <p>
-    <strong>A lightweight agent workstation for Claude Code and Codex</strong>
-  </p>
+- Nền tảng: Windows (bản đầu) · Tauri v2 (Rust) + React/TypeScript
+- Động cơ AI: Codex CLI qua **Codex App Server** (đăng nhập ChatGPT chính chủ của khách — BYO)
+- Nguyên tắc: AI **không tự ký / không ghi sổ**; mọi thao tác ghi đều qua **phiếu duyệt + bằng chứng**
+- Dữ liệu ứng dụng: `~/.accountingx/`
 
-  <p>
-    <a href="https://milisp.github.io/modern-github-release/#/repo/milisp/codexia"><img src="https://img.shields.io/github/downloads/milisp/codexia/total.svg?style=for-the-badge&label=Downloads&color=2ea44f" alt="Downloads"></a>
-    <a href="https://github.com/milisp/codexia/stargazers"><img src="https://img.shields.io/github/stars/milisp/codexia?style=for-the-badge&label=Stars&color=f1c40f" alt="Stars"></a>
-    <a href="https://discord.gg/zAjtD4kf5K"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
-    <a href="http://x.com/intent/follow?screen_name=lisp_mi"><img src="https://img.shields.io/badge/Follow-@lisp__mi-000000?style=for-the-badge&logo=x&logoColor=white" alt="Follow on X"></a>
-  </p>
+> Dự án fork từ [Codexia](https://github.com/milisp/codexia) (MIT). Xem `NOTICE.md` và `LICENSE`.
 
-</div>
+## Phát triển (Windows)
 
-Use your existing Claude subscription or ChatGPT plan — no API key required.
+Yêu cầu: Rust (MSVC toolchain), Visual Studio Build Tools (C++), WebView2 Runtime, Bun, Codex CLI.
 
-Build your team of **Bots** — long-lived AI coworkers with memory and scheduled routines. Manage Claude Code, Codex, and Agent Client Protocol (ACP) agents in one workspace, with git worktrees and remote control.
-
-![Codexia Home](https://github.com/user-attachments/assets/5be5e429-8524-4032-ba59-61ac6578cb0d)
-
-**Your brand here.** [Sponsor Codexia](mailto:milisp@proton.me).
-
-## 🤖 Bots: AI coworkers that keep working
-
-A bot is a named agent with its own project, persona, memory and permissions — you message it like a colleague, and it keeps working while you look elsewhere.
-
-- **Trust levels that are enforced**: Read-only, Ask before writing, or Autonomous — backed by the agent's OS sandbox, not just a prompt
-- **Persistent memory**: each bot remembers across conversations and restarts
-- **Routines**: schedule prompts a bot runs on its own (daily, weekdays, every N hours); results land in its history with an unread badge and a system notification
-- **Bots help each other**: a bot can hand a job to another bot and use its answer
-- **Your MCP servers**: pick which ones each bot can use
-- **Nothing to install**: the [keke](https://github.com/milisp/keke-agent) agent ships inside Codexia
-
-See [docs/BOTS.md](docs/BOTS.md).
-
-## Features
-
-- **Use your existing subscription**: sign in with your Claude account or ChatGPT account and work within your plan's usage limits
-- **Bots**: long-lived AI coworkers with memory, routines, enforced trust levels and bot-to-bot help (see above)
-- **Agent Client Protocol (ACP)**: Connect any external ACP agent — sessions persist across restarts, tool calls render live in the thread
-- **Agent workflows**: Task Scheduler for recurring jobs, remote control via headless web server (including iOS)
-- **Workspace**: Git worktree management, project file tree, IDE-like editor, prompt notepad, local web preview
-- **Data tools**: One-click PDF / XLSX / CSV preview
-- **Ecosystem**: MCP server marketplace, agent skills marketplace
-- **Personalization**: Theme and accent customization, usage analytics dashboard
-
-## Requirements
-
-- [Codex CLI](https://github.com/openai/codex)
-- [Claude Code CLI](https://claude.ai/code), which powers Claude Agent
-- Optional: any agent that speaks the [Agent Client Protocol](https://agentclientprotocol.com)
-
-## Installation
-
-### Homebrew (macOS)
-```sh
-brew install --cask codexia
-```
-
-### Scoop (Windows)
 ```powershell
-scoop bucket add milisp https://github.com/milisp/scoop-bucket
-scoop install codexia
+bun install
+bun tauri dev        # chạy app ở chế độ dev
+bunx tsc --noEmit    # kiểm tra frontend
+cargo check -p codexia   # kiểm tra Rust (tên crate nội bộ giữ nguyên tạm thời)
 ```
 
-### Prebuilt releases (macOS / Linux / Windows)
-- [GitHub Releases](https://milisp.github.io/modern-github-release/#/repo/milisp/codexia)
-
-Windows also ships a portable archive (`codexia_<version>_x64_portable.zip`) that
-runs without installing.
-
-## Quick Start
-
-1. Launch Codexia.
-2. Sign in with your Claude account or ChatGPT account.
-3. Add your project directory.
-4. Enter a prompt and start your agent session.
-5. Create an Agent Task Scheduler job for recurring workflows.
-
-## Also by me
-
-- [Plux](https://milisp.dev/plux) - Capture now with a shortcut. Turn it into a todo, send it to AI anytime.
-
-## Recommend tools
-
-- [keke](https://github.com/milisp/keke-agent) - Local terminal coding agent with zero-vendor lock-in. Works with subscriptions, API keys, or self-hosted models; speaks ACP for editor/client integration
-- [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) - Your codex is not alone. Add hooks, agent teams, HUDs, and so much more.
-- [rtk](https://github.com/rtk-ai/rtk) - CLI proxy that reduces LLM token consumption by 60-90% on common dev commands. Single Rust binary, zero dependencies
-- [ctx](https://github.com/ctxrs/ctx) - Search the coding agent history already on your machine
-
-## Architecture at a Glance
-- Codex app-server integration
-- Claude agent rust sdk integration
-- Agent Client Protocol (ACP) client for external agents, with persisted sessions
-- Frontend: React + TypeScript + Zustand + shadcn/ui in `src/`
-- Desktop backend: Tauri v2 + Rust in `src-tauri/src/`
-- Headless backend: Axum web server for remote control in `web/`
-- Agent runtime: Codex `app-server` JSON-RPC integration for session/turn lifecycle
-- Real-time updates: WebSocket broadcast stream at `/ws` for browser clients
-
-Core entry points:
-- `src-tauri/src/lib.rs` (desktop commands and state)
-- `web/src/server_web.rs` (headless server startup)
-- `src-tauri/src/web/router.rs` (HTTP API route surface)
-- `src/services/tauri/` (frontend invoke layer)
-
-## API Surface
-Codexia exposes a browser-accessible API when running in web/headless mode:
-
-- Health and stream: `GET /health`, `GET /ws`
-- Codex lifecycle: `/api/codex/thread/*`, `/api/codex/turn/*`, `/api/codex/model/*`, `/api/codex/approval/*`
-- Automation scheduler: `/api/automation/*` (create/update/list/run/pause/delete)
-- Files, git, and terminal: `/api/filesystem/*`, `/api/git/*`, `/api/terminal/*`
-- Claude integration: `/api/cc/*`
-- Notes and productivity: `/api/notes/*`, `/api/codex/usage/token`
-
-Contributor note:
-- Add new API handlers under `./web/src/handlers/`
-- Register routes in `./web/src/router.rs`
-- Add corresponding frontend client calls in `src/services/tauri/`
-
-## Documentation
-
-- [Usage](docs/USAGE.md)
-- [Bots](docs/BOTS.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Web Server](docs/WEB_SERVER.md)
-
-## 🔒 Security
-
-- **Process isolation**: Agents run in separate processes
-- **Permission control**: Configure file and network access per agent
-- **Local storage**: Your projects, conversations and bot memory stay on your machine. Optional anonymous usage counts are off until you say yes ([details](docs/PRIVACY.md))
-- **Open source**: Full transparency through open source code
-
-## Contributing
-
-Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup and workflow.
-
-Community forks:
-- [jeremiahodom/codex-ui](https://github.com/jeremiahodom/codex-ui) — Node.js backend with API/SSE
-- [nuno5645/codexia](https://github.com/nuno5645/codexia) — Reasoning and token count events
-
-Related:
-- [awesome-codex-cli](https://github.com/milisp/awesome-codex-cli) — curated list of Codex CLI resources
-
-## Community
-
-- [GitHub Discussions](https://github.com/milisp/codexia/discussions)
-- [Report Bug / Request Feature](https://github.com/milisp/codexia/issues)
-
-## Support & Contact
-
-For custom work, contact [milisp@proton.me](mailto:milisp@proton.me).
-
-## License
-
-Licensed under the [MIT License](LICENSE).
+Kế hoạch giữ/bỏ/thêm module: `docs/ACCOUNTINGX_PLAN.md`.

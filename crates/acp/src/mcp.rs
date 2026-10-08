@@ -151,7 +151,7 @@ async fn verify_github_token(url: &str, token: &str) -> Result<(), String> {
     let response = client.post(url).bearer_auth(token).header("Accept", "application/json, text/event-stream")
         .json(&json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{
             "protocolVersion":"2025-06-18","capabilities":{},
-            "clientInfo":{"name":"codexia","version":env!("CARGO_PKG_VERSION")}
+            "clientInfo":{"name":"accountingx","version":env!("CARGO_PKG_VERSION")}
         }})).send().await.map_err(|_| "Could not reach GitHub. Try again.")?;
     match response.status().as_u16() {
         200..=299 => Ok(()),

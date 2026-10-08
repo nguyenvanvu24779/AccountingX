@@ -37,7 +37,7 @@ pub fn trust(level: &str) -> (&'static str, &'static str) {
 pub fn memory_dir(bot_id: &str) -> Option<PathBuf> {
     Some(
         dirs::home_dir()?
-            .join(".codexia")
+            .join(".accountingx")
             .join("bots")
             .join(bot_id)
             .join("memory"),
