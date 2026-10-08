@@ -5,9 +5,12 @@ fn codex_home() -> PathBuf {
     if let Some(path) = std::env::var_os("CODEX_HOME") {
         return PathBuf::from(path);
     }
+    let system = std::env::var_os("ACCOUNTINGX_USE_SYSTEM_CODEX")
+        .is_some_and(|v| v != "0" && !v.is_empty());
+    let dir = if system { ".codex" } else { ".accountingx/codex" };
     dirs::home_dir()
-        .map(|home| home.join(".codex"))
-        .unwrap_or_else(|| PathBuf::from(".codex"))
+        .map(|home| home.join(dir))
+        .unwrap_or_else(|| PathBuf::from(dir))
 }
 
 fn plugins_root_dir() -> Result<PathBuf, String> {

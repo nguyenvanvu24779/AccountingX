@@ -10,8 +10,6 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{ChildStdin, Command};
 use tokio::sync::{Mutex, oneshot};
 
-use codex_finder::discover_codex_command;
-
 #[cfg(target_os = "windows")]
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
@@ -102,12 +100,17 @@ impl CodexInitializationState {
 
 pub async fn connect_codex(event_sink: Arc<dyn EventSink>) -> Result<Arc<CodexAppServer>, String> {
     log::info!("Connecting to codex app-server");
-    let codex_bin =
-        discover_codex_command().ok_or_else(|| "Unable to locate codex binary".to_string())?;
+    let codex_bin = crate::runtime::resolve_codex_command()
+        .ok_or_else(|| crate::runtime::MISSING_CODEX_MESSAGE.to_string())?;
+    let codex_home = crate::runtime::effective_codex_home();
+    if let Err(err) = crate::runtime::ensure_codex_home(&codex_home) {
+        log::warn!("Could not prepare CODEX_HOME {}: {err}", codex_home.display());
+    }
 
     let mut command = {
         let mut cmd = Command::new(codex_bin);
         cmd.arg("app-server");
+        cmd.env("CODEX_HOME", &codex_home);
         cmd
     };
 

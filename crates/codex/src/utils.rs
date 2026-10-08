@@ -56,13 +56,7 @@ pub fn file_created_time(path: &Path) -> Option<i64> {
 }
 
 pub fn codex_home() -> PathBuf {
-    if let Some(path) = std::env::var_os("CODEX_HOME") {
-        return PathBuf::from(path);
-    }
-
-    dirs::home_dir()
-        .map(|home| home.join(".codex"))
-        .unwrap_or_else(|| PathBuf::from(".codex"))
+    crate::runtime::effective_codex_home()
 }
 
 pub fn codexia_history_path() -> PathBuf {

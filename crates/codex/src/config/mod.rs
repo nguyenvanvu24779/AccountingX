@@ -50,6 +50,5 @@ pub struct CodexConfig {
 }
 
 pub fn get_config_path() -> Result<PathBuf, String> {
-    let home_dir = dirs::home_dir().ok_or("Could not find home directory")?;
-    Ok(home_dir.join(".codex").join("config.toml"))
+    Ok(crate::runtime::effective_codex_home().join("config.toml"))
 }
