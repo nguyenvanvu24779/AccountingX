@@ -24,6 +24,7 @@ export function useServerNotificationHandler(
   return useCallback(
     (payload: ServerNotification) => {
       const method = payload.method;
+      console.info('[accountingx] codex notification:', method);
       let threadId = null;
       if (method === 'thread/started') {
         threadId = payload.params.thread.id;
