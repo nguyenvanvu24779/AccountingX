@@ -83,7 +83,14 @@ Vui lòng cài lại ứng dụng hoặc liên hệ bộ phận hỗ trợ.";
 
 const DEFAULT_CONFIG: &str = "# AccountingX defaults. Edit with care.\n\
 approval_policy = \"on-request\"\n\
-sandbox_mode = \"workspace-write\"\n";
+sandbox_mode = \"workspace-write\"\n\
+\n\
+[features]\n\
+code_mode = false\n\
+code_mode_host = false\n";
+
+/// Appended to configs created before these keys existed.
+const CODE_MODE_OFF: &str = "\n[features]\ncode_mode = false\ncode_mode_host = false\n";
 
 /// Creates the private Codex home and a conservative default `config.toml`.
 /// An existing config is never overwritten.
@@ -92,6 +99,13 @@ pub fn ensure_codex_home(home: &Path) -> std::io::Result<()> {
     let config = home.join("config.toml");
     if !config.exists() {
         fs::write(config, DEFAULT_CONFIG)?;
+    } else {
+        // Code mode needs a helper executable AccountingX does not ship; turn it
+        // off unless the user's config already mentions it.
+        let existing = fs::read_to_string(&config)?;
+        if !existing.contains("code_mode") && !existing.contains("[features]") {
+            fs::write(&config, format!("{existing}{CODE_MODE_OFF}"))?;
+        }
     }
     Ok(())
 }

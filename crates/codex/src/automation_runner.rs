@@ -64,10 +64,7 @@ impl AgentRunner for CodexAgentRunner {
             json!({
                 "model_reasoning_effort": "medium",
                 "show_raw_agent_reasoning": true,
-                "model_reasoning_summary": "auto",
-                "web_search_request": false,
-                "view_image_tool": true,
-                "features.multi_agents": true
+                "model_reasoning_summary": "auto"
             }),
         );
         start_params_map.insert("personality".to_string(), json!("friendly"));

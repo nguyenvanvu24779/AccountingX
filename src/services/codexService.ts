@@ -69,7 +69,6 @@ const generateWorktreeKey = (): string => {
 const buildAgentsConfigFragment = (): Record<string, unknown> => {
   const { agentsMaxThreads, agentsMaxDepth } = useSettingsStore.getState();
   return {
-    'features.multi_agents': true,
     'agents.max_threads': agentsMaxThreads,
     'agents.max_depth': agentsMaxDepth,
   };
@@ -236,7 +235,6 @@ export const codexService = {
         approvalPolicy,
         sandbox,
         reasoningEffort,
-        webSearchRequest,
         threadCwdMode,
         collaborationMode,
       } = useConfigStore.getState();
@@ -265,8 +263,6 @@ export const codexService = {
           model_reasoning_effort: reasoningEffort,
           show_raw_agent_reasoning: false,
           model_reasoning_summary: 'auto',
-          web_search_request: webSearchRequest,
-          view_image_tool: true,
           // Inject user-configured multi-agent limits.
           ...buildAgentsConfigFragment(),
           // Inject plan mode when selected.
