@@ -26,7 +26,10 @@ foreach ($f in $files) {
   $out = Join-Path $tmp ([IO.Path]::GetFileNameWithoutExtension($f.asset))
   if (Test-Path $out) { Remove-Item -Recurse -Force $out }
   Expand-Archive $zip -DestinationPath $out -Force
-  $exe = Get-ChildItem $out -Recurse -Filter *.exe | Select-Object -First 1
+  $all = Get-ChildItem $out -Recurse -Filter *.exe | Sort-Object Length -Descending
+  Write-Host ("  contains: " + (($all | ForEach-Object { "$($_.Name) ($([math]::Round($_.Length/1MB,1)) MB)" }) -join ", "))
+  # The archive may hold helper executables too; the real CLI is the largest one.
+  $exe = $all | Select-Object -First 1
   if (-not $exe) { throw "No .exe found inside $($f.asset)" }
   Copy-Item $exe.FullName (Join-Path $dest $f.target) -Force
 }

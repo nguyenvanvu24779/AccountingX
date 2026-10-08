@@ -27,7 +27,7 @@ function Step($name, [scriptblock]$body) {
 Step "git head"            { git log --oneline -3 }
 Step "disk free (GB)"      { [math]::Round((Get-PSDrive C).Free/1GB,1) }
 Step "bundled files"       { Get-ChildItem src-tauri\resources\codex | Select-Object Name,Length | Format-Table | Out-String; if (-not (Test-Path src-tauri\resources\codex\codex.exe)) { cmd /c exit 1 } }
-Step "codex --version"     { & .\src-tauri\resources\codex\codex.exe --version }
+Step "codex --version"     { & .\src-tauri\resources\codex\codex.exe --version; "size MB: " + [math]::Round((Get-Item src-tauri\resources\codex\codex.exe).Length/1MB,1) }
 Step "frontend typecheck"  { bunx tsc --noEmit }
 Step "frontend tests"      { bun run test }
 Step "rust check"          { cargo check --workspace }
