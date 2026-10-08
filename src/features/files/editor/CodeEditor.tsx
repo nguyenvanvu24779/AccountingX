@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronUp, FileText, Save, Search, Send, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import AceEditor from 'react-ace';
+import * as ReactAceModule from 'react-ace';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useThemeContext } from '@/contexts/ThemeContext';
@@ -32,6 +32,16 @@ import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/theme-github';
 import { aceMapping, editableExtensions } from './languageMap';
+
+// react-ace is CommonJS; depending on the bundler the component sits on `.default`
+// or on `.default.default`. Resolve it so dev and production builds both work.
+const AceEditor = ((): typeof ReactAceModule.default => {
+  let mod: unknown = ReactAceModule;
+  for (let i = 0; i < 3 && mod && typeof mod !== 'function'; i++) {
+    mod = (mod as { default?: unknown }).default;
+  }
+  return mod as typeof ReactAceModule.default;
+})();
 
 interface CodeEditorProps {
   content: string;
