@@ -3,9 +3,9 @@
 AccountingX chạy Codex CLI đi kèm, không dùng bản cài sẵn trên máy.
 
 ## Cách đặt file
-1. Tải `codex-x86_64-pc-windows-msvc` từ trang Releases của `openai/codex`
-   (hoặc lấy binary trong gói npm `@openai/codex`).
-2. Đổi tên thành `codex.exe`, đặt vào `src-tauri/resources/codex/`.
+1. Chạy `powershell -ExecutionPolicy Bypass -File scripts\fetch-codex.ps1` (mặc định `rust-v0.161.0`, tải từ trang Releases của `openai/codex`).
+
+2. Script đặt `codex.exe` cùng hai file hỗ trợ sandbox Windows vào `src-tauri/resources/codex/`.
 3. Ghi phiên bản đã kiểm thử vào `NOTICE.md`.
 4. `bun tauri build`. Bộ cài sẽ chứa `resources/codex/codex.exe`.
 
