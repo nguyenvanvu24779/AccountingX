@@ -9,6 +9,7 @@ import { ProjectRunMenu } from '@/features/project-run/ProjectRunMenu';
 import { PublishButton } from '@/features/publish/PublishButton';
 import { useTrafficLightConfig } from '@/hooks';
 import { isPhone } from '@/hooks/runtime';
+import { EDITION } from '@/lib/edition';
 import { useCCStore, useLayoutStore, useWorkspaceStore } from '@/stores';
 import type { AgentCardsViewMode } from '@/stores/useAgentCenterStore';
 import { useAgentCenterStore } from '@/stores/useAgentCenterStore';
@@ -78,7 +79,7 @@ export function AgentViewHeader() {
         </span>
         {!isRightPanelOpen && (
           <>
-            {hasActiveSession && <GitActions />}
+            {EDITION.git && hasActiveSession && <GitActions />}
             <Button
               variant={isTerminalOpen ? 'secondary' : 'ghost'}
               size="icon"

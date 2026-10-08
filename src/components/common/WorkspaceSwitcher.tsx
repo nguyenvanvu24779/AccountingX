@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { BrowserProjects } from '@/features/ProjectSelector';
 import { isDesktopTauri } from '@/hooks/runtime';
+import { EDITION } from '@/lib/edition';
 import { useCCStore } from '@/stores';
 import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
@@ -146,7 +147,7 @@ export function WorkspaceSwitcher() {
         />
       )}
 
-      <BranchSwitcher cwd={cwd} />
+      {EDITION.git && <BranchSwitcher cwd={cwd} />}
     </div>
   );
 }

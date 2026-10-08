@@ -21,6 +21,8 @@ export const EDITION = {
   dictation: false,
   /** Marketing promos for third-party apps. */
   promo: false,
+  /** Git integration (branches, commits, diff stats). Accounting folders are not repositories. */
+  git: false,
   /** Developer tools in the right panel. */
   devPanels: { diff: false, terminal: false, webpreview: false },
   /** Link to the upstream project's issue tracker. */

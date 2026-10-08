@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useGitWatch } from '@/hooks/useGitWatch';
+import { EDITION } from '@/lib/edition';
 import { useLayoutStore, useWorkspaceStore } from '@/stores';
 import { useGitStatsStore } from '@/stores/useGitStatsStore';
 import { detectWebFramework } from '../../features/web-preview/webFrameworkDetection';
@@ -43,7 +44,7 @@ export function RightPanel() {
     if (currentCwd) void refreshStatsRef.current(currentCwd, true);
   }, []);
 
-  useGitWatch(cwd, silentRefresher, Boolean(cwd));
+  useGitWatch(cwd, silentRefresher, EDITION.git && Boolean(cwd));
 
   useEffect(() => {
     let cancelled = false;

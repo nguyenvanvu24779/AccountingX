@@ -1,3 +1,4 @@
+import { EDITION } from '@/lib/edition';
 import { postJson, postJsonWithOptions, postNoContent } from './shared';
 
 export type GitStatusEntry = {
@@ -74,7 +75,7 @@ export async function gitBranchInfo(cwd: string) {
 // toast on the (expected) non-git case. Result is not cached because cwd
 // changes are rare and the call is cheap.
 export async function isGitRepo(cwd: string): Promise<boolean> {
-  if (!cwd) return false;
+  if (!cwd || !EDITION.git) return false;
   try {
     await postJsonWithOptions<GitBranchInfoResponse>(
       '/api/git/branch-info',
