@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { useLayoutStore } from '@/stores';
 import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
+import { enabledEngines } from '@/lib/edition';
 import { AgentIcon } from '../common/AgentIcon';
 
-const AGENT_TYPES = ['codex', 'cc'] as const;
+const AGENT_TYPES = enabledEngines();
 
 interface AgentSwitcherProps {
   /** "icon" = icon-only ghost buttons; "tab" = icon + label tabs */
@@ -14,6 +15,8 @@ interface AgentSwitcherProps {
 export function AgentSwitcher({ variant = 'icon', className }: AgentSwitcherProps) {
   const { selectedAgent, setSelectedAgent } = useAgentSettingsStore();
   const { setActiveSidebarTab } = useLayoutStore();
+
+  if (AGENT_TYPES.length < 2) return null;
 
   if (variant === 'tab') {
     return (

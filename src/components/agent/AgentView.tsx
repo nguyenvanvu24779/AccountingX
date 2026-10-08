@@ -1,3 +1,4 @@
+import { EDITION } from '@/lib/edition';
 import { lazy, Suspense } from 'react';
 import { useCodexStore } from '@/components/codex/stores';
 import { useCCStore } from '@/stores/cc';
@@ -10,7 +11,9 @@ import { AgentViewHeader } from './AgentViewHeader';
 import { PluxPromo } from './PluxPromo';
 
 const CodexThread = lazy(() =>
-  import('@/components/codex/thread/CodexThread').then((m) => ({ default: m.CodexThread }))
+  import('@/components/codex/thread/CodexThread').then((m) => ({
+    default: m.CodexThread,
+  }))
 );
 const CCSession = lazy(() => import('@/components/cc/session/CCSession'));
 const AcpSession = lazy(() => import('@/components/acp/AcpSession'));
@@ -87,7 +90,7 @@ export default function AgentView() {
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden items-center justify-center">
             <div className="flex flex-col gap-4 w-full px-4 md:max-w-3xl md:px-0">
               <AgentComposer />
-              <PluxPromo />
+              {EDITION.promo && <PluxPromo />}
             </div>
           </div>
         </div>

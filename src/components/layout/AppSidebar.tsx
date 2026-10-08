@@ -1,3 +1,4 @@
+import { EDITION } from '@/lib/edition';
 import { Bug, ChevronDown, ChevronRight, Monitor, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -75,55 +76,57 @@ export function AppSideBar() {
         <SidebarContent className="min-w-0 max-w-full overflow-x-hidden gap-0 px-0">
           <SideBarAgentHeader />
 
-          <Collapsible
-            open={botsOpen}
-            onOpenChange={(open) => {
-              setBotsOpen(open);
-              if (open) setHasSeenBotTab(true);
-            }}
-          >
-            <div className="flex items-center px-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex-1 justify-start"
-                onClick={() => {
-                  setBotsOpen(true);
-                  setHasSeenBotTab(true);
-                  setView('bot');
-                }}
-              >
-                Bots
-              </Button>
-              <CollapsibleTrigger asChild>
+          {EDITION.bots && (
+            <Collapsible
+              open={botsOpen}
+              onOpenChange={(open) => {
+                setBotsOpen(open);
+                if (open) setHasSeenBotTab(true);
+              }}
+            >
+              <div className="flex items-center px-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex-1 justify-start"
+                  onClick={() => {
+                    setBotsOpen(true);
+                    setHasSeenBotTab(true);
+                    setView('bot');
+                  }}
+                >
+                  Bots
+                </Button>
+                <CollapsibleTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    aria-label={botsOpen ? 'Collapse bots' : 'Expand bots'}
+                  >
+                    <ChevronRight
+                      className={`h-4 w-4 text-muted-foreground/60 transition-transform ${botsOpen ? 'rotate-90' : ''}`}
+                    />
+                  </Button>
+                </CollapsibleTrigger>
+                <BotNotifications />
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
-                  aria-label={botsOpen ? 'Collapse bots' : 'Expand bots'}
+                  className="h-8 w-8 shrink-0"
+                  title={t('newBot')}
+                  aria-label={t('newBot')}
+                  onClick={handleCreateBot}
+                  disabled={creating}
                 >
-                  <ChevronRight
-                    className={`h-4 w-4 text-muted-foreground/60 transition-transform ${botsOpen ? 'rotate-90' : ''}`}
-                  />
+                  <Plus className="h-4 w-4" />
                 </Button>
-              </CollapsibleTrigger>
-              <BotNotifications />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 shrink-0"
-                title={t('newBot')}
-                aria-label={t('newBot')}
-                onClick={handleCreateBot}
-                disabled={creating}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            <CollapsibleContent>
-              <SideBarBotPane />
-            </CollapsibleContent>
-          </Collapsible>
+              </div>
+              <CollapsibleContent>
+                <SideBarBotPane />
+              </CollapsibleContent>
+            </Collapsible>
+          )}
 
           <SideBarPinnedList />
 
@@ -152,13 +155,15 @@ export function AppSideBar() {
           <div className="flex-shrink-0 pr-2 flex items-center gap-2">
             <UpdateIndicator
               fallback={
-                <a
-                  href="https://github.com/milisp/codexia/issues"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Bug className="h-4 w-4" />
-                </a>
+                EDITION.upstreamLinks ? (
+                  <a
+                    href="https://github.com/milisp/codexia/issues"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Bug className="h-4 w-4" />
+                  </a>
+                ) : null
               }
             />
           </div>

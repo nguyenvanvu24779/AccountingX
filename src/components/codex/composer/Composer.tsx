@@ -1,3 +1,4 @@
+import { EDITION } from '@/lib/edition';
 import { ArrowUp, Pause, Play, Square, Target, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ThreadGoal } from '@/bindings/v2';
@@ -128,7 +129,13 @@ export function Composer({ overrideSend, onAfterSend }: ComposerProps) {
       return;
     }
 
-    addAgentCard({ kind: 'codex', id: targetThreadId, preview: text, worktreePath, cwd });
+    addAgentCard({
+      kind: 'codex',
+      id: targetThreadId,
+      preview: text,
+      worktreePath,
+      cwd,
+    });
     setCurrentAgentCardId(targetThreadId);
     onAfterSend?.(targetThreadId, text);
     setInputValue('');
@@ -155,7 +162,10 @@ export function Composer({ overrideSend, onAfterSend }: ComposerProps) {
     }
     const nextStatus = threadGoal.status === 'active' ? 'paused' : 'active';
     try {
-      await codexService.threadGoalSet({ threadId: currentThreadId, status: nextStatus });
+      await codexService.threadGoalSet({
+        threadId: currentThreadId,
+        status: nextStatus,
+      });
     } catch (error) {
       console.error('Failed to update goal status:', error);
     }
@@ -308,11 +318,13 @@ export function Composer({ overrideSend, onAfterSend }: ComposerProps) {
               <div className="flex items-center gap-2">
                 <ContextWindowWidget />
                 <AgentModelPanel trigger={<AgentModelTrigger />} />
-                <DictationButton
-                  onTranscript={(text) => {
-                    setInputValue(inputValue ? `${inputValue} ${text}` : text);
-                  }}
-                />
+                {EDITION.dictation && (
+                  <DictationButton
+                    onTranscript={(text) => {
+                      setInputValue(inputValue ? `${inputValue} ${text}` : text);
+                    }}
+                  />
+                )}
                 {threadStatus?.type === 'active' ? (
                   <Button
                     onClick={handleStop}

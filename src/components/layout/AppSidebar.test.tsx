@@ -6,6 +6,10 @@ import { useBotUiStore } from '@/stores/useBotUiStore';
 
 const createBot = vi.fn();
 
+vi.mock('@/lib/edition', async (orig) => {
+  const mod = await orig<typeof import('@/lib/edition')>();
+  return { ...mod, EDITION: { ...mod.EDITION, bots: true } };
+});
 vi.mock('@/services/apiAdapt/bots', () => ({
   listBots: vi.fn().mockResolvedValue([]),
   createBot: (...args: unknown[]) => createBot(...args),

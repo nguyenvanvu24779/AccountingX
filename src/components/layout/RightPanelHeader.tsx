@@ -1,3 +1,4 @@
+import { EDITION } from '@/lib/edition';
 import {
   Diff,
   Files,
@@ -35,7 +36,7 @@ interface TabConfig {
 }
 
 // Order tabs the way users scan them: work-in-progress first, reference last.
-const TAB_BUTTONS: TabConfig[] = [
+const ALL_TAB_BUTTONS: TabConfig[] = [
   { tab: 'diff', icon: Diff, label: 'Review' },
   { tab: 'todo', icon: ListTodo, label: 'Todos' },
   { tab: 'terminal', icon: SquareTerminal, label: 'Terminal' },
@@ -43,6 +44,9 @@ const TAB_BUTTONS: TabConfig[] = [
   { tab: 'files', icon: Files, label: 'Files' },
   { tab: 'tasks', icon: Kanban, label: 'Kanban' },
 ];
+const TAB_BUTTONS = ALL_TAB_BUTTONS.filter(
+  (t) => EDITION.devPanels[t.tab as keyof typeof EDITION.devPanels] !== false
+);
 
 export function RightPanelHeader() {
   const isMobile = useIsMobile();

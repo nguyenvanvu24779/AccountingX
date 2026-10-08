@@ -1,3 +1,4 @@
+import { EDITION } from '@/lib/edition';
 import { Bot } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
@@ -58,13 +59,15 @@ export function AgentModelPanel({ trigger }: AgentModelPanelProps) {
                   >
                     {active ? <Codex size="sm" /> : <AgentIcon agent="codex" />}
                   </CommandItem>
-                  <CommandItem
-                    value="Claude Code"
-                    onSelect={() => selectBuiltin('cc')}
-                    aria-label="Claude Code"
-                  >
-                    {active ? <ClaudeCode size="sm" /> : <AgentIcon agent="cc" />}
-                  </CommandItem>
+                  {EDITION.claudeAgent && (
+                    <CommandItem
+                      value="Claude Code"
+                      onSelect={() => selectBuiltin('cc')}
+                      aria-label="Claude Code"
+                    >
+                      {active ? <ClaudeCode size="sm" /> : <AgentIcon agent="cc" />}
+                    </CommandItem>
+                  )}
                 </CommandGroup>
                 <CommandGroup className="p-1">
                   {agents.map((agent) => (

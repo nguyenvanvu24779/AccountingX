@@ -1,3 +1,4 @@
+import { enabledEngines } from '@/lib/edition';
 import { Bot, Check } from 'lucide-react';
 import { useState } from 'react';
 import KekeIcon from '@/assets/keke-agent.svg';
@@ -74,17 +75,19 @@ export function AgentBadge() {
                   { id: 'codex', name: 'Codex' },
                   { id: 'cc', name: 'Claude Code' },
                 ] as const
-              ).map((agent) => (
-                <CommandItem
-                  key={agent.id}
-                  value={agent.name}
-                  onSelect={() => selectBuiltin(agent.id)}
-                >
-                  <AgentIcon agent={agent.id} />
-                  <span className="ml-2 flex-1">{agent.name}</span>
-                  {!active && selectedAgent === agent.id && <Check className="h-3.5 w-3.5" />}
-                </CommandItem>
-              ))}
+              )
+                .filter((a) => enabledEngines().includes(a.id))
+                .map((agent) => (
+                  <CommandItem
+                    key={agent.id}
+                    value={agent.name}
+                    onSelect={() => selectBuiltin(agent.id)}
+                  >
+                    <AgentIcon agent={agent.id} />
+                    <span className="ml-2 flex-1">{agent.name}</span>
+                    {!active && selectedAgent === agent.id && <Check className="h-3.5 w-3.5" />}
+                  </CommandItem>
+                ))}
             </CommandGroup>
             <CommandGroup heading="ACP">
               {agents.map((agent) => (

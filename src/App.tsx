@@ -1,3 +1,4 @@
+import { EDITION } from '@/lib/edition';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { lazy, Suspense, useEffect, useState } from 'react';
@@ -117,7 +118,7 @@ function AppShell() {
       <AppLayout />
       <TodoCaptureHint />
       <HistoryProjectsDialog />
-      <TelemetryConsentDialog />
+      {EDITION.telemetry && <TelemetryConsentDialog />}
       <QuitDialog open={quitDialogOpen} onOpenChange={setQuitDialogOpen} />
     </>
   );

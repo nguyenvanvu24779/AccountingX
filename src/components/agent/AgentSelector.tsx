@@ -12,15 +12,17 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { enabledEngines, type EngineId } from '@/lib/edition';
 import { acpStop } from '@/services/apiAdapt/acp';
 import { useLayoutStore } from '@/stores';
 import { useAcpStore } from '@/stores/useAcpStore';
 import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
 
-const BUILTIN = [
+const ALL_BUILTIN: { id: EngineId; name: string }[] = [
   { id: 'codex', name: 'Codex' },
   { id: 'cc', name: 'Claude Agent' },
-] as const;
+];
+const BUILTIN = ALL_BUILTIN.filter((b) => enabledEngines().includes(b.id));
 
 /**
  * Picks which agent drives the chat pane: the two built-in agents plus every

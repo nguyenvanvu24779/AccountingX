@@ -1,3 +1,4 @@
+import { EDITION } from '@/lib/edition';
 import { open as openDialog } from '@tauri-apps/plugin-dialog';
 import { Clock3, FolderPlus, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -171,7 +172,7 @@ export function HistoryProjectsDialog() {
               >
                 <TabsList>
                   <TabsTrigger value="codex">Codex</TabsTrigger>
-                  <TabsTrigger value="cc">Claude Agent</TabsTrigger>
+                  {EDITION.claudeAgent && <TabsTrigger value="cc">Claude Agent</TabsTrigger>}
                 </TabsList>
               </Tabs>
             </div>

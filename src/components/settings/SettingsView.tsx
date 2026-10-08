@@ -1,3 +1,4 @@
+import { EDITION } from '@/lib/edition';
 import { ChevronDown, ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -49,14 +50,16 @@ type SettingsSection =
   | 'remote';
 
 const codexSections = ['task', 'agents', 'config', 'personalization', 'archived'] as const;
-const topLevelSections = [
-  'general',
-  'remote',
-  'dictation',
-  'projects',
-  'claude',
-  'explorer',
-] as const;
+const topLevelSections = (
+  [
+    'general',
+    EDITION.remoteAccess ? 'remote' : null,
+    EDITION.dictation ? 'dictation' : null,
+    'projects',
+    EDITION.claudeAgent ? 'claude' : null,
+    'explorer',
+  ] as const
+).filter((s): s is Exclude<typeof s, null> => s !== null);
 
 export default function SettingsView() {
   const { t } = useTranslation('settings');
