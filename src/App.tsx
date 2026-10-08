@@ -65,9 +65,14 @@ function AppShell() {
       return;
     }
 
-    initializeCodexAsync().catch((error) => {
-      console.warn('Failed to initialize codex asynchronously', error);
-    });
+    // The `codex:initialized` event is emitted once and can fire before this
+    // listener is registered (React StrictMode runs this effect twice in dev), so
+    // also mark Codex ready as soon as the init command itself resolves.
+    initializeCodexAsync()
+      .then(() => setCodexReady(true))
+      .catch((error) => {
+        console.warn('Failed to initialize codex asynchronously', error);
+      });
 
     // Listen for codex initialized event
     const unlisten = listen<InitializeResponse>('codex:initialized', (event) => {
