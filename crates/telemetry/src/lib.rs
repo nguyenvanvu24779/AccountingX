@@ -15,7 +15,9 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 /// Compile-time endpoint. Unset or empty disables telemetry entirely.
-const ENDPOINT: Option<&str> = option_env!("CODEXIA_TELEMETRY_URL");
+/// AccountingX: hard-disabled. Accounting data must never leave the machine
+/// through a usage counter, so the endpoint is not read from the build env.
+const ENDPOINT: Option<&str> = None;
 
 /// This crate uses the workspace version, which is the app version
 /// (package.json and tauri.conf.json follow it).
