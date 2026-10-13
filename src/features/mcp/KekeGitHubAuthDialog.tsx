@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -20,6 +21,7 @@ export function KekeGitHubAuthDialog({
   auth: ReturnType<typeof useKekeMcpAuth>;
   onAuthorized?: () => void;
 }) {
+  const { t } = useTranslation('mcp');
   const [token, setToken] = useState('');
   const { openExternalUrl } = useExternalUrl();
   const name = auth.githubName;
@@ -36,8 +38,8 @@ export function KekeGitHubAuthDialog({
     >
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Authorize GitHub</DialogTitle>
-          <DialogDescription>Connect with a personal access token.</DialogDescription>
+          <DialogTitle>{t('keke.authorizeGitHub')}</DialogTitle>
+          <DialogDescription>{t('keke.connectWithToken')}</DialogDescription>
         </DialogHeader>
         <form
           className="flex flex-col gap-3"
@@ -49,7 +51,7 @@ export function KekeGitHubAuthDialog({
             }
           }}
         >
-          <Label htmlFor="github-mcp-token">GitHub token</Label>
+          <Label htmlFor="github-mcp-token">{t('keke.githubToken')}</Label>
           <Input
             id="github-mcp-token"
             type="password"
@@ -66,7 +68,7 @@ export function KekeGitHubAuthDialog({
               openExternalUrl('https://github.com/settings/personal-access-tokens/new')
             }
           >
-            Create a token
+            {t('keke.createToken')}
           </Button>
           {name && auth.errors[name] && (
             <p role="alert" className="text-sm text-destructive">
@@ -75,7 +77,7 @@ export function KekeGitHubAuthDialog({
           )}
           <DialogFooter>
             <Button type="submit" disabled={busy || !token.trim()}>
-              {busy ? 'Authorizing…' : 'Authorize'}
+              {busy ? t('authorizing') : t('authorize')}
             </Button>
           </DialogFooter>
         </form>

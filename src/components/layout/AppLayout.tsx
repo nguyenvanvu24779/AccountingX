@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 import { AppSideBar, RightPanel } from '@/components/layout';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
@@ -23,6 +24,7 @@ const MAX_RIGHT_PANEL_SIZE = 75;
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
 function LayoutContent({ mainContent }: { mainContent: React.ReactNode }) {
+  const { t } = useTranslation('sidebar');
   const {
     isSidebarOpen,
     setSidebarOpen,
@@ -142,7 +144,7 @@ function LayoutContent({ mainContent }: { mainContent: React.ReactNode }) {
             <button
               type="button"
               className="absolute inset-0 z-30 bg-black/40"
-              aria-label="Close right panel"
+              aria-label={t('closeRightPanelAria')}
               onClick={() => setRightPanelOpen(false)}
             />
             <div className="absolute inset-y-0 right-0 z-40 w-[min(92vw,420px)]">
@@ -155,11 +157,14 @@ function LayoutContent({ mainContent }: { mainContent: React.ReactNode }) {
   );
 }
 
-const ViewLoadingFallback = () => (
-  <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
-    Loading view...
-  </div>
-);
+const ViewLoadingFallback = () => {
+  const { t } = useTranslation('sidebar');
+  return (
+    <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
+      {t('loadingView')}
+    </div>
+  );
+};
 
 export function AppLayout() {
   const { view, setView, isSidebarOpen, setSidebarOpen } = useLayoutStore();

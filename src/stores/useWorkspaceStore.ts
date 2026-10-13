@@ -4,6 +4,15 @@ import { useEditorStore } from './useEditorStore';
 export type ProjectSortKey = 'added_desc' | 'added_asc' | 'name_asc' | 'name_desc';
 const MAX_HISTORY_PROJECTS = 30;
 
+/** A company workspace: its own folder under `~/.accountingx/companies/`. */
+export interface Company {
+  /** The folder path — matches an entry in `projects`/`cwd`, the join key to the rest of the app. */
+  path: string;
+  name: string;
+  /** Tax code (mã số thuế) — required, since it's the one id that tells two companies apart. */
+  mst: string;
+}
+
 function normalizeProjectPath(project: string): string {
   return project.trim();
 }
@@ -63,6 +72,10 @@ interface WorkspaceStore {
   setProjectSort: (sortKey: ProjectSortKey) => void;
   cwd: string | null;
   setCwd: (path: string | null) => void;
+  companies: Company[];
+  setCompanies: (companies: Company[]) => void;
+  addCompany: (company: Company) => void;
+  removeCompany: (path: string) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
@@ -128,4 +141,14 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         : state.historyProjects,
     }));
   },
+  companies: [],
+  setCompanies: (companies) => set({ companies }),
+  addCompany: (company) =>
+    set((state) => ({
+      companies: [...state.companies.filter((c) => c.path !== company.path), company],
+    })),
+  removeCompany: (path) =>
+    set((state) => ({
+      companies: state.companies.filter((c) => c.path !== path),
+    })),
 }));

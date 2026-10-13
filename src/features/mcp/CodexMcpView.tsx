@@ -1,5 +1,6 @@
 import { Save, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import type { McpServerConfig } from '@/components/codex/types';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ interface CodexMcpViewProps {
 }
 
 export function CodexMcpView({ refreshKey }: CodexMcpViewProps) {
+  const { t } = useTranslation('mcp');
   const [servers, setServers] = useState<Record<string, McpServerConfig>>({});
   const { authStatuses, refreshAuthStatuses } = useMcpAuthStatus();
   const [editingServer, setEditingServer] = useState<string | null>(null);
@@ -74,7 +76,7 @@ export function CodexMcpView({ refreshKey }: CodexMcpViewProps) {
           try {
             config.env = JSON.parse(editConfig.command.env);
           } catch {
-            toast.error('Invalid JSON format for environment variables');
+            toast.error(t('invalidJsonEnv'));
             return;
           }
         }
@@ -104,7 +106,7 @@ export function CodexMcpView({ refreshKey }: CodexMcpViewProps) {
       loadServers();
     } catch (error) {
       console.error('Failed to update MCP server:', error);
-      toast.error(`Failed to update MCP server: ${error}`);
+      toast.error(t('updateFailed', { error: String(error) }));
     }
   };
 
@@ -151,11 +153,11 @@ export function CodexMcpView({ refreshKey }: CodexMcpViewProps) {
                     <div className="flex gap-2">
                       <Button size="sm" onClick={handleSaveEdit}>
                         <Save className="h-4 w-4 mr-1" />
-                        Save
+                        {t('save')}
                       </Button>
                       <Button size="sm" variant="outline" onClick={handleCancelEdit}>
                         <X className="h-4 w-4 mr-1" />
-                        Cancel
+                        {t('cancel')}
                       </Button>
                     </div>
                   </div>
@@ -174,7 +176,7 @@ export function CodexMcpView({ refreshKey }: CodexMcpViewProps) {
             </div>
           ))}
           {Object.keys(servers).length === 0 && (
-            <div className="text-gray-500 text-center py-8">No MCP servers configured</div>
+            <div className="text-gray-500 text-center py-8">{t('noServersConfigured')}</div>
           )}
         </div>
       </div>

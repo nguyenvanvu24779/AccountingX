@@ -1,6 +1,6 @@
-import { open } from '@tauri-apps/plugin-dialog';
-import { Check, ChevronDown, FolderOpen, FolderPlus } from 'lucide-react';
+import { Building2, Check, ChevronDown, FolderPlus } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { type ThreadCwdMode, useConfigStore } from '@/components/codex/stores';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,8 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { BrowserProjects } from '@/features/ProjectSelector';
-import { isDesktopTauri } from '@/hooks/runtime';
+import { AddCompanyForm } from '@/features/CompanySelector';
 import { EDITION } from '@/lib/edition';
 import { useCCStore } from '@/stores';
 import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
@@ -19,41 +18,33 @@ import { BranchSwitcher } from '../../features/branch';
 import { AgentWorkspaceSelect } from './AgentWorkspaceSelect';
 
 export function WorkspaceSwitcher() {
+  const { t } = useTranslation('company');
   const [projectOpen, setProjectOpen] = useState(false);
-  const [browseMode, setBrowseMode] = useState(false);
-  const { cwd, projects, addProject, setCwd } = useWorkspaceStore();
+  const [addMode, setAddMode] = useState(false);
+  const { cwd, companies, setCwd } = useWorkspaceStore();
   const { selectedAgent } = useAgentSettingsStore();
   const { options, updateOptions } = useCCStore();
   const { threadCwdMode, setThreadCwdMode } = useConfigStore();
 
-  const handleSelectProject = useCallback(
-    (project: string) => {
-      setCwd(project);
+  const handleSelectCompany = useCallback(
+    (path: string) => {
+      setCwd(path);
       setProjectOpen(false);
     },
     [setCwd]
   );
 
-  async function handleSelectBrowseProject(path: string) {
-    addProject(path);
-    setCwd(path);
-    setBrowseMode(false);
+  const handleCreated = useCallback(() => {
+    setAddMode(false);
     setProjectOpen(false);
-  }
+  }, []);
 
-  const handleChooseFolder = useCallback(async () => {
-    if (isDesktopTauri()) {
-      const projectPath = await open({ directory: true, multiple: false });
-      if (!projectPath || Array.isArray(projectPath)) return;
-      addProject(projectPath as string);
-      setCwd(projectPath as string);
-      setProjectOpen(false);
-    } else {
-      setBrowseMode(true);
-    }
-  }, [addProject, setCwd]);
-
-  const repoLabel = cwd ? (cwd.split('/').filter(Boolean).pop() ?? cwd) : 'No project';
+  const activeCompany = companies.find((c) => c.path === cwd);
+  const repoLabel = activeCompany
+    ? activeCompany.name
+    : cwd
+      ? (cwd.split('/').filter(Boolean).pop() ?? cwd)
+      : t('noCompanyFallback');
 
   return (
     <div className="flex items-center gap-1 font-mono py-2">
@@ -62,7 +53,7 @@ export function WorkspaceSwitcher() {
         open={projectOpen}
         onOpenChange={(o) => {
           setProjectOpen(o);
-          if (!o) setBrowseMode(false);
+          if (!o) setAddMode(false);
         }}
       >
         <DropdownMenuTrigger asChild>
@@ -71,36 +62,37 @@ export function WorkspaceSwitcher() {
             size="sm"
             className="h-auto gap-1 px-1.5 py-0.5 text-xs text-muted-foreground"
           >
-            <FolderOpen className="h-3 w-3 shrink-0" />
+            <Building2 className="h-3 w-3 shrink-0" />
             <span>{repoLabel}</span>
             <ChevronDown className="h-3 w-3 shrink-0 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="top" align="start" className="w-fix">
-          {browseMode ? (
-            <BrowserProjects cwd={cwd} onAddProject={handleSelectBrowseProject} />
+          {addMode ? (
+            <div className="p-2">
+              <AddCompanyForm onCreated={handleCreated} />
+            </div>
           ) : (
             <>
               <div className="max-h-60 overflow-y-auto p-1">
-                {projects.map((project) => {
-                  const isCurrent = project === cwd;
-                  const folderName = project.split('/').filter(Boolean).pop() ?? project;
+                {companies.map((company) => {
+                  const isCurrent = company.path === cwd;
                   return (
                     <DropdownMenuItem
-                      key={project}
+                      key={company.path}
                       asChild
                       onSelect={(e) => {
                         e.preventDefault();
-                        handleSelectProject(project);
+                        handleSelectCompany(company.path);
                       }}
                     >
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-auto w-full justify-start gap-2 px-2 py-1.5 text-xs font-mono focus-visible:ring-0"
+                        className="h-auto w-full justify-start gap-2 px-2 py-1.5 text-xs focus-visible:ring-0"
                       >
                         <div className="flex w-full justify-between items-center">
-                          <span className="font-medium">{folderName}</span>
+                          <span className="font-medium">{company.name}</span>
                           {isCurrent ? (
                             <Check className="h-3 w-3 shrink-0 text-primary" />
                           ) : (
@@ -117,7 +109,7 @@ export function WorkspaceSwitcher() {
                   asChild
                   onSelect={(e) => {
                     e.preventDefault();
-                    handleChooseFolder();
+                    setAddMode(true);
                   }}
                 >
                   <Button
@@ -126,7 +118,7 @@ export function WorkspaceSwitcher() {
                     className="h-auto w-full justify-start gap-2 text-xs text-muted-foreground focus-visible:ring-0"
                   >
                     <FolderPlus className="h-3 w-3 shrink-0" />
-                    <span>Choose a different folder</span>
+                    <span>{t('addCompany')}</span>
                   </Button>
                 </DropdownMenuItem>
               </div>

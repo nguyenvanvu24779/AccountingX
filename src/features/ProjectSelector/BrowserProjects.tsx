@@ -1,5 +1,6 @@
 import { ArrowUp, ChevronDown, FolderOpen, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -51,6 +52,7 @@ export function BrowserProjects({
   search: searchProp = '',
   onSearchChange,
 }: BrowserProjectsProps) {
+  const { t } = useTranslation('project');
   const [currentPath, setCurrentPath] = useState('');
   const [_, setHomeDir] = useState('');
   const [entries, setEntries] = useState<TauriFileEntry[]>([]);
@@ -116,9 +118,9 @@ export function BrowserProjects({
   }, [pathSegments]);
 
   const currentDirName = useMemo(() => {
-    if (pathSegments.length === 0) return 'Root';
+    if (pathSegments.length === 0) return t('browser.root');
     return pathSegments[pathSegments.length - 1].name;
-  }, [pathSegments]);
+  }, [pathSegments, t]);
 
   const directoryEntries = useMemo(
     () =>
@@ -210,7 +212,7 @@ export function BrowserProjects({
 
       <Input
         autoFocus
-        placeholder="Filter folders..."
+        placeholder={t('browser.filterPlaceholder')}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="h-8 text-sm"
@@ -223,7 +225,7 @@ export function BrowserProjects({
         {isLoading ? (
           <div className="flex flex-1 items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Loading folders...</span>
+            <span>{t('browser.loadingFolders')}</span>
           </div>
         ) : (
           <div className="p-1 flex-1">
@@ -264,7 +266,7 @@ export function BrowserProjects({
                       void onAddProject(entry.path);
                     }}
                   >
-                    Select
+                    {t('browser.select')}
                   </Button>
                 </div>
               );
@@ -272,7 +274,7 @@ export function BrowserProjects({
 
             {directoryEntries.length === 0 && !hasParentRow && (
               <div className="flex flex-1 items-center justify-center p-8 text-sm text-muted-foreground">
-                No folders found
+                {t('browser.noFoldersFound')}
               </div>
             )}
           </div>
@@ -288,7 +290,7 @@ export function BrowserProjects({
             onClick={() => onAddProject(currentPath)}
           >
             <FolderOpen className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium text-xs">Select</span>
+            <span className="font-medium text-xs">{t('browser.select')}</span>
           </Button>
         </div>
       )}

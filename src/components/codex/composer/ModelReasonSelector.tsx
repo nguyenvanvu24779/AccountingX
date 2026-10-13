@@ -1,5 +1,6 @@
 import { Check, ChevronDown, ChevronRight, Plus, Search, Settings, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ReasoningEffort } from '@/bindings';
 import type { Model } from '@/bindings/v2';
 import { useCodexStore, useConfigStore } from '@/components/codex/stores';
@@ -48,6 +49,7 @@ function ModelItem({
   onSelect: () => void;
   onRemove?: () => void;
 }) {
+  const { t } = useTranslation('composer');
   return (
     <CommandItem
       value={`${provider} ${item.label} ${item.id}`}
@@ -64,7 +66,7 @@ function ModelItem({
       {onRemove && (
         <button
           type="button"
-          title="Remove model"
+          title={t('modelSelector.removeModel')}
           className={cn(
             'shrink-0 rounded-sm p-0.5 text-muted-foreground opacity-0 hover:text-destructive group-data-[selected=true]:opacity-100',
             !selected && !showProvider && 'ml-auto'
@@ -106,6 +108,7 @@ function BaseModelSelector({
   onClose,
   mode = 'popover',
 }: BaseModelSelectorProps) {
+  const { t } = useTranslation('composer');
   const [open, setOpen] = useState(false);
   const [envKeysOpen, setEnvKeysOpen] = useState(false);
   // The list swaps to provider picking instead of opening a nested menu, so
@@ -150,7 +153,7 @@ function BaseModelSelector({
 
   const currentItems = providerItems(provider);
   const activeItem = currentItems.find((m) => m.id === value);
-  const activeLabel = activeItem?.label || value || 'Select model';
+  const activeLabel = activeItem?.label || value || t('modelSelector.selectModelFallback');
 
   const selectedOpenAiModel =
     provider === 'openai' ? openAiModels.find((m) => m.id === value) : undefined;
@@ -223,7 +226,7 @@ function BaseModelSelector({
               variant="ghost"
               size="icon"
               className="h-7 w-7"
-              aria-label="Search models"
+              aria-label={t('modelSelector.searchModelsAria')}
               onClick={() => setShowSearch((v) => !v)}
             >
               <Search className="h-4 w-4" />
@@ -232,7 +235,7 @@ function BaseModelSelector({
               variant="ghost"
               size="icon"
               className="h-7 w-7"
-              aria-label="Providers and API keys"
+              aria-label={t('modelSelector.providersApiKeysAria')}
               onClick={() => setEnvKeysOpen(true)}
             >
               <Settings className="h-4 w-4" />
@@ -240,7 +243,7 @@ function BaseModelSelector({
           </div>
           {showSearch && (
             <CommandInput
-              placeholder="Search or type a model id..."
+              placeholder={t('modelSelector.searchOrTypeModelId')}
               value={searchQuery}
               onValueChange={setSearchQuery}
             />
@@ -248,7 +251,7 @@ function BaseModelSelector({
           <Command loop>
             <CommandList className="max-h-[min(55vh,400px)]">
               <CommandEmpty className="py-4 text-xs text-muted-foreground">
-                No results found
+                {t('modelSelector.noResultsFound')}
               </CommandEmpty>
               {pickingProvider ? (
                 <CommandGroup>
@@ -354,7 +357,7 @@ function BaseModelSelector({
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 shrink-0"
-                  title="Search"
+                  title={t('modelSelector.searchTitle')}
                   onClick={() => {
                     setShowSearch((prev) => !prev);
                     setSearchQuery('');
@@ -366,7 +369,7 @@ function BaseModelSelector({
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 shrink-0"
-                  title="Providers & API keys"
+                  title={t('modelSelector.providersApiKeysTitle')}
                   onClick={() => setEnvKeysOpen(true)}
                 >
                   <Settings className="h-4 w-4" />
@@ -376,7 +379,9 @@ function BaseModelSelector({
               <div className={cn(!showSearch && 'hidden')}>
                 <CommandInput
                   placeholder={
-                    pickingProvider ? 'Search provider...' : 'Search or type a model id...'
+                    pickingProvider
+                      ? t('modelSelector.searchProviderPlaceholder')
+                      : t('modelSelector.searchOrTypeModelId')
                   }
                   value={searchQuery}
                   onValueChange={setSearchQuery}
@@ -386,7 +391,7 @@ function BaseModelSelector({
 
               <CommandList className="max-h-64">
                 <CommandEmpty className="py-4 text-xs text-muted-foreground">
-                  No results found
+                  {t('modelSelector.noResultsFound')}
                 </CommandEmpty>
 
                 {pickingProvider ? (
@@ -430,7 +435,7 @@ function BaseModelSelector({
                         className="gap-1.5 pl-7 text-xs text-muted-foreground"
                         forceMount
                       >
-                        Use "{query}"
+                        {t('modelSelector.useTyped', { query })}
                       </CommandItem>
                     )}
                     {!expanded && !query && currentItems.length > visibleItems.length && (
@@ -439,7 +444,7 @@ function BaseModelSelector({
                         onSelect={() => setExpandedProviders((prev) => new Set(prev).add(provider))}
                         className="gap-1.5 pl-7 text-xs text-muted-foreground"
                       >
-                        Show all {currentItems.length} models
+                        {t('modelSelector.showAllModels', { count: currentItems.length })}
                         <ChevronRight className="ml-auto h-3.5 w-3.5 shrink-0" />
                       </CommandItem>
                     )}
@@ -466,7 +471,7 @@ function BaseModelSelector({
                 <div className="flex items-center gap-1 border-t p-1">
                   <Input
                     className="h-7 text-xs"
-                    placeholder="Add model id..."
+                    placeholder={t('modelSelector.addModelIdPlaceholder')}
                     value={newModelId}
                     onChange={(e) => setNewModelId(e.target.value)}
                     onKeyDown={(e) => {
@@ -479,7 +484,7 @@ function BaseModelSelector({
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7 shrink-0"
-                    title="Add model"
+                    title={t('modelSelector.addModel')}
                     disabled={!newModelId.trim()}
                     onClick={handleAddTyped}
                   >

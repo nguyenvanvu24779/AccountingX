@@ -29,6 +29,7 @@ export function SelectFilesMenuItem({
   onAfterSelect,
   className,
 }: SelectFilesMenuItemProps) {
+  const { t } = useTranslation('composer');
   const handleSelectFiles = async () => {
     try {
       const selected = await open({
@@ -58,7 +59,7 @@ export function SelectFilesMenuItem({
       onClick={handleSelectFiles}
     >
       <File className="w-4 h-4" />
-      <span>Select files</span>
+      <span>{t('selectFiles')}</span>
     </Button>
   );
 }
@@ -183,7 +184,7 @@ export function ComposerMenu({
             }}
           >
             <Globe className="w-4 h-4" />
-            <span className="flex-1 text-left">Web search</span>
+            <span className="flex-1 text-left">{t('webSearch')}</span>
             {webSearchRequest && <Check className="w-4 h-4" />}
           </Button>
 
@@ -193,7 +194,7 @@ export function ComposerMenu({
             onClick={handleSelectImage}
           >
             <ImageIcon className="w-4 h-4" />
-            <span>Add images</span>
+            <span>{t('addImages')}</span>
           </Button>
           <SelectFilesMenuItem
             onFilesSelected={onFilesSelected}

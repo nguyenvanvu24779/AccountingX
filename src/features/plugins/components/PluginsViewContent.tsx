@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import CCMcpView from '@/components/cc/mcp/CCMcpView';
 import { CodexMcpView } from '@/features/mcp/CodexMcpView';
 import { DefaultMcpServers } from '@/features/mcp/DefaultMcpServers';
@@ -18,6 +19,7 @@ import { TabSwitcher } from './TabSwitcher';
 
 /** Main content area: switches between Tools / Connectors / Skills, or a manage / add overlay. */
 export function PluginsViewContent() {
+  const { t } = useTranslation('mcp');
   const { selectedAgent } = useAgentSettingsStore();
   const { cwd } = useWorkspaceStore();
   const { connectorTarget } = usePluginsViewContext();
@@ -84,10 +86,10 @@ export function PluginsViewContent() {
       {!overlay && mainTab === 'Connectors' && (
         <div className="h-full overflow-y-auto p-4">
           {quickAddState.key !== targetKey ? (
-            <p className="text-sm text-muted-foreground">Loading connectors…</p>
+            <p className="text-sm text-muted-foreground">{t('loadingConnectors')}</p>
           ) : quickAddState.error ? (
             <p role="alert" className="text-sm text-destructive">
-              Could not load connectors: {quickAddState.error}
+              {t('keke.loadFailed', { error: quickAddState.error })}
             </p>
           ) : (
             <DefaultMcpServers

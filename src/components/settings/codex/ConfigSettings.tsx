@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CodeEditor } from '@/features/files';
 import { getCodexHome, readTextFile, writeFile } from '@/services/apiAdapt';
 import { getErrorMessage } from '@/utils/errorUtils';
@@ -6,6 +7,7 @@ import { getErrorMessage } from '@/utils/errorUtils';
 const CONFIG_FILE_NAME = 'config.toml';
 
 export function ConfigSettings() {
+  const { t } = useTranslation('settings');
   const [configPath, setConfigPath] = useState('');
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ export function ConfigSettings() {
         const errorMessage = getErrorMessage(err);
         if (errorMessage.includes('does not exist')) {
           setContent('');
-          setStatusMessage(`${CONFIG_FILE_NAME} does not exist yet. Save to create it.`);
+          setStatusMessage(t('configSection.notExistYet', { file: CONFIG_FILE_NAME }));
           return;
         }
 
@@ -57,11 +59,11 @@ export function ConfigSettings() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [t]);
 
   const handleSave = async (newContent: string) => {
     if (!configPath) {
-      throw new Error('Config path is not ready.');
+      throw new Error(t('configSection.pathNotReady'));
     }
 
     setError(null);
@@ -70,7 +72,7 @@ export function ConfigSettings() {
     try {
       await writeFile(configPath, newContent);
       setContent(newContent);
-      setStatusMessage('Configuration saved.');
+      setStatusMessage(t('configSection.saved'));
     } catch (err) {
       const errorMessage = getErrorMessage(err);
       setError(errorMessage);
@@ -81,12 +83,12 @@ export function ConfigSettings() {
   return (
     <div className="space-y-6">
       <section className="space-y-3">
-        <h3>Configuration</h3>
+        <h3>{t('configSection.title')}</h3>
         <p className="text-xs font-semibold tracking-wider text-muted-foreground">
-          {configPath || `Loading ${CONFIG_FILE_NAME}...`}
+          {configPath || t('configSection.loadingFile', { file: CONFIG_FILE_NAME })}
         </p>
         {loading ? (
-          <div className="text-sm text-muted-foreground">Loading configuration...</div>
+          <div className="text-sm text-muted-foreground">{t('configSection.loadingConfig')}</div>
         ) : null}
         {error ? (
           <div className="rounded border border-destructive/70 bg-destructive/10 px-3 py-2 text-sm text-destructive">

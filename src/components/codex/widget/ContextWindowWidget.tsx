@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next';
 import { useCodexStore } from '@/components/codex/stores/useCodexStore';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 export function ContextWindowWidget() {
+  const { t } = useTranslation('composer');
   const currentThreadId = useCodexStore((state) => state.currentThreadId);
   const tokenUsageMap = useCodexStore((state) => state.tokenUsageMap);
   const usage = currentThreadId ? tokenUsageMap[currentThreadId] : null;
@@ -38,7 +40,7 @@ export function ContextWindowWidget() {
         <button
           type="button"
           className="flex items-center justify-center w-6 h-6 rounded-full hover:bg-accent transition-colors relative"
-          aria-label="Context window usage"
+          aria-label={t('contextWindow.aria')}
         >
           <svg className="w-5 h-5 transform -rotate-90" viewBox="0 0 24 24">
             <circle
@@ -69,7 +71,7 @@ export function ContextWindowWidget() {
         </button>
       </PopoverTrigger>
       <PopoverContent side="top" align="end" className="w-52 p-3 text-xs space-y-1.5">
-        <p className="font-medium text-sm">Context Window</p>
+        <p className="font-medium text-sm">{t('contextWindow.title')}</p>
         {usagePercent !== null && (
           <div className="flex items-center gap-2">
             <div className="flex-1 bg-muted rounded-full h-1.5 overflow-hidden">
@@ -82,22 +84,22 @@ export function ContextWindowWidget() {
           </div>
         )}
         <div className="flex justify-between text-muted-foreground">
-          <span>Total tokens</span>
+          <span>{t('contextWindow.totalTokens')}</span>
           <span className="font-mono tabular-nums">{totalTokens.toLocaleString()}</span>
         </div>
         <div className="flex justify-between text-muted-foreground">
-          <span>Last turn</span>
+          <span>{t('contextWindow.lastTurn')}</span>
           <span className="font-mono tabular-nums">{lastTokens.toLocaleString()}</span>
         </div>
         {cachedTokens > 0 && (
           <div className="flex justify-between text-muted-foreground">
-            <span>Cached</span>
+            <span>{t('contextWindow.cached')}</span>
             <span className="font-mono tabular-nums">{cachedTokens.toLocaleString()}</span>
           </div>
         )}
         {modelContextWindow && (
           <div className="flex justify-between text-muted-foreground">
-            <span>Limit</span>
+            <span>{t('contextWindow.limit')}</span>
             <span className="font-mono tabular-nums">{modelContextWindow.toLocaleString()}</span>
           </div>
         )}

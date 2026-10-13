@@ -2,6 +2,7 @@ import { X } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import type { SkillsListEntry } from '@/bindings/v2/SkillsListEntry';
 import type { ComposerEditorRef } from '@/components/common/useComposerPopover';
 import {
@@ -32,6 +33,7 @@ export function SkillsInputPopover({
   editorRef,
   triggerElement,
 }: SkillsInputPopoverProps) {
+  const { t } = useTranslation('composer');
   const { cwd } = useWorkspaceStore();
   const [open, setOpen] = useState(false);
   const [skillsList, setSkillsList] = useState<SkillsListEntry[]>([]);
@@ -99,17 +101,17 @@ export function SkillsInputPopover({
       className="z-[9999] w-96 max-w-[600px] max-h-96 overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md p-3"
     >
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs text-muted-foreground">Skills</span>
+        <span className="text-xs text-muted-foreground">{t('skillsPopover.title')}</span>
         <Button variant="ghost" size="icon" className="h-5 w-5" onClick={handleClose}>
           <X className="h-3 w-3" />
         </Button>
       </div>
       <div className="space-y-4">
         <h4 className="font-medium leading-none mb-2 text-sm text-muted-foreground">
-          Available Skills
+          {t('skillsPopover.available')}
         </h4>
         {skillsList.flatMap((e) => e.skills).length === 0 ? (
-          <div className="text-sm text-muted-foreground p-2">No skills found.</div>
+          <div className="text-sm text-muted-foreground p-2">{t('skillsPopover.empty')}</div>
         ) : (
           <div className="grid gap-2">
             {skillsList

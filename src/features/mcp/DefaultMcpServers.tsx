@@ -1,5 +1,6 @@
 import { Check, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { type UnifiedMcpClientName, unifiedAddMcpServer } from '@/services';
@@ -18,6 +19,7 @@ interface DefaultMcpServersProps {
 }
 
 export function DefaultMcpServers({ agent, cwd, servers, onServerAdded }: DefaultMcpServersProps) {
+  const { t } = useTranslation('mcp');
   const auth = useKekeMcpAuth(agent === 'keke');
   const [category, setCategory] = useState('featured');
   const [adding, setAdding] = useState<string | null>(null);
@@ -39,7 +41,12 @@ export function DefaultMcpServers({ agent, cwd, servers, onServerAdded }: Defaul
           serverConfig: preset.config,
           scope: agent === 'cc' ? 'global' : undefined,
         });
-      toast.success(`${preset.label} configured.${preset.access ? ` ${preset.access}.` : ''}`);
+      toast.success(
+        t('keke.addedToastSimple', {
+          label: preset.label,
+          access: preset.access ? ` ${preset.access}.` : '',
+        })
+      );
       onServerAdded();
       setAdditions((previous) => ({
         key: catalogKey,
@@ -53,7 +60,7 @@ export function DefaultMcpServers({ agent, cwd, servers, onServerAdded }: Defaul
         else await auth.refresh();
       }
     } catch (error) {
-      toast.error(`Could not add ${preset.label}: ${error}`);
+      toast.error(t('keke.addFailedToastSimple', { label: preset.label, error: String(error) }));
     } finally {
       setAdding(null);
     }
@@ -63,16 +70,23 @@ export function DefaultMcpServers({ agent, cwd, servers, onServerAdded }: Defaul
     <div className="flex flex-col gap-4">
       <KekeGitHubAuthDialog auth={auth} />
       <div>
-        <h3 className="text-lg font-semibold">Connectors</h3>
+        <h3 className="text-lg font-semibold">{t('keke.connectorsTitle')}</h3>
         <p className="text-sm text-muted-foreground">
-          Add tools for {agent === 'keke' ? 'your bots' : agent === 'cc' ? 'Claude' : 'Codex'}.
+          {t('keke.addToolsFor', {
+            target:
+              agent === 'keke'
+                ? t('keke.yourBots')
+                : agent === 'cc'
+                  ? t('targetClaude')
+                  : t('targetCodex'),
+          })}
         </p>
       </div>
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Connector category">
+      <div className="flex flex-wrap gap-2" role="group" aria-label={t('keke.categoryAria')}>
         {[
-          { value: 'featured', label: 'Featured' },
-          { value: 'all', label: 'All connectors' },
-          { value: 'finance', label: 'Finance & economics' },
+          { value: 'featured', label: t('keke.categoryFeatured') },
+          { value: 'all', label: t('keke.categoryAll') },
+          { value: 'finance', label: t('keke.categoryFinance') },
         ].map((item) => (
           <Button
             key={item.value}
@@ -114,7 +128,7 @@ export function DefaultMcpServers({ agent, cwd, servers, onServerAdded }: Defaul
                     <KekeMcpAuthControl name={preset.name} auth={auth} config={config} />
                   ) : (
                     <Check
-                      aria-label={`${preset.label} configured`}
+                      aria-label={t('keke.configuredAria', { label: preset.label })}
                       className="size-4 shrink-0 text-muted-foreground"
                     />
                   )
@@ -122,12 +136,12 @@ export function DefaultMcpServers({ agent, cwd, servers, onServerAdded }: Defaul
                   <Button
                     size="sm"
                     variant="outline"
-                    aria-label={`Add ${preset.label}`}
+                    aria-label={t('keke.addAria', { label: preset.label })}
                     disabled={adding !== null}
                     onClick={() => add(preset)}
                   >
                     <Plus data-icon="inline-start" />
-                    {adding === preset.name ? 'Adding…' : 'Add'}
+                    {adding === preset.name ? t('adding') : t('keke.add')}
                   </Button>
                 )}
               </div>

@@ -1,5 +1,6 @@
 import { ExternalLink, Key, Plus, Save, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { EnvStatusItem } from '@/components/codex/types';
 import { ProviderIcons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ export function EnvKeysDialog({
   provider,
   onProviderChange,
 }: EnvKeysDialogProps) {
+  const { t } = useTranslation('composer');
   const [envKeys, setEnvKeys] = useState<EnvStatusItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
@@ -96,7 +98,7 @@ export function EnvKeysDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-sm">
             <Key className="h-4 w-4" />
-            Providers
+            {t('envKeysDialog.providers')}
             <Button
               variant="ghost"
               size="sm"
@@ -104,13 +106,13 @@ export function EnvKeysDialog({
               onClick={() => setAddProviderOpen(true)}
             >
               <Plus className="h-3.5 w-3.5" />
-              Add
+              {t('envKeysDialog.add')}
             </Button>
           </DialogTitle>
         </DialogHeader>
 
         {loading ? (
-          <div className="py-6 text-center text-xs text-muted-foreground">Loading...</div>
+          <div className="py-6 text-center text-xs text-muted-foreground">{t('loading')}</div>
         ) : (
           <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1 subtle-scrollbar">
             {rows.map((item) => (
@@ -127,8 +129,13 @@ export function EnvKeysDialog({
                   <span className="flex">
                     {item.signup_url && (
                       <Button variant="ghost" size="sm" asChild>
-                        <a href={item.signup_url} target="_blank" rel="noreferrer" title="Sign up">
-                          <ExternalLink className="h-3 w-3" /> Sign Up
+                        <a
+                          href={item.signup_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          title={t('envKeysDialog.signUpTitle')}
+                        >
+                          <ExternalLink className="h-3 w-3" /> {t('envKeysDialog.signUp')}
                         </a>
                       </Button>
                     )}
@@ -138,9 +145,9 @@ export function EnvKeysDialog({
                           href={item.api_key_url}
                           target="_blank"
                           rel="noreferrer"
-                          title="Get API key"
+                          title={t('envKeysDialog.getApiKey')}
                         >
-                          <ExternalLink className="h-3 w-3" /> Get API key
+                          <ExternalLink className="h-3 w-3" /> {t('envKeysDialog.getApiKey')}
                         </a>
                       </Button>
                     )}
@@ -148,7 +155,7 @@ export function EnvKeysDialog({
                       <Button
                         variant="ghost"
                         size="icon"
-                        title="Remove provider"
+                        title={t('envKeysDialog.removeProvider')}
                         onClick={async () => {
                           // Deletes the entry from config.toml, not just from the UI.
                           await removeModelProvider(item.provider);

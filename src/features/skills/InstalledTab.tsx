@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronRight, Loader2, Package, Pencil, Tag, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +46,7 @@ function GroupAssignPopover({
   groups: SkillGroup[];
   onToggle: (groupId: string, add: boolean) => void;
 }) {
+  const { t } = useTranslation('skills');
   const assigned = useMemo(() => groupsForSkill(groups, skillName), [groups, skillName]);
 
   return (
@@ -54,14 +56,14 @@ function GroupAssignPopover({
           variant="ghost"
           size="icon"
           className="h-6 w-6 shrink-0 text-muted-foreground hover:text-foreground"
-          title="Assign to group"
+          title={t('market.assignToGroup')}
         >
           <Tag className="h-3 w-3" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-48 p-2" align="end">
         {groups.length === 0 ? (
-          <p className="px-1 py-1.5 text-xs text-muted-foreground">No groups yet</p>
+          <p className="px-1 py-1.5 text-xs text-muted-foreground">{t('market.noGroupsYet')}</p>
         ) : (
           <div className="space-y-0.5">
             {groups.map((g) => {
@@ -273,6 +275,7 @@ export function InstalledTab({
   onGroupsChange: (config: SkillGroupsConfig) => Promise<void>;
   selectedGroupId?: string | null;
 }) {
+  const { t } = useTranslation('skills');
   const { cwd } = useWorkspaceStore();
   const [skills, setSkills] = useState<CentralSkillItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -287,13 +290,13 @@ export function InstalledTab({
     try {
       setSkills(await listCentralSkills(scope, cwd ?? undefined));
     } catch (err) {
-      toast.error('Failed to load skills', {
+      toast.error(t('market.loadSkillsFailed'), {
         description: err instanceof Error ? err.message : String(err),
       });
     } finally {
       setLoading(false);
     }
-  }, [scope, cwd]);
+  }, [scope, cwd, t]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: refreshKey is a trigger dependency, used for its identity change alone
   useEffect(() => {
@@ -333,9 +336,15 @@ export function InstalledTab({
       }
       await load();
     } catch (err) {
-      toast.error(`Failed to ${linked ? 'unlink' : 'link'} ${skill.name}`, {
-        description: err instanceof Error ? err.message : String(err),
-      });
+      toast.error(
+        t('market.linkActionFailed', {
+          action: linked ? t('market.actionUnlink') : t('market.actionLink'),
+          name: skill.name,
+        }),
+        {
+          description: err instanceof Error ? err.message : String(err),
+        }
+      );
     } finally {
       setTogglingKey(null);
     }
@@ -354,10 +363,10 @@ export function InstalledTab({
         })),
       });
       setSkills((prev) => prev.filter((s) => s.name !== deleteTarget.name));
-      toast.success(`Deleted ${deleteTarget.name}`);
+      toast.success(t('market.deletedToast', { name: deleteTarget.name }));
       setDeleteTarget(null);
     } catch (err) {
-      toast.error(`Failed to delete ${deleteTarget.name}`, {
+      toast.error(t('market.deleteSkillFailed', { name: deleteTarget.name }), {
         description: err instanceof Error ? err.message : String(err),
       });
     } finally {
@@ -413,7 +422,7 @@ export function InstalledTab({
     return (
       <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
         <Loader2 className="h-7 w-7 animate-spin" />
-        <p className="mt-3 text-sm">Loading…</p>
+        <p className="mt-3 text-sm">{t('market.loadingEllipsis')}</p>
       </div>
     );
   }
@@ -425,12 +434,12 @@ export function InstalledTab({
           <Package className="h-7 w-7 text-muted-foreground" />
         </div>
         <h3 className="mt-4 font-semibold">
-          {searchQuery ? `No results for "${searchQuery}"` : 'No skills installed'}
+          {searchQuery
+            ? t('market.noResultsFor', { query: searchQuery })
+            : t('market.noSkillsInstalled')}
         </h3>
         {!searchQuery && (
-          <p className="mt-1 text-sm text-muted-foreground">
-            Browse the marketplace to install skills.
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">{t('market.browseToInstall')}</p>
         )}
       </div>
     );
@@ -450,8 +459,8 @@ export function InstalledTab({
           >
             {groupSkills.length === 0 ? (
               <p className="col-span-full py-4 text-center text-xs text-muted-foreground">
-                No skills in this group — use the <Tag className="inline h-3 w-3" /> button on a
-                skill to add it here.
+                {t('market.noSkillsInGroupBefore')} <Tag className="inline h-3 w-3" />{' '}
+                {t('market.noSkillsInGroupAfter')}
               </p>
             ) : (
               groupSkills.map((s) => <SkillCard {...cardProps} key={s.name} skill={s} />)
@@ -462,7 +471,7 @@ export function InstalledTab({
         {/* Ungrouped */}
         {ungrouped.length > 0 && (
           <GroupSection
-            title={groups.length > 0 ? 'Ungrouped' : 'All Skills'}
+            title={groups.length > 0 ? t('market.ungrouped') : t('market.allSkills')}
             count={ungrouped.length}
             defaultOpen
           >
@@ -483,15 +492,14 @@ export function InstalledTab({
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-destructive">
               <Trash2 className="h-4 w-4" />
-              Delete skill
+              {t('market.deleteSkillTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Remove <strong className="text-foreground">{deleteTarget?.name}</strong> from the
-              central store and all agent links?
+              {t('market.deleteSkillConfirm', { name: deleteTarget?.name ?? '' })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>{t('market.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault();
@@ -503,10 +511,10 @@ export function InstalledTab({
               {deleting ? (
                 <>
                   <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-                  Deleting
+                  {t('market.deleting')}
                 </>
               ) : (
-                'Delete'
+                t('market.delete')
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -61,7 +61,7 @@ export function AgentViewHeader() {
       </div>
       <span className="flex items-center gap-1 pr-2">
         {cwd && <ProjectRunMenu />}
-        {cwd && <PublishButton />}
+        {EDITION.promo && cwd && <PublishButton />}
         {cwd && <OpenAppMenu path={cwd} />}
         <span className="flex items-center gap-0.5 border rounded-md p-0.5">
           {CARDS_VIEW_MODES.map(({ mode, icon: Icon, title }) => (

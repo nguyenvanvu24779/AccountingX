@@ -1,5 +1,6 @@
 import { AlertCircle, CheckCircle2, Download, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import type {
   ExternalAgentConfigImportHistory,
@@ -51,6 +52,7 @@ interface ImportDialogProps {
  * streaming its progress.
  */
 export function ImportDialog({ open, onClose }: ImportDialogProps) {
+  const { t } = useTranslation('composer');
   const cwd = useWorkspaceStore((s) => s.cwd);
 
   const [phase, setPhase] = useState<Phase>('loading');
@@ -111,9 +113,9 @@ export function ImportDialog({ open, onClose }: ImportDialogProps) {
       setPhase('done');
       const { successes, failures } = countResults(finalResults);
       if (failures > 0) {
-        toast.error(`Imported ${successes} item(s), ${failures} failed`);
+        toast.error(t('importDialog.importedWithFailuresToast', { count: successes, failures }));
       } else {
-        toast.success(`Imported ${successes} item(s) from Claude Code`);
+        toast.success(t('importDialog.importedToast', { count: successes }));
       }
       if (successes > 0) {
         try {
@@ -127,7 +129,7 @@ export function ImportDialog({ open, onClose }: ImportDialogProps) {
         loadHistories();
       }
     },
-    [loadHistories]
+    [loadHistories, t]
   );
 
   useImportNotifications(phase === 'importing', {
@@ -172,12 +174,16 @@ export function ImportDialog({ open, onClose }: ImportDialogProps) {
       if (!isTauri()) {
         // Notifications only reach the Tauri event bridge; outside it the
         // import still runs but no progress can be observed.
-        toast.success('Import started');
+        toast.success(t('importDialog.importStarted'));
         onClose();
       }
     } catch (error) {
       setPhase('select');
-      toast.error(`Import failed: ${error instanceof Error ? error.message : String(error)}`);
+      toast.error(
+        t('importDialog.importFailed', {
+          error: error instanceof Error ? error.message : String(error),
+        })
+      );
     }
   };
 
@@ -191,16 +197,14 @@ export function ImportDialog({ open, onClose }: ImportDialogProps) {
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Import from Claude Code</DialogTitle>
-          <DialogDescription>
-            Bring your setup, this project's files and recent chats into Codex.
-          </DialogDescription>
+          <DialogTitle>{t('importDialog.title')}</DialogTitle>
+          <DialogDescription>{t('importDialog.description')}</DialogDescription>
         </DialogHeader>
 
         {phase === 'loading' && (
           <div className="flex items-center gap-2 py-8 text-muted-foreground text-sm">
             <Loader2 className="size-4 animate-spin" />
-            Detecting Claude Code configuration...
+            {t('importDialog.detecting')}
           </div>
         )}
 
@@ -214,7 +218,7 @@ export function ImportDialog({ open, onClose }: ImportDialogProps) {
             )}
             {!detectError && items.length === 0 && (
               <p className="py-8 text-center text-muted-foreground text-sm">
-                Nothing to import was found.
+                {t('importDialog.nothingFound')}
               </p>
             )}
             {items.length > 0 && (
@@ -257,11 +261,13 @@ export function ImportDialog({ open, onClose }: ImportDialogProps) {
           <div className="space-y-3 py-4">
             <div className="flex items-center gap-2 text-sm">
               <Loader2 className="size-4 animate-spin" />
-              Importing {selectedItems.length} item(s)...
+              {t('importDialog.importingCount', { count: selectedItems.length })}
             </div>
             <Progress value={progressValue} />
             <p className="text-muted-foreground text-xs">
-              {successes} imported{failures > 0 ? `, ${failures} failed` : ''}
+              {failures > 0
+                ? t('importDialog.importedWithFailures', { count: successes, failures })
+                : t('importDialog.importedCount', { count: successes })}
             </p>
           </div>
         )}
@@ -274,7 +280,9 @@ export function ImportDialog({ open, onClose }: ImportDialogProps) {
               ) : (
                 <CheckCircle2 className="size-4 text-emerald-500" />
               )}
-              {successes} imported{failures > 0 ? `, ${failures} failed` : ''}
+              {failures > 0
+                ? t('importDialog.importedWithFailures', { count: successes, failures })
+                : t('importDialog.importedCount', { count: successes })}
             </div>
             {results.map((result) => (
               <div key={result.itemType} className="space-y-1">
@@ -303,18 +311,20 @@ export function ImportDialog({ open, onClose }: ImportDialogProps) {
 
         <DialogFooter>
           {phase === 'done' ? (
-            <Button onClick={onClose}>Done</Button>
+            <Button onClick={onClose}>{t('importDialog.done')}</Button>
           ) : (
             <>
               <Button variant="ghost" onClick={onClose} disabled={phase === 'importing'}>
-                Cancel
+                {t('cancel')}
               </Button>
               <Button
                 onClick={runImport}
                 disabled={phase !== 'select' || selectedItems.length === 0}
               >
                 <Download className="size-4" />
-                Import{selectedItems.length > 0 ? ` (${selectedItems.length})` : ''}
+                {selectedItems.length > 0
+                  ? t('importDialog.importCount', { count: selectedItems.length })
+                  : t('importDialog.import')}
               </Button>
             </>
           )}

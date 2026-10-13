@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
@@ -26,12 +27,13 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
   onHttpConfigChange,
   isEditMode = false,
 }) => {
+  const { t } = useTranslation('mcp');
   return (
     <div className="space-y-4">
       <div>
-        <div className="text-sm font-medium mb-1">Server Name</div>
+        <div className="text-sm font-medium mb-1">{t('form.serverName')}</div>
         <Input
-          aria-label="Server name"
+          aria-label={t('form.serverNameAria')}
           value={serverName}
           onChange={(e) => onServerNameChange(e.target.value)}
           placeholder="e.g., fetch, deepwiki"
@@ -51,27 +53,27 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
 
         <TabsContent value="stdio" className="space-y-4">
           <div>
-            <div className="text-sm font-medium mb-1">Command</div>
+            <div className="text-sm font-medium mb-1">{t('form.command')}</div>
             <Input
-              aria-label="Command"
+              aria-label={t('form.command')}
               value={commandConfig.command}
               onChange={(e) => onCommandConfigChange({ ...commandConfig, command: e.target.value })}
               placeholder="e.g., uvx, npx"
             />
           </div>
           <div>
-            <div className="text-sm font-medium mb-1">Arguments</div>
+            <div className="text-sm font-medium mb-1">{t('form.arguments')}</div>
             <Input
-              aria-label="Arguments"
+              aria-label={t('form.arguments')}
               value={commandConfig.args}
               onChange={(e) => onCommandConfigChange({ ...commandConfig, args: e.target.value })}
               placeholder="e.g., -y mcp-server-fetch"
             />
           </div>
           <div>
-            <div className="text-sm font-medium mb-1">Environment Variables (JSON, optional)</div>
+            <div className="text-sm font-medium mb-1">{t('form.envVars')}</div>
             <Textarea
-              aria-label="Environment variables (JSON)"
+              aria-label={t('form.envVarsAria')}
               value={commandConfig.env}
               onChange={(e) => onCommandConfigChange({ ...commandConfig, env: e.target.value })}
               placeholder='{"API_KEY": "value"} - Leave empty if not needed'
@@ -82,9 +84,9 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
 
         <TabsContent value="http" className="space-y-4">
           <div>
-            <div className="text-sm font-medium mb-1">URL</div>
+            <div className="text-sm font-medium mb-1">{t('form.url')}</div>
             <Input
-              aria-label="Server URL"
+              aria-label={t('form.urlAria')}
               value={httpConfig.url}
               onChange={(e) => onHttpConfigChange({ ...httpConfig, url: e.target.value })}
               placeholder="https://mcp.deepwiki.com/mcp"
@@ -93,9 +95,9 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
         </TabsContent>
         <TabsContent value="sse" className="space-y-4">
           <div>
-            <div className="text-sm font-medium mb-1">URL</div>
+            <div className="text-sm font-medium mb-1">{t('form.url')}</div>
             <Input
-              aria-label="Server URL"
+              aria-label={t('form.urlAria')}
               value={httpConfig.url}
               onChange={(e) => onHttpConfigChange({ ...httpConfig, url: e.target.value })}
               placeholder="https://mcp.deepwiki.com/sse"
@@ -106,10 +108,10 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
       {protocol !== 'stdio' && httpConfig.headers !== undefined && (
         <details>
           <summary className="cursor-pointer text-xs text-muted-foreground">
-            Authentication headers
+            {t('form.authHeaders')}
           </summary>
           <Textarea
-            aria-label="Authentication headers (JSON)"
+            aria-label={t('form.authHeadersAria')}
             value={httpConfig.headers ?? ''}
             onChange={(event) => onHttpConfigChange({ ...httpConfig, headers: event.target.value })}
             placeholder='{"Authorization": "Bearer token"}'

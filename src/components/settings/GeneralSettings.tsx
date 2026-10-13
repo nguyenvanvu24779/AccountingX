@@ -13,15 +13,15 @@ import { cn } from '@/lib/utils';
 import { type Accent, type Theme, useThemeStore } from '@/stores/settings';
 import { LanguageSelector } from './LanguageSelector';
 
-const ACCENT_OPTIONS: Array<{ value: Accent; label: string; colorClass: string }> = [
-  { value: 'default', label: 'Default', colorClass: 'bg-neutral-500' },
-  { value: 'ghibli', label: 'Ghibli', colorClass: 'bg-emerald-700' },
-  { value: 'black', label: 'Noir', colorClass: 'bg-slate-800' },
-  { value: 'pink', label: 'Pink', colorClass: 'bg-pink-500' },
-  { value: 'blue', label: 'Blue', colorClass: 'bg-blue-500' },
-  { value: 'green', label: 'Green', colorClass: 'bg-emerald-500' },
-  { value: 'purple', label: 'Purple', colorClass: 'bg-purple-500' },
-  { value: 'orange', label: 'Orange', colorClass: 'bg-orange-500' },
+const ACCENT_OPTIONS: Array<{ value: Accent; labelKey: string; colorClass: string }> = [
+  { value: 'default', labelKey: 'default', colorClass: 'bg-neutral-500' },
+  { value: 'ghibli', labelKey: 'ghibli', colorClass: 'bg-emerald-700' },
+  { value: 'black', labelKey: 'noir', colorClass: 'bg-slate-800' },
+  { value: 'pink', labelKey: 'pink', colorClass: 'bg-pink-500' },
+  { value: 'blue', labelKey: 'blue', colorClass: 'bg-blue-500' },
+  { value: 'green', labelKey: 'green', colorClass: 'bg-emerald-500' },
+  { value: 'purple', labelKey: 'purple', colorClass: 'bg-purple-500' },
+  { value: 'orange', labelKey: 'orange', colorClass: 'bg-orange-500' },
 ];
 
 const LINKS = {
@@ -107,8 +107,9 @@ export function GeneralSettings() {
                 <div className="text-xs text-muted-foreground">{t('accentColorDescription')}</div>
               </div>
               <div className="flex flex-wrap gap-2">
-                {ACCENT_OPTIONS.map(({ value, label, colorClass }) => {
+                {ACCENT_OPTIONS.map(({ value, labelKey, colorClass }) => {
                   const selected = accent === value;
+                  const label = t(`accent.${labelKey}`);
                   return (
                     <button
                       key={value}
@@ -122,7 +123,7 @@ export function GeneralSettings() {
                           : 'border-border text-foreground'
                       )}
                       aria-pressed={selected}
-                      aria-label={`Use ${label} accent color`}
+                      aria-label={t('useAccentColor', { label })}
                     >
                       <span className={cn('size-2.5 rounded-full', colorClass)} />
                       <span>{label}</span>

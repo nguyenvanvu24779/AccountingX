@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +11,7 @@ interface KekeMcpJsonEditorProps {
 }
 
 export function KekeMcpJsonEditor({ busy, onAdd }: KekeMcpJsonEditorProps) {
+  const { t } = useTranslation('mcp');
   const id = useId();
   const [name, setName] = useState('');
   const [json, setJson] = useState('{\n  "command": "",\n  "args": [],\n  "env": {}\n}');
@@ -19,9 +21,9 @@ export function KekeMcpJsonEditor({ busy, onAdd }: KekeMcpJsonEditorProps) {
     setError('');
     try {
       const config: unknown = JSON.parse(json);
-      if (!name.trim()) throw new Error('Enter a server name.');
+      if (!name.trim()) throw new Error(t('keke.enterServerName'));
       if (!config || typeof config !== 'object' || Array.isArray(config)) {
-        throw new Error('Enter one server configuration object, not the entire MCP file.');
+        throw new Error(t('keke.enterOneObject'));
       }
       if (await onAdd(name.trim(), config as Record<string, unknown>)) setName('');
     } catch (failure) {
@@ -31,14 +33,10 @@ export function KekeMcpJsonEditor({ busy, onAdd }: KekeMcpJsonEditorProps) {
 
   return (
     <details className="rounded-md border p-3">
-      <summary className="cursor-pointer text-sm font-medium">
-        Custom server / JSON configuration
-      </summary>
+      <summary className="cursor-pointer text-sm font-medium">{t('keke.customServerJson')}</summary>
       <div className="mt-3 space-y-3">
-        <p className="text-xs text-muted-foreground">
-          Paste one server definition. Existing names are never replaced.
-        </p>
-        <Label htmlFor={`${id}-name`}>Server name</Label>
+        <p className="text-xs text-muted-foreground">{t('keke.pasteOneDefinition')}</p>
+        <Label htmlFor={`${id}-name`}>{t('keke.serverName')}</Label>
         <Input
           id={`${id}-name`}
           value={name}
@@ -46,7 +44,7 @@ export function KekeMcpJsonEditor({ busy, onAdd }: KekeMcpJsonEditorProps) {
           onChange={(event) => setName(event.target.value)}
           placeholder="my-server"
         />
-        <Label htmlFor={`${id}-json`}>Server configuration (JSON)</Label>
+        <Label htmlFor={`${id}-json`}>{t('keke.serverConfigJson')}</Label>
         <Textarea
           id={`${id}-json`}
           value={json}
@@ -62,7 +60,7 @@ export function KekeMcpJsonEditor({ busy, onAdd }: KekeMcpJsonEditorProps) {
           </p>
         )}
         <Button type="button" size="sm" disabled={busy} onClick={add}>
-          Add to keke
+          {t('keke.addToKeke')}
         </Button>
       </div>
     </details>

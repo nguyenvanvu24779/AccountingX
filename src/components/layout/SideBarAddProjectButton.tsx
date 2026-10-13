@@ -1,6 +1,7 @@
 import { open } from '@tauri-apps/plugin-dialog';
 import { FolderPlus } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +16,7 @@ import { isDesktopTauri } from '@/hooks/runtime';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 
 export function SideBarAddProjectButton() {
+  const { t } = useTranslation('sidebar');
   const { addProject, cwd, setCwd } = useWorkspaceStore();
   const [browserOpen, setBrowserOpen] = useState(false);
 
@@ -44,7 +46,7 @@ export function SideBarAddProjectButton() {
         variant="ghost"
         size="icon"
         className="h-8 w-8"
-        title="Add new project"
+        title={t('addNewProject')}
         onClick={handleAddProject}
       >
         <FolderPlus className="h-4 w-4" />
@@ -52,8 +54,8 @@ export function SideBarAddProjectButton() {
       <Dialog open={browserOpen} onOpenChange={setBrowserOpen}>
         <DialogContent size="xl" className="max-h-[calc(100dvh-2rem)] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add new project</DialogTitle>
-            <DialogDescription>Browse and select a folder to add as a project.</DialogDescription>
+            <DialogTitle>{t('addNewProject')}</DialogTitle>
+            <DialogDescription>{t('browseSelectFolderProject')}</DialogDescription>
           </DialogHeader>
           <BrowserProjects cwd={cwd} onAddProject={selectProject} />
         </DialogContent>

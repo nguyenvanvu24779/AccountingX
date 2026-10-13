@@ -9,6 +9,7 @@ import {
   X,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -30,10 +31,14 @@ type Props = {
 };
 
 export function SideBarProjectList({ onNewAction, newActionTitle, renderList }: Props) {
-  const { projects, removeProject, setCwd } = useWorkspaceStore();
+  const { t } = useTranslation('sidebar');
+  const { projects, companies, removeProject, setCwd } = useWorkspaceStore();
   const { setInstructionType } = useAgentSettingsStore();
   const { setView, expandedProjects, setProjectExpanded } = useLayoutStore();
   const [hoveredProject, setHoveredProject] = useState<string | null>(null);
+
+  const displayName = (project: string) =>
+    companies.find((c) => c.path === project)?.name || getFilename(project) || project;
 
   const isOpen = (project: string) => expandedProjects[project] ?? true;
   const toggleProject = (project: string, open: boolean) => setProjectExpanded(project, open);
@@ -66,7 +71,7 @@ export function SideBarProjectList({ onNewAction, newActionTitle, renderList }: 
               ) : (
                 <FolderClosed className={`h-3.5 w-3.5 shrink-0 transition-transform`} />
               )}
-              <span className="truncate font-medium">{getFilename(project) || project}</span>
+              <span className="truncate font-medium">{displayName(project)}</span>
               {isOpen(project) ? (
                 <ChevronDown
                   className={`h-3.5 w-3.5 shrink-0 transition-opacity ${hoveredProject === project ? 'opacity-100' : 'opacity-0'}`}
@@ -86,7 +91,7 @@ export function SideBarProjectList({ onNewAction, newActionTitle, renderList }: 
                   <Button
                     variant="ghost"
                     size="icon-xs"
-                    title={`Project actions for ${getFilename(project) || project}`}
+                    title={t('projectActionsFor', { name: displayName(project) })}
                     className="shrink-0"
                   >
                     <Ellipsis />
@@ -94,10 +99,10 @@ export function SideBarProjectList({ onNewAction, newActionTitle, renderList }: 
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => removeProject(project)}>
-                    <X /> Remove
+                    <X /> {t('removeProject')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => openAgentInstructions(project)}>
-                    <ScrollText /> Instructions
+                    <ScrollText /> {t('instructions')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -106,7 +111,7 @@ export function SideBarProjectList({ onNewAction, newActionTitle, renderList }: 
             <Button
               variant="ghost"
               size="icon-xs"
-              title={newActionTitle(getFilename(project) || project)}
+              title={newActionTitle(displayName(project))}
               onClick={() => onNewAction(project)}
               className="shrink-0"
             >
@@ -121,7 +126,7 @@ export function SideBarProjectList({ onNewAction, newActionTitle, renderList }: 
       {/* The phone's home screen says this itself, with a retry. */}
       {projects.length === 0 && !isPhone() && (
         <div className="rounded-lg border border-sidebar-border bg-sidebar/30 px-3 py-3 text-xs text-muted-foreground">
-          No projects yet.
+          {t('noProjectsYet')}
         </div>
       )}
     </div>

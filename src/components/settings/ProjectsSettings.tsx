@@ -1,10 +1,12 @@
 import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { getFilename } from '@/utils/getFilename';
 
 export function ProjectsSettings() {
+  const { t } = useTranslation('settings');
   const { projects, setProjects, cwd, setCwd } = useWorkspaceStore();
 
   const moveProject = (index: number, direction: -1 | 1) => {
@@ -27,18 +29,16 @@ export function ProjectsSettings() {
 
   return (
     <section className="space-y-3">
-      <h3 className="text-sm font-medium px-1">Projects</h3>
+      <h3 className="text-sm font-medium px-1">{t('projects')}</h3>
       <Card>
         <CardContent className="p-4 space-y-3">
           <div className="space-y-0.5">
-            <div className="text-sm font-medium">Sort projects</div>
-            <p className="text-xs text-muted-foreground">
-              Use arrows to reorder projects in sidebar. Delete removes it from the list.
-            </p>
+            <div className="text-sm font-medium">{t('sortProjectsTitle')}</div>
+            <p className="text-xs text-muted-foreground">{t('sortProjectsDescription')}</p>
           </div>
           {projects.length === 0 ? (
             <div className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
-              No projects yet.
+              {t('noProjectsYet')}
             </div>
           ) : (
             <div className="space-y-2">
@@ -59,7 +59,7 @@ export function ProjectsSettings() {
                     className="h-7 w-7"
                     onClick={() => moveProject(index, -1)}
                     disabled={index === 0}
-                    title="Move up"
+                    title={t('moveUp')}
                   >
                     <ArrowUp className="h-3.5 w-3.5" />
                   </Button>
@@ -69,7 +69,7 @@ export function ProjectsSettings() {
                     className="h-7 w-7"
                     onClick={() => moveProject(index, 1)}
                     disabled={index === projects.length - 1}
-                    title="Move down"
+                    title={t('moveDown')}
                   >
                     <ArrowDown className="h-3.5 w-3.5" />
                   </Button>
@@ -78,7 +78,7 @@ export function ProjectsSettings() {
                     size="icon"
                     className="h-7 w-7 text-destructive hover:text-destructive"
                     onClick={() => deleteProject(project)}
-                    title="Delete project"
+                    title={t('deleteProject')}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>

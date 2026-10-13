@@ -1,5 +1,6 @@
 import { Bot, ChevronDown } from 'lucide-react';
 import { forwardRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import KekeIcon from '@/assets/keke-agent.svg';
 import { useConfigStore } from '@/components/codex/stores';
 import { AgentIcon } from '@/components/common/AgentIcon';
@@ -21,6 +22,7 @@ import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
  */
 export const AgentModelTrigger = forwardRef<HTMLButtonElement, React.ComponentProps<typeof Button>>(
   function AgentModelTrigger(props, ref) {
+    const { t } = useTranslation('agent');
     const selectedAgent = useAgentSettingsStore((s) => s.selectedAgent);
     const active = useAcpStore((s) => s.active);
     const agentId = useAcpStore((s) => s.agentId);
@@ -55,7 +57,7 @@ export const AgentModelTrigger = forwardRef<HTMLButtonElement, React.ComponentPr
         (typeof modelValue === 'string'
           ? (modelOption?.options?.find((option) => option.value === modelValue)?.name ??
             modelValue)
-          : 'Select model');
+          : t('selectModelFallback'));
       const effortOption = acpConfigOptions.find((option) => option.category === 'thought_level');
       const selectedEffort = effortOption?.currentValue;
       effort =
@@ -71,7 +73,7 @@ export const AgentModelTrigger = forwardRef<HTMLButtonElement, React.ComponentPr
       effort = ccOptions.effort ?? 'medium';
     } else {
       icon = <AgentIcon agent="codex" />;
-      label = codexModel || 'Select model';
+      label = codexModel || t('selectModelFallback');
       effort = codexReasoningEffort !== 'none' ? codexReasoningEffort : undefined;
     }
 

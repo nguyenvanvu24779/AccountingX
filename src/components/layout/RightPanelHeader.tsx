@@ -1,4 +1,3 @@
-import { EDITION } from '@/lib/edition';
 import {
   Diff,
   Files,
@@ -12,6 +11,7 @@ import {
   SquareTerminal,
   X,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { NewAgentButton } from '@/components/common/NewAgentButton';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,6 +23,7 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useTrafficLightConfig } from '@/hooks';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { EDITION } from '@/lib/edition';
 import { useLayoutStore } from '@/stores';
 import type { RightPanelTab } from '@/stores/useLayoutStore';
 import { useTodoStore } from '@/stores/useTodoStore';
@@ -32,23 +33,24 @@ export type { RightPanelTab };
 interface TabConfig {
   tab: RightPanelTab;
   icon: LucideIcon;
-  label: string;
+  labelKey: string;
 }
 
 // Order tabs the way users scan them: work-in-progress first, reference last.
 const ALL_TAB_BUTTONS: TabConfig[] = [
-  { tab: 'diff', icon: Diff, label: 'Review' },
-  { tab: 'todo', icon: ListTodo, label: 'Todos' },
-  { tab: 'terminal', icon: SquareTerminal, label: 'Terminal' },
-  { tab: 'webpreview', icon: Globe, label: 'Browser' },
-  { tab: 'files', icon: Files, label: 'Files' },
-  { tab: 'tasks', icon: Kanban, label: 'Kanban' },
+  { tab: 'diff', icon: Diff, labelKey: 'tabReview' },
+  { tab: 'todo', icon: ListTodo, labelKey: 'tabTodos' },
+  { tab: 'terminal', icon: SquareTerminal, labelKey: 'tabTerminal' },
+  { tab: 'webpreview', icon: Globe, labelKey: 'tabBrowser' },
+  { tab: 'files', icon: Files, labelKey: 'tabFiles' },
+  { tab: 'tasks', icon: Kanban, labelKey: 'tabKanban' },
 ];
 const TAB_BUTTONS = ALL_TAB_BUTTONS.filter(
   (t) => EDITION.devPanels[t.tab as keyof typeof EDITION.devPanels] !== false
 );
 
 export function RightPanelHeader() {
+  const { t } = useTranslation('sidebar');
   const isMobile = useIsMobile();
   const {
     activeRightPanelTab,
@@ -90,7 +92,7 @@ export function RightPanelHeader() {
               variant={isRightPanelFocused ? 'secondary' : 'ghost'}
               size="icon"
               onClick={toggleRightPanelFocused}
-              title={isRightPanelFocused ? 'Exit focus mode' : 'Focus on this panel'}
+              title={isRightPanelFocused ? t('exitFocusMode') : t('focusOnPanel')}
             >
               {isRightPanelFocused ? (
                 <Minimize2 className="size-4" />
@@ -99,14 +101,19 @@ export function RightPanelHeader() {
               )}
             </Button>
           )}
-          <Button variant="ghost" size="icon" onClick={toggleRightPanel} title="Hide right panel">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleRightPanel}
+            title={t('hideRightPanel')}
+          >
             <PanelRight className="size-4" />
           </Button>
         </div>
         <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-2">
-          <span className="text-xs text-muted-foreground">Open a panel</span>
+          <span className="text-xs text-muted-foreground">{t('openAPanel')}</span>
           <div className="flex flex-col items-center gap-1">
-            {TAB_BUTTONS.map(({ tab, icon: Icon, label }) => (
+            {TAB_BUTTONS.map(({ tab, icon: Icon, labelKey }) => (
               <Button
                 key={tab}
                 variant="ghost"
@@ -115,7 +122,7 @@ export function RightPanelHeader() {
                 className="gap-1.5 px-3 justify-start w-32"
               >
                 <Icon className="size-4" />
-                <span className="text-xs">{label}</span>
+                <span className="text-xs">{t(labelKey)}</span>
               </Button>
             ))}
           </div>
@@ -148,7 +155,7 @@ export function RightPanelHeader() {
                 className="gap-1.5 pl-2 pr-6"
               >
                 <Icon className="size-4" />
-                <span className="text-xs hidden lg:block">{config.label}</span>
+                <span className="text-xs hidden lg:block">{t(config.labelKey)}</span>
                 {tab === 'todo' && openTodoCount > 0 && activeRightPanelTab !== tab && (
                   <span className="rounded-full bg-primary px-1.5 text-[10px] leading-4 text-primary-foreground">
                     {openTodoCount}
@@ -158,7 +165,7 @@ export function RightPanelHeader() {
               <button
                 type="button"
                 onClick={(e) => closeTab(e, tab)}
-                title={`Close ${config.label}`}
+                title={t('closeTab', { label: t(config.labelKey) })}
                 className="absolute right-1 top-1/2 -translate-y-1/2 rounded p-0.5 opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-opacity"
               >
                 <X className="size-3" />
@@ -169,15 +176,20 @@ export function RightPanelHeader() {
         {closedTabs.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="shrink-0 size-7" title="Open panel">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 size-7"
+                title={t('openPanel')}
+              >
                 <span className="text-base leading-none">+</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
-              {closedTabs.map(({ tab, icon: Icon, label }) => (
+              {closedTabs.map(({ tab, icon: Icon, labelKey }) => (
                 <DropdownMenuItem key={tab} onClick={() => openTab(tab)}>
                   <Icon className="size-4" />
-                  {label}
+                  {t(labelKey)}
                   {tab === 'todo' && openTodoCount > 0 && (
                     <span className="ml-auto text-[10px] text-muted-foreground">
                       {openTodoCount}
@@ -195,7 +207,7 @@ export function RightPanelHeader() {
             variant={isRightPanelFocused ? 'secondary' : 'ghost'}
             size="icon"
             onClick={toggleRightPanelFocused}
-            title={isRightPanelFocused ? 'Exit focus mode' : 'Focus on this panel'}
+            title={isRightPanelFocused ? t('exitFocusMode') : t('focusOnPanel')}
           >
             {isRightPanelFocused ? (
               <Minimize2 className="size-4" />
@@ -204,7 +216,7 @@ export function RightPanelHeader() {
             )}
           </Button>
         )}
-        <Button variant="ghost" size="icon" onClick={toggleRightPanel} title="Hide right panel">
+        <Button variant="ghost" size="icon" onClick={toggleRightPanel} title={t('hideRightPanel')}>
           <PanelRight className="size-4" />
         </Button>
       </div>

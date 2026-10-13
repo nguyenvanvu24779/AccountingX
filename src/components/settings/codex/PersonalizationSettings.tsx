@@ -1,5 +1,6 @@
 import MarkdownIt from 'markdown-it';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import MdEditor from 'react-markdown-editor-lite';
 import { type Personality, useConfigStore } from '@/components/codex/stores';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,6 +20,7 @@ import { loadInstructionFile, saveInstructionFile } from '@/utils/instructionFil
 const CUSTOM_INSTRUCTIONS_PATH = '~/.codex/AGENTS.md';
 
 export function PersonalizationSettings() {
+  const { t } = useTranslation('settings');
   const { personality, setPersonality } = useConfigStore();
   const selectValue = personality ?? 'friendly';
   const { resolvedTheme } = useThemeContext();
@@ -44,7 +46,7 @@ export function PersonalizationSettings() {
         if (isActive) {
           setInstructions('');
           const message = err instanceof Error ? err.message : String(err);
-          setLoadError(message || 'Failed to load custom instructions.');
+          setLoadError(message || t('personalizationSection.loadFailed'));
         }
       }
     };
@@ -54,7 +56,7 @@ export function PersonalizationSettings() {
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [t]);
 
   const handleSave = async () => {
     setSaveError(null);
@@ -66,7 +68,7 @@ export function PersonalizationSettings() {
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      setSaveError(message || 'Failed to save custom instructions.');
+      setSaveError(message || t('personalizationSection.saveFailed'));
     } finally {
       setIsSaving(false);
     }
@@ -75,14 +77,18 @@ export function PersonalizationSettings() {
   return (
     <div className="space-y-6">
       <section className="space-y-3">
-        <h3 className="text-sm font-semibold tracking-tight">Personalization</h3>
+        <h3 className="text-sm font-semibold tracking-tight">
+          {t('personalizationSection.title')}
+        </h3>
         <Card className="p-0">
           <CardContent className="p-0 divide-y divide-border/40">
             <div className="p-4 flex items-center justify-between gap-4">
               <div className="space-y-0.5">
-                <div className="text-sm font-semibold tracking-tight">Personality</div>
+                <div className="text-sm font-semibold tracking-tight">
+                  {t('personalizationSection.personality')}
+                </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Choose a default tone for Codex responses
+                  {t('personalizationSection.personalityDescription')}
                 </p>
               </div>
               <Select
@@ -90,21 +96,21 @@ export function PersonalizationSettings() {
                 onValueChange={(value) => setPersonality(value as Personality)}
               >
                 <SelectTrigger className="min-w-[160px]">
-                  <SelectValue placeholder="Friendly" />
+                  <SelectValue placeholder={t('personalizationSection.friendly')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="friendly">Friendly</SelectItem>
-                  <SelectItem value="pragmatic">Pragmatic</SelectItem>
+                  <SelectItem value="friendly">{t('personalizationSection.friendly')}</SelectItem>
+                  <SelectItem value="pragmatic">{t('personalizationSection.pragmatic')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </CardContent>
         </Card>
-        <h4>Custom instructions</h4>
+        <h4>{t('personalizationSection.customInstructions')}</h4>
         <p className="text-xs text-muted-foreground gap-2 flex items-center">
-          Edit instructions that tailor Codex to you.{' '}
+          {t('personalizationSection.customInstructionsDescription')}{' '}
           <a href="https://developers.openai.com/codex/guides/agents-md/#create-global-guidance">
-            Learn more
+            {t('personalizationSection.learnMore')}
           </a>
           <ExternalLink className="inline w-4 h-4" />
         </p>
@@ -119,7 +125,7 @@ export function PersonalizationSettings() {
         </div>
         {saveError ? <p className="text-xs text-destructive">{saveError}</p> : null}
         <Button onClick={handleSave} disabled={isSaving}>
-          {isSaving ? 'Saving…' : 'Save'}
+          {isSaving ? t('personalizationSection.saving') : t('personalizationSection.save')}
         </Button>
       </section>
     </div>

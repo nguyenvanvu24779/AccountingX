@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ProviderPreset } from '@/components/codex/types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -14,6 +15,7 @@ type AddProviderDialogProps = {
 };
 
 export function AddProviderDialog({ open, onOpenChange, onAdded }: AddProviderDialogProps) {
+  const { t } = useTranslation('composer');
   const [presets, setPresets] = useState<ProviderPreset[]>([]);
   const [id, setId] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
@@ -62,13 +64,15 @@ export function AddProviderDialog({ open, onOpenChange, onAdded }: AddProviderDi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-sm">Add model provider</DialogTitle>
+          <DialogTitle className="text-sm">{t('addProviderDialog.title')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3 text-xs">
           {presets.length > 0 && (
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Start from a suggestion</Label>
+              <Label className="text-xs text-muted-foreground">
+                {t('addProviderDialog.startFromSuggestion')}
+              </Label>
               <div className="flex flex-wrap gap-1">
                 {presets.map((preset) => (
                   <Button
@@ -87,7 +91,7 @@ export function AddProviderDialog({ open, onOpenChange, onAdded }: AddProviderDi
           )}
 
           <div className="space-y-1">
-            <Label className="text-xs">Provider id</Label>
+            <Label className="text-xs">{t('addProviderDialog.providerId')}</Label>
             <Input
               className="h-8"
               value={id}
@@ -97,7 +101,7 @@ export function AddProviderDialog({ open, onOpenChange, onAdded }: AddProviderDi
           </div>
 
           <div className="space-y-1">
-            <Label className="text-xs">Base URL</Label>
+            <Label className="text-xs">{t('addProviderDialog.baseUrl')}</Label>
             <Input
               className="h-8"
               value={baseUrl}
@@ -107,7 +111,7 @@ export function AddProviderDialog({ open, onOpenChange, onAdded }: AddProviderDi
           </div>
 
           <div className="space-y-1">
-            <Label className="text-xs">API key env var</Label>
+            <Label className="text-xs">{t('addProviderDialog.apiKeyEnvVar')}</Label>
             <Input
               className="h-8"
               value={envKey}
@@ -120,14 +124,14 @@ export function AddProviderDialog({ open, onOpenChange, onAdded }: AddProviderDi
 
           <div className="flex justify-end gap-2">
             <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('cancel')}
             </Button>
             <Button
               size="sm"
               onClick={handleSave}
               disabled={saving || !id.trim() || !baseUrl.trim()}
             >
-              {saving ? 'Adding...' : 'Add'}
+              {saving ? t('addProviderDialog.adding') : t('addProviderDialog.add')}
             </Button>
           </div>
         </div>

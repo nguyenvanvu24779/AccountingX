@@ -1,5 +1,6 @@
 import { AlertTriangle, Loader2, TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { HookEventName, HookMetadata, HooksListEntry } from '@/bindings/v2';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -91,6 +92,7 @@ function HookRow({ hook }: { hook: HookMetadata }) {
 }
 
 function HooksEntry({ entry }: { entry: HooksListEntry }) {
+  const { t } = useTranslation('composer');
   const groups = groupByEvent(entry.hooks);
   return (
     <div className="space-y-3">
@@ -120,7 +122,7 @@ function HooksEntry({ entry }: { entry: HooksListEntry }) {
       ))}
 
       {groups.length === 0 ? (
-        <div className="text-xs text-muted-foreground">No hooks configured here.</div>
+        <div className="text-xs text-muted-foreground">{t('hooksDialog.emptyWorkspace')}</div>
       ) : (
         groups.map(([eventName, hooks]) => (
           <div key={eventName} className="space-y-1.5">
@@ -140,6 +142,7 @@ function HooksEntry({ entry }: { entry: HooksListEntry }) {
 
 /** Read-only viewer for the lifecycle hooks configured for the current workspace. */
 export function HooksDialog({ open, onClose }: HooksDialogProps) {
+  const { t } = useTranslation('composer');
   const cwd = useWorkspaceStore((s) => s.cwd);
   const [entries, setEntries] = useState<HooksListEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -184,20 +187,20 @@ export function HooksDialog({ open, onClose }: HooksDialogProps) {
     >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Hooks</DialogTitle>
-          <DialogDescription>Lifecycle hooks configured for this workspace.</DialogDescription>
+          <DialogTitle>{t('hooksDialog.title')}</DialogTitle>
+          <DialogDescription>{t('hooksDialog.description')}</DialogDescription>
         </DialogHeader>
 
         {loading && (
           <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground">
             <Loader2 className="size-4 animate-spin" />
-            Loading hooks...
+            {t('hooksDialog.loadingHooks')}
           </div>
         )}
 
         {error && (
           <div className="rounded-md border border-destructive/50 p-3 text-sm text-destructive">
-            Failed to load hooks: {error}
+            {t('hooksDialog.loadFailed', { error })}
           </div>
         )}
 
@@ -205,7 +208,7 @@ export function HooksDialog({ open, onClose }: HooksDialogProps) {
           <ScrollArea className="max-h-[60vh] pr-3">
             {(entries?.length ?? 0) === 0 ? (
               <div className="py-8 text-center text-sm text-muted-foreground">
-                No hooks configured.
+                {t('hooksDialog.empty')}
               </div>
             ) : (
               <div className="space-y-5">

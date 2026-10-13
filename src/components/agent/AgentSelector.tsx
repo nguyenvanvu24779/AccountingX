@@ -1,5 +1,6 @@
 import { Bot, Check, ChevronsUpDown } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAcpAgents } from '@/components/acp/useAcpAgents';
 import { AgentIcon } from '@/components/common/AgentIcon';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { enabledEngines, type EngineId } from '@/lib/edition';
+import { type EngineId, enabledEngines } from '@/lib/edition';
 import { acpStop } from '@/services/apiAdapt/acp';
 import { useLayoutStore } from '@/stores';
 import { useAcpStore } from '@/stores/useAcpStore';
@@ -30,6 +31,7 @@ const BUILTIN = ALL_BUILTIN.filter((b) => enabledEngines().includes(b.id));
  * ACP preset list grows, and this row also carries the session list.
  */
 export function AgentSelector() {
+  const { t } = useTranslation('agent');
   const { selectedAgent, setSelectedAgent } = useAgentSettingsStore();
   const { setActiveSidebarTab } = useLayoutStore();
   const { active, agentId, connectionId, setActive, setAgentId, reset } = useAcpStore();
@@ -70,10 +72,10 @@ export function AgentSelector() {
       </PopoverTrigger>
       <PopoverContent align="start" className="w-72 p-0">
         <Command>
-          <CommandInput placeholder="Search agents..." className="h-8" />
+          <CommandInput placeholder={t('searchAgentsPlaceholder')} className="h-8" />
           <CommandList>
-            <CommandEmpty>No agent found.</CommandEmpty>
-            <CommandGroup heading="Built-in">
+            <CommandEmpty>{t('noAgentFound')}</CommandEmpty>
+            <CommandGroup heading={t('builtinHeading')}>
               {BUILTIN.map((b) => (
                 <CommandItem key={b.id} value={b.name} onSelect={() => selectBuiltin(b.id)}>
                   <AgentIcon agent={b.id} />
@@ -82,7 +84,7 @@ export function AgentSelector() {
                 </CommandItem>
               ))}
             </CommandGroup>
-            <CommandGroup heading="ACP">
+            <CommandGroup heading={t('acpHeading')}>
               {acpAgents.map((a) => (
                 <CommandItem key={a.id} value={a.name} onSelect={() => selectAcp(a.id)}>
                   <Bot className={`h-4 w-4 ${a.available ? '' : 'opacity-50'}`} />
@@ -93,7 +95,7 @@ export function AgentSelector() {
                     </div>
                   </div>
                   {!a.available && (
-                    <span className="text-[10px] text-muted-foreground">not installed</span>
+                    <span className="text-[10px] text-muted-foreground">{t('notInstalled')}</span>
                   )}
                   {active && agentId === a.id && <Check className="ml-1 h-3.5 w-3.5" />}
                 </CommandItem>

@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { useCodexStore } from '@/components/codex/stores';
 import type { ComposerEditorRef } from '@/components/common/useComposerPopover';
 import {
@@ -30,6 +31,7 @@ export function SlashCommandPopover({
   triggerElement,
   onOpenDialog,
 }: SlashCommandPopoverProps) {
+  const { t } = useTranslation('composer');
   const { currentThreadId } = useCodexStore();
 
   const handleSelect = useCallback(
@@ -105,9 +107,9 @@ export function SlashCommandPopover({
         ))}
       </div>
       <div className="border-t border-border px-4 py-2 text-xs text-muted-foreground bg-muted/30">
-        <span>↑↓ navigate</span>
-        <span className="ml-3">↵ select</span>
-        <span className="ml-3">Esc close</span>
+        <span>{t('slashNav.navigate')}</span>
+        <span className="ml-3">{t('slashNav.select')}</span>
+        <span className="ml-3">{t('slashNav.close')}</span>
       </div>
     </div>,
     document.body

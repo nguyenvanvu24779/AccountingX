@@ -1,5 +1,6 @@
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import type { McpServerConfig } from '@/components/codex/types';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ interface McpAddPanelProps {
 }
 
 export function McpAddPanel({ onAdded, target }: McpAddPanelProps) {
+  const { t } = useTranslation('mcp');
   const auth = useKekeMcpAuth(target === 'keke');
   const [configured, setConfigured] = useState<{ name: string; config: KekeMcpServer } | null>(
     null
@@ -52,7 +54,7 @@ export function McpAddPanel({ onAdded, target }: McpAddPanelProps) {
         throw new Error('Invalid map');
       return value;
     } catch {
-      toast.error('Enter a JSON object with string values.');
+      toast.error(t('jsonObjectError'));
       return null;
     }
   };
@@ -93,7 +95,7 @@ export function McpAddPanel({ onAdded, target }: McpAddPanelProps) {
         const request: any = { name: serverName, type: protocol, scope: 'local', enabled: true };
         if (protocol === 'stdio') {
           if (!commandConfig.command.trim()) {
-            toast.error('Command is required');
+            toast.error(t('commandRequired'));
             return;
           }
           request.command = commandConfig.command;
@@ -105,7 +107,7 @@ export function McpAddPanel({ onAdded, target }: McpAddPanelProps) {
           }
         } else {
           if (!httpConfig.url.trim()) {
-            toast.error('URL is required');
+            toast.error(t('urlRequired'));
             return;
           }
           request.url = httpConfig.url;
@@ -117,7 +119,7 @@ export function McpAddPanel({ onAdded, target }: McpAddPanelProps) {
         }
         await ccMcpAdd(request, cwd || '');
       }
-      toast.success(`Server "${serverName}" added`);
+      toast.success(t('serverAdded', { name: serverName }));
       if (botConfig && needsPresetAuthorization(botConfig)) {
         const name = serverName.trim();
         setConfigured({ name, config: botConfig });
@@ -130,7 +132,7 @@ export function McpAddPanel({ onAdded, target }: McpAddPanelProps) {
       resetForm();
       onAdded();
     } catch (error) {
-      toast.error('Failed to add MCP server: ' + error);
+      toast.error(t('addFailed', { error: String(error) }));
     } finally {
       setAdding(false);
     }
@@ -153,7 +155,7 @@ export function McpAddPanel({ onAdded, target }: McpAddPanelProps) {
         <div className="flex flex-col gap-3">
           <KekeMcpAuthControl name={configured.name} config={configured.config} auth={auth} />
           <Button variant="outline" onClick={onAdded}>
-            Done
+            {t('done')}
           </Button>
         </div>
       ) : (
@@ -172,7 +174,7 @@ export function McpAddPanel({ onAdded, target }: McpAddPanelProps) {
           />
           <Button onClick={handleAdd} disabled={isDisabled || adding} className="w-full">
             <Plus className="h-4 w-4 mr-2" />
-            {adding ? 'Adding…' : 'Add Server'}
+            {adding ? t('adding') : t('addServer')}
           </Button>
         </>
       )}

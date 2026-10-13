@@ -1,4 +1,5 @@
 import { Check, ChevronDown, Monitor, Split } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { ThreadCwdMode } from '@/components/codex/stores';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,18 +19,19 @@ const MODE_ICONS: Record<ThreadCwdMode, React.ReactNode> = {
   worktree: <Split size={14} />,
 };
 
-const MODE_LABELS: Record<ThreadCwdMode, string> = {
-  local: 'Local',
-  worktree: 'Worktree',
+const MODE_LABEL_KEYS: Record<ThreadCwdMode, string> = {
+  local: 'workspaceLocal',
+  worktree: 'workspaceWorktree',
 };
 
 export function AgentWorkspaceSelect({ value, onValueChange }: AgentWorkspaceSelectProps) {
+  const { t } = useTranslation('project');
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="h-7 text-xs px-2 gap-1">
           {MODE_ICONS[value]}
-          <span>{MODE_LABELS[value]}</span>
+          <span>{t(MODE_LABEL_KEYS[value])}</span>
           <ChevronDown size={10} className="opacity-60" />
         </Button>
       </DropdownMenuTrigger>
@@ -37,7 +39,7 @@ export function AgentWorkspaceSelect({ value, onValueChange }: AgentWorkspaceSel
         <DropdownMenuItem onClick={() => onValueChange('local')} className="flex justify-between">
           <span className="flex gap-2">
             <Monitor className="h-4 w-4" />
-            <span>Local</span>
+            <span>{t('workspaceLocal')}</span>
           </span>
           {value === 'local' && <Check />}
         </DropdownMenuItem>
@@ -47,7 +49,7 @@ export function AgentWorkspaceSelect({ value, onValueChange }: AgentWorkspaceSel
         >
           <span className="flex gap-2">
             <Split className="h-4 w-4" />
-            <span>Worktree</span>
+            <span>{t('workspaceWorktree')}</span>
           </span>
           {value === 'worktree' && <Check />}
         </DropdownMenuItem>

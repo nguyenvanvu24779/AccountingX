@@ -1,6 +1,6 @@
-import { EDITION } from '@/lib/edition';
 import { ArrowUp, Pause, Play, Square, Target, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ThreadGoal } from '@/bindings/v2';
 import { AgentModelPanel } from '@/components/agent/AgentModelPanel';
 import { AgentModelTrigger } from '@/components/agent/AgentModelTrigger';
@@ -10,6 +10,7 @@ import { ContextWindowWidget } from '@/components/codex/widget';
 import { FileMentionPopover } from '@/components/common';
 import { Button } from '@/components/ui/button';
 import { fileSrc } from '@/hooks/runtime';
+import { EDITION } from '@/lib/edition';
 import { codexService } from '@/services/codexService';
 import { useAgentCenterStore } from '@/stores';
 import { useInputStore } from '@/stores/useInputStore';
@@ -28,26 +29,14 @@ interface ComposerProps {
   onAfterSend?: (threadId: string, text: string) => void;
 }
 
-// Compact status label per goal status, mirroring
+// Translation key per goal status, mirroring
 // codex-rs/tui/src/bottom_pane/footer.rs::goal_status_indicator_line.
-function goalStatusLabel(status: ThreadGoal['status']): string {
-  switch (status) {
-    case 'active':
-      return 'Pursuing goal';
-    case 'paused':
-      return 'Goal paused';
-    case 'blocked':
-      return 'Goal blocked';
-    case 'usageLimited':
-      return 'Goal hit usage limits';
-    case 'budgetLimited':
-      return 'Goal unmet';
-    case 'complete':
-      return 'Goal achieved';
-  }
+function goalStatusKey(status: ThreadGoal['status']): string {
+  return `goalStatus.${status}`;
 }
 
 export function Composer({ overrideSend, onAfterSend }: ComposerProps) {
+  const { t } = useTranslation('composer');
   const [images, setImages] = useState<string[]>([]);
   const [slashDialog, setSlashDialog] = useState<SlashDialog | null>(null);
   const { inputValue, setInputValue, appendFileLinks } = useInputStore();
@@ -106,7 +95,7 @@ export function Composer({ overrideSend, onAfterSend }: ComposerProps) {
       try {
         const thread = await codexService.threadStart();
         targetThreadId = thread.id;
-        worktreePath = thread.cwd?.includes('/.codexia/worktrees/') ? thread.cwd : undefined;
+        worktreePath = thread.cwd?.includes('/.accountingx/worktrees/') ? thread.cwd : undefined;
       } catch (error) {
         console.error(error);
         return;
@@ -245,14 +234,14 @@ export function Composer({ overrideSend, onAfterSend }: ComposerProps) {
               value={inputValue}
               onChange={setInputValue}
               onSubmit={handleEditorSubmit}
-              placeholder={goalEnabled ? 'Enter goal...' : 'Do anything... / $ @'}
+              placeholder={goalEnabled ? t('enterGoalPlaceholder') : t('defaultPlaceholder')}
             />
           </div>
 
           {threadGoal && (
             <div className="flex items-center gap-1.5 px-3 pb-1 text-xs text-muted-foreground">
               <Target className="h-3 w-3 shrink-0" />
-              <span className="truncate">{goalStatusLabel(threadGoal.status)}</span>
+              <span className="truncate">{t(goalStatusKey(threadGoal.status))}</span>
               {threadGoal.status !== 'complete' && (
                 <span className="truncate text-muted-foreground/70">· {threadGoal.objective}</span>
               )}
@@ -274,7 +263,7 @@ export function Composer({ overrideSend, onAfterSend }: ComposerProps) {
                     variant="ghost"
                     size="icon"
                     onClick={() => setGoalEnabled(false)}
-                    title="Cancel goal draft"
+                    title={t('cancelGoalDraft')}
                     className="group relative ml-1 h-8 w-8 text-blue-600 hover:bg-blue-50"
                   >
                     {/* Target Icon: Visible by default, shrinks/fades on hover */}
@@ -293,7 +282,7 @@ export function Composer({ overrideSend, onAfterSend }: ComposerProps) {
                         variant="ghost"
                         size="icon"
                         onClick={handleToggleGoalPause}
-                        title={threadGoal.status === 'active' ? 'Pause goal' : 'Resume goal'}
+                        title={threadGoal.status === 'active' ? t('pauseGoal') : t('resumeGoal')}
                         className="ml-1 h-8 w-8 text-blue-600 hover:bg-blue-50"
                       >
                         {threadGoal.status === 'active' ? (
@@ -307,7 +296,7 @@ export function Composer({ overrideSend, onAfterSend }: ComposerProps) {
                       variant="ghost"
                       size="icon"
                       onClick={handleClearGoal}
-                      title="Clear goal"
+                      title={t('clearGoal')}
                       className="h-8 w-8 text-blue-600 hover:bg-blue-50"
                     >
                       <X className="h-4 w-4" />

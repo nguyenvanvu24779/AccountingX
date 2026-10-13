@@ -1,5 +1,6 @@
 import { RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ import { useKekeMcpAuth } from './useKekeMcpAuth';
 
 /** Manage shared Bot definitions here; access selection belongs to Bot settings. */
 export function KekeMcpView({ refreshKey = 0 }: { refreshKey?: number }) {
+  const { t } = useTranslation('mcp');
   const auth = useKekeMcpAuth();
   const [servers, setServers] = useState<Record<string, KekeMcpServer>>({});
   const [imports, setImports] = useState<Record<string, unknown> | null>(null);
@@ -47,11 +49,11 @@ export function KekeMcpView({ refreshKey = 0 }: { refreshKey?: number }) {
     try {
       await addKekeMcpServer(name, config);
       await load();
-      toast.success(`${name} configured. Select it from the bot’s Plus menu.`);
+      toast.success(t('keke.addedToast', { name }));
       if (needsPresetAuthorization(config)) await auth.authorize(name, config);
       return true;
     } catch (failure) {
-      toast.error(`Could not add ${name}: ${failure}`);
+      toast.error(t('keke.addFailedToast', { name, error: String(failure) }));
       return false;
     } finally {
       setBusy(false);
@@ -64,7 +66,7 @@ export function KekeMcpView({ refreshKey = 0 }: { refreshKey?: number }) {
       setRemoveName(null);
       await load();
     } catch (failure) {
-      toast.error(`Could not remove ${name}: ${failure}`);
+      toast.error(t('keke.removeFailedToast', { name, error: String(failure) }));
     } finally {
       setBusy(false);
     }
@@ -74,7 +76,7 @@ export function KekeMcpView({ refreshKey = 0 }: { refreshKey?: number }) {
     try {
       setImports((await unifiedReadMcpConfig('codex')).mcpServers ?? {});
     } catch (failure) {
-      toast.error(`Could not read Codex tools: ${failure}`);
+      toast.error(t('keke.readFailedToast', { error: String(failure) }));
     } finally {
       setBusy(false);
     }
@@ -84,12 +86,12 @@ export function KekeMcpView({ refreshKey = 0 }: { refreshKey?: number }) {
     <div className="flex flex-col gap-4 px-4">
       <KekeGitHubAuthDialog auth={auth} />
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Bot connectors</h3>
+        <h3 className="text-sm font-medium">{t('keke.botConnectors')}</h3>
         <Button
           size="icon"
           variant="ghost"
-          aria-label="Refresh bot connectors"
-          title="Refresh"
+          aria-label={t('keke.refreshAria')}
+          title={t('keke.refresh')}
           onClick={() => {
             load();
             auth.refresh();
@@ -100,17 +102,17 @@ export function KekeMcpView({ refreshKey = 0 }: { refreshKey?: number }) {
       </div>
       {error && (
         <p role="alert" className="text-sm text-destructive">
-          Could not load connectors: {error}
+          {t('keke.loadFailed', { error })}
         </p>
       )}
-      {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
+      {loading && <p className="text-sm text-muted-foreground">{t('loading')}</p>}
       {auth.error && (
         <p role="alert" className="text-sm text-destructive">
-          Could not check authorization: {auth.error}
+          {t('keke.checkAuthFailed', { error: auth.error })}
         </p>
       )}
       {!loading && !error && Object.keys(servers).length === 0 && (
-        <p className="text-sm text-muted-foreground">No connectors added yet.</p>
+        <p className="text-sm text-muted-foreground">{t('keke.empty')}</p>
       )}
       {Object.entries(servers).map(([name, config]) => (
         <div key={name} className="flex flex-col gap-2 rounded-md border p-3">
@@ -119,24 +121,26 @@ export function KekeMcpView({ refreshKey = 0 }: { refreshKey?: number }) {
             <span className="min-w-0 flex-1 break-all text-sm font-medium">{name}</span>
             <Badge variant="secondary">
               {config.disabled
-                ? 'Disabled'
+                ? t('keke.disabled')
                 : auth.statuses[name]?.signedIn
-                  ? 'Authorized'
-                  : 'Configured'}
+                  ? t('keke.authorized')
+                  : t('keke.configured')}
             </Badge>
             <Button size="sm" variant="ghost" disabled={busy} onClick={() => setRemoveName(name)}>
-              Remove
+              {t('keke.remove')}
             </Button>
           </div>
           {(config.type === 'http' || config.type === 'sse') && !config.disabled && (
             <KekeMcpAuthControl name={name} auth={auth} disabled={busy} config={config} />
           )}
           <details className="text-xs">
-            <summary className="cursor-pointer text-muted-foreground">Configuration</summary>
-            <p className="my-2 text-muted-foreground">Configuration may contain secrets.</p>
+            <summary className="cursor-pointer text-muted-foreground">
+              {t('keke.configuration')}
+            </summary>
+            <p className="my-2 text-muted-foreground">{t('keke.configurationMaySecret')}</p>
             {auth.statuses[name]?.error && (
               <p className="my-2 text-destructive">
-                Authorization status unavailable: {auth.statuses[name].error}
+                {t('keke.authStatusUnavailable', { error: auth.statuses[name].error })}
               </p>
             )}
             <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-all">
@@ -145,7 +149,7 @@ export function KekeMcpView({ refreshKey = 0 }: { refreshKey?: number }) {
           </details>
           {removeName === name && (
             <div className="flex flex-col gap-2">
-              <p className="text-xs">Remove {name} for all bots?</p>
+              <p className="text-xs">{t('keke.removeConfirm', { name })}</p>
               <div className="flex gap-2">
                 <Button
                   size="sm"
@@ -153,7 +157,7 @@ export function KekeMcpView({ refreshKey = 0 }: { refreshKey?: number }) {
                   disabled={busy}
                   onClick={() => void remove(name)}
                 >
-                  Confirm removal
+                  {t('keke.confirmRemoval')}
                 </Button>
                 <Button
                   size="sm"
@@ -161,7 +165,7 @@ export function KekeMcpView({ refreshKey = 0 }: { refreshKey?: number }) {
                   disabled={busy}
                   onClick={() => setRemoveName(null)}
                 >
-                  Cancel
+                  {t('keke.cancel')}
                 </Button>
               </div>
             </div>
@@ -169,35 +173,32 @@ export function KekeMcpView({ refreshKey = 0 }: { refreshKey?: number }) {
         </div>
       ))}
       <details>
-        <summary className="cursor-pointer text-sm font-medium">Advanced</summary>
+        <summary className="cursor-pointer text-sm font-medium">{t('keke.advanced')}</summary>
         <div className="mt-3 flex flex-col gap-3">
           <p className="text-xs text-muted-foreground">
-            Bot definitions are stored in <code>~/.keke/.mcp.json</code>. Only tools selected for a
-            bot are loaded.
+            {t('keke.storedAt', { path: '~/.keke/.mcp.json' })}
           </p>
           <KekeMcpJsonEditor busy={busy || loading || Boolean(error)} onAdd={add} />
           <details className="rounded-md border p-3">
-            <summary className="cursor-pointer text-sm">Import from Codex</summary>
+            <summary className="cursor-pointer text-sm">{t('keke.importFromCodex')}</summary>
             <div className="mt-3 flex flex-col gap-2">
-              <p className="text-xs text-muted-foreground">
-                Review before copying. Existing names and OAuth sessions are not imported.
-              </p>
+              <p className="text-xs text-muted-foreground">{t('keke.reviewBeforeCopying')}</p>
               <Button
                 size="sm"
                 variant="outline"
                 disabled={busy || loading || Boolean(error)}
                 onClick={() => void readImports()}
               >
-                Read Codex definitions
+                {t('keke.readCodexDefinitions')}
               </Button>
               {imports && Object.keys(imports).length === 0 && (
-                <p className="text-xs text-muted-foreground">No definitions found.</p>
+                <p className="text-xs text-muted-foreground">{t('keke.noDefinitionsFound')}</p>
               )}
               {imports &&
                 Object.entries(imports).map(([name, config]) => (
                   <details key={name}>
                     <summary className="cursor-pointer text-xs">
-                      {name} · review configuration
+                      {t('keke.reviewConfig', { name })}
                     </summary>
                     <pre className="my-2 max-h-48 overflow-auto whitespace-pre-wrap break-all text-xs">
                       {JSON.stringify(config, null, 2)}
@@ -214,7 +215,7 @@ export function KekeMcpView({ refreshKey = 0 }: { refreshKey?: number }) {
                       }
                       onClick={() => void add(name, config as Record<string, unknown>)}
                     >
-                      Import {name}
+                      {t('keke.importItem', { name })}
                     </Button>
                   </details>
                 ))}

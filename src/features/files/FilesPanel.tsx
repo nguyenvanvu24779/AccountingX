@@ -1,5 +1,6 @@
 import { Folders, X } from 'lucide-react';
 import { Suspense, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useEditorStore, useWorkspaceStore } from '@/stores';
@@ -7,6 +8,7 @@ import { getFilename } from '@/utils/getFilename';
 import { FileTree, FileViewer } from './explorer';
 
 export default function FilesPanel() {
+  const { t } = useTranslation('explorer');
   const { openFiles, activeFile, openFile, closeFile, setActiveFile } = useEditorStore();
   const { cwd } = useWorkspaceStore();
   const isMobile = useIsMobile();
@@ -49,7 +51,7 @@ export default function FilesPanel() {
                 <span
                   role="button"
                   tabIndex={0}
-                  aria-label={`Close ${getFilename(path)}`}
+                  aria-label={t('closeTab', { name: getFilename(path) })}
                   onClick={(e) => {
                     e.stopPropagation();
                     closeFile(path);
@@ -67,8 +69,8 @@ export default function FilesPanel() {
           size="icon"
           className="h-9 w-9 shrink-0 rounded-none border-r border-border text-muted-foreground hover:text-foreground hover:bg-accent/60"
           onClick={() => setIsFileTreeVisible((v) => !v)}
-          title={isFileTreeVisible ? 'Hide file tree' : 'Show file tree'}
-          aria-label={isFileTreeVisible ? 'Hide file tree' : 'Show file tree'}
+          title={isFileTreeVisible ? t('hideFileTree') : t('showFileTree')}
+          aria-label={isFileTreeVisible ? t('hideFileTree') : t('showFileTree')}
         >
           <Folders className="h-4 w-4" />
         </Button>
@@ -85,7 +87,7 @@ export default function FilesPanel() {
           </div>
         ) : (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-            Select a file to view
+            {t('selectFileToView')}
           </div>
         )}
 
@@ -106,7 +108,7 @@ export default function FilesPanel() {
             <button
               type="button"
               className="absolute inset-0 z-10 bg-black/20"
-              aria-label="Hide file tree"
+              aria-label={t('hideFileTree')}
               onClick={() => setIsFileTreeVisible(false)}
             />
             <div className="absolute inset-y-0 right-0 z-20 w-[min(78vw,280px)] border-l border-border bg-sidebar/90 overflow-hidden backdrop-blur">

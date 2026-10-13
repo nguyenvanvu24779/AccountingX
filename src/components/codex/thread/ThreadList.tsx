@@ -3,6 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 import { Archive, FolderX, GitFork, Loader2, Pin, PinOff } from 'lucide-react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ServerNotification } from '@/bindings/ServerNotification';
 import type {
   Thread,
@@ -47,6 +48,7 @@ const EMPTY_LIST: ThreadListResponse = { data: [], nextCursor: null, backwardsCu
 const PAGE_SIZE = 3;
 
 export function ThreadList({ cwd }: ThreadListProps) {
+  const { t } = useTranslation('thread');
   const { cwd: workspaceCwd, setCwd } = useWorkspaceStore();
   const { setView } = useLayoutStore();
   const { addAgentCard, setCurrentAgentCardId } = useAgentCenterStore();
@@ -171,12 +173,12 @@ export function ThreadList({ cwd }: ThreadListProps) {
       try {
         await archiveThread(threadId);
       } catch (err) {
-        toast.error('Failed to archive thread', { description: String(err) });
+        toast.error(t('list.archiveFailed'), { description: String(err) });
         return;
       }
       refresh();
     },
-    [refresh]
+    [refresh, t]
   );
 
   const handleFork = useCallback(
@@ -185,7 +187,7 @@ export function ThreadList({ cwd }: ThreadListProps) {
       try {
         await codexService.threadFork(threadId);
       } catch (err) {
-        toast.error('Failed to fork thread', { description: String(err) });
+        toast.error(t('list.forkFailed'), { description: String(err) });
         return;
       }
       addAgentCard({ kind: 'codex', id: threadId, preview: thread?.preview, cwd });
@@ -193,27 +195,30 @@ export function ThreadList({ cwd }: ThreadListProps) {
       setView('agent');
       refresh();
     },
-    [cwd, threads, addAgentCard, setCurrentAgentCardId, setView, refresh]
+    [cwd, threads, addAgentCard, setCurrentAgentCardId, setView, refresh, t]
   );
 
-  const handleDeleteWorktree = useCallback(async (thread: Thread) => {
-    const { cwd: mainCwd } = useWorkspaceStore.getState();
-    if (!mainCwd || !thread.cwd.includes('/.codexia/worktrees/')) return;
-    const key = thread.cwd.split('/').pop() ?? '';
-    try {
-      await gitRemoveWorktree(mainCwd, key);
-      toast.success('Worktree deleted');
-    } catch (err) {
-      toast.error('Failed to delete worktree', { description: String(err) });
-    }
-  }, []);
+  const handleDeleteWorktree = useCallback(
+    async (thread: Thread) => {
+      const { cwd: mainCwd } = useWorkspaceStore.getState();
+      if (!mainCwd || !thread.cwd.includes('/.accountingx/worktrees/')) return;
+      const key = thread.cwd.split('/').pop() ?? '';
+      try {
+        await gitRemoveWorktree(mainCwd, key);
+        toast.success(t('list.worktreeDeleted'));
+      } catch (err) {
+        toast.error(t('list.worktreeDeleteFailed'), { description: String(err) });
+      }
+    },
+    [t]
+  );
 
   const handleDelete = useCallback(
     async (threadId: string) => {
       try {
         await deleteThread(threadId);
       } catch (err) {
-        toast.error('Failed to delete thread', { description: String(err) });
+        toast.error(t('list.deleteFailed'), { description: String(err) });
         return;
       }
       if (currentThreadId === threadId) {
@@ -221,7 +226,7 @@ export function ThreadList({ cwd }: ThreadListProps) {
       }
       refresh();
     },
-    [currentThreadId, refresh]
+    [currentThreadId, refresh, t]
   );
 
   const handleLoadMore = useCallback(async () => {
@@ -259,12 +264,12 @@ export function ThreadList({ cwd }: ThreadListProps) {
     try {
       await renameThread(renameThreadId, renameValue.trim());
     } catch (err) {
-      toast.error('Failed to rename thread', { description: String(err) });
+      toast.error(t('list.renameFailed'), { description: String(err) });
       return;
     }
     setRenameThreadId(null);
     // thread/name/updated notification patches response.data directly.
-  }, [renameThreadId, renameValue]);
+  }, [renameThreadId, renameValue, t]);
 
   // --- Touch long press opens the context menu (touch devices get no
   // native contextmenu event, so synthesize one at the touch point) ---
@@ -309,9 +314,9 @@ export function ThreadList({ cwd }: ThreadListProps) {
     (thread: Thread): ThreadAction[] => {
       const isPinned = pinnedIds.some((p) => p.id === thread.id);
       return [
-        { label: 'Rename', onSelect: () => openRenameDialog(thread) },
+        { label: t('list.rename'), onSelect: () => openRenameDialog(thread) },
         {
-          label: isPinned ? 'Unpin' : 'Pin',
+          label: isPinned ? t('list.unpin') : t('list.pin'),
           icon: isPinned ? PinOff : Pin,
           onSelect: () =>
             togglePin({
@@ -321,26 +326,35 @@ export function ThreadList({ cwd }: ThreadListProps) {
               cwd: thread.cwd || cwd,
             }),
         },
-        { label: 'Fork', icon: GitFork, onSelect: () => void handleFork(thread.id) },
-        { label: 'Archive', icon: Archive, onSelect: () => void handleArchive(thread.id) },
-        ...(thread.cwd.includes('/.codexia/worktrees/')
+        { label: t('list.fork'), icon: GitFork, onSelect: () => void handleFork(thread.id) },
+        {
+          label: t('list.archive'),
+          icon: Archive,
+          onSelect: () => void handleArchive(thread.id),
+        },
+        ...(thread.cwd.includes('/.accountingx/worktrees/')
           ? [
               {
-                label: 'Delete Worktree',
+                label: t('list.deleteWorktree'),
                 icon: FolderX,
                 onSelect: () => void handleDeleteWorktree(thread),
               },
             ]
           : []),
-        { label: 'Delete', destructive: true, onSelect: () => void handleDelete(thread.id) },
         {
-          label: 'Copy Id',
+          label: t('list.delete'),
+          destructive: true,
+          onSelect: () => void handleDelete(thread.id),
+        },
+        {
+          label: t('list.copyId'),
           separatorBefore: true,
           onSelect: () => void navigator.clipboard.writeText(thread.id),
         },
       ];
     },
     [
+      t,
       cwd,
       pinnedIds,
       togglePin,
@@ -384,7 +398,7 @@ export function ThreadList({ cwd }: ThreadListProps) {
                   {threadStatusMap[thread.id]?.type === 'active' && (
                     <Loader2 className="h-3 w-3 shrink-0 animate-spin text-muted-foreground" />
                   )}
-                  {thread.name ?? (thread.preview || 'New chat')}
+                  {thread.name ?? (thread.preview || t('list.newChat'))}
                 </div>
                 <div className="flex items-center justify-end h-6 w-12 relative">
                   <span className="text-xs text-muted-foreground whitespace-nowrap group-hover:hidden">
@@ -392,7 +406,7 @@ export function ThreadList({ cwd }: ThreadListProps) {
                   </span>
                   <button
                     type="button"
-                    aria-label="Archive thread"
+                    aria-label={t('list.archiveAria')}
                     onClick={(e) => {
                       e.stopPropagation();
                       void handleArchive(thread.id);
@@ -421,7 +435,7 @@ export function ThreadList({ cwd }: ThreadListProps) {
           </ContextMenu>
         ))}
         {threads.length === 0 && (
-          <div className="text-xs p-2 text-sidebar-foreground/50">No chats.</div>
+          <div className="text-xs p-2 text-sidebar-foreground/50">{t('list.noChats')}</div>
         )}
       </div>
       {nextCursor && (
@@ -432,7 +446,7 @@ export function ThreadList({ cwd }: ThreadListProps) {
           disabled={isLoadingMore}
           className="justify-start"
         >
-          {isLoadingMore ? 'Loading more…' : 'Load more'}
+          {isLoadingMore ? t('list.loadingMore') : t('list.loadMore')}
         </Button>
       )}
       <RenameThreadDialog

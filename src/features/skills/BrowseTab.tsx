@@ -10,6 +10,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -26,10 +27,10 @@ import {
 import { useAgentSettingsStore, useWorkspaceStore } from '@/stores';
 import { type BoardType, leaderboardCache, searchCache } from './browseCache';
 
-const BOARD_TABS: { value: BoardType; label: string; icon: React.ReactNode }[] = [
-  { value: 'alltime', label: 'All Time', icon: <Clock className="h-3 w-3" /> },
-  { value: 'trending', label: 'Trending', icon: <TrendingUp className="h-3 w-3" /> },
-  { value: 'hot', label: 'Hot', icon: <Flame className="h-3 w-3" /> },
+const BOARD_TABS: { value: BoardType; labelKey: string; icon: React.ReactNode }[] = [
+  { value: 'alltime', labelKey: 'market.boardAllTime', icon: <Clock className="h-3 w-3" /> },
+  { value: 'trending', labelKey: 'market.boardTrending', icon: <TrendingUp className="h-3 w-3" /> },
+  { value: 'hot', labelKey: 'market.boardHot', icon: <Flame className="h-3 w-3" /> },
 ];
 
 export type { BoardType };
@@ -63,6 +64,7 @@ export function BrowseTab({
   onGroupsChange: (config: SkillGroupsConfig) => Promise<void>;
   selectedGroupId: string | null;
 }) {
+  const { t } = useTranslation('skills');
   const { cwd } = useWorkspaceStore();
   const { selectedAgent } = useAgentSettingsStore();
   const [board, setBoard] = useState<BoardType>('alltime');
@@ -72,25 +74,28 @@ export function BrowseTab({
   const [selectedSource, setSelectedSource] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const loadLeaderboard = useCallback(async (b: BoardType) => {
-    if (leaderboardCache[b]) {
-      setSkills(leaderboardCache[b]!);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    try {
-      const data = await fetchMarketLeaderboard(b);
-      leaderboardCache[b] = data;
-      setSkills(data);
-    } catch (err) {
-      toast.error('Failed to load marketplace', {
-        description: err instanceof Error ? err.message : String(err),
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const loadLeaderboard = useCallback(
+    async (b: BoardType) => {
+      if (leaderboardCache[b]) {
+        setSkills(leaderboardCache[b]!);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      try {
+        const data = await fetchMarketLeaderboard(b);
+        leaderboardCache[b] = data;
+        setSkills(data);
+      } catch (err) {
+        toast.error(t('market.loadMarketFailed'), {
+          description: err instanceof Error ? err.message : String(err),
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [t]
+  );
 
   useEffect(() => {
     if (!searchQuery) void loadLeaderboard(board);
@@ -112,7 +117,7 @@ export function BrowseTab({
         searchCache.set(searchQuery, data);
         setSkills(data);
       } catch (err) {
-        toast.error('Search failed', {
+        toast.error(t('market.searchFailed'), {
           description: err instanceof Error ? err.message : String(err),
         });
       } finally {
@@ -122,7 +127,7 @@ export function BrowseTab({
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [searchQuery]);
+  }, [searchQuery, t]);
 
   const sources = useMemo(() => Array.from(new Set(skills.map((s) => s.source))).sort(), [skills]);
   const filteredSkills = useMemo(
@@ -169,9 +174,9 @@ export function BrowseTab({
       }
 
       onInstalled();
-      toast.success(`Installed ${skill.name}`);
+      toast.success(t('market.installedToast', { name: skill.name }));
     } catch (err) {
-      toast.error(`Failed to install ${skill.name}`, {
+      toast.error(t('market.installFailed', { name: skill.name }), {
         description: err instanceof Error ? err.message : String(err),
       });
     } finally {
@@ -184,21 +189,21 @@ export function BrowseTab({
       {/* Board tabs */}
       {!searchQuery && (
         <div className="flex gap-1">
-          {BOARD_TABS.map((t) => (
+          {BOARD_TABS.map((boardTab) => (
             <Button
-              key={t.value}
+              key={boardTab.value}
               variant="ghost"
               size="sm"
-              onClick={() => setBoard(t.value)}
+              onClick={() => setBoard(boardTab.value)}
               className={cn(
                 'h-7 gap-1.5 px-3 text-xs',
-                board === t.value
+                board === boardTab.value
                   ? 'bg-muted text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              {t.icon}
-              {t.label}
+              {boardTab.icon}
+              {t(boardTab.labelKey)}
             </Button>
           ))}
         </div>
@@ -217,7 +222,7 @@ export function BrowseTab({
                 : 'border-muted text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'
             )}
           >
-            All
+            {t('market.sourceAll')}
           </button>
           {sources.map((src) => (
             <button
@@ -240,7 +245,9 @@ export function BrowseTab({
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
           <Loader2 className="h-7 w-7 animate-spin" />
-          <p className="mt-3 text-sm">{searchQuery ? 'Searching…' : 'Loading…'}</p>
+          <p className="mt-3 text-sm">
+            {searchQuery ? t('market.searching') : t('market.loadingEllipsis')}
+          </p>
         </div>
       ) : filteredSkills.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -248,7 +255,9 @@ export function BrowseTab({
             <SearchX className="h-7 w-7 text-muted-foreground" />
           </div>
           <h3 className="mt-4 font-semibold">
-            {searchQuery ? `No results for "${searchQuery}"` : 'No skills found'}
+            {searchQuery
+              ? t('market.noResultsFor', { query: searchQuery })
+              : t('market.noSkillsFound')}
           </h3>
         </div>
       ) : (

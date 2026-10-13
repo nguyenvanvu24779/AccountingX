@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { AgentIcon } from '@/components/common/AgentIcon';
 import type { AgentCenterCard } from '@/stores/useAgentCenterStore';
 
@@ -16,6 +17,7 @@ export function AgentCardHeader({
   onSelect,
   status = 'idle',
 }: AgentCardHeaderProps) {
+  const { t } = useTranslation('agent');
   const title = card.preview?.slice(0, 60) || card.id.slice(0, 12);
 
   const dotColor =
@@ -51,7 +53,7 @@ export function AgentCardHeader({
             onClose();
           }}
           className="group relative h-3.5 w-3.5 flex items-center justify-center shrink-0"
-          aria-label="Remove"
+          aria-label={t('removeAria')}
         >
           <span
             className={`absolute h-2 w-2 rounded-full transition-opacity duration-150 group-hover:opacity-0 ${dotColor} ${dotAnimate}`}

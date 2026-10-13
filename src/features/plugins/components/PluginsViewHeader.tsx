@@ -1,4 +1,5 @@
 import { ArrowLeft, ChevronRight, MoreHorizontal, Plus, RotateCcw, Settings } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { AgentSwitcher } from '@/components/agent';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +27,7 @@ import { TabSwitcher } from './TabSwitcher';
 
 /** Top toolbar: back button, tab switcher, manage/add actions, agent switcher. */
 export function PluginsViewHeader() {
+  const { t } = useTranslation('mcp');
   const isMobile = useIsMobile();
   const { isSidebarOpen } = useLayoutStore();
   const { needsTrafficLightOffset } = useTrafficLightConfig(isSidebarOpen);
@@ -62,8 +64,8 @@ export function PluginsViewHeader() {
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          aria-label="Manage plugins and tools"
-          title="Manage plugins and tools"
+          aria-label={t('manageTitle')}
+          title={t('manageTitle')}
           onClick={() => setOverlay('manage')}
         >
           <ArrowLeft className="h-4 w-4" />
@@ -74,7 +76,7 @@ export function PluginsViewHeader() {
       {overlay === 'manage' ? (
         <Button variant="ghost" size="sm" onClick={() => setOverlay(null)}>
           <ArrowLeft className="h-4 w-4" />
-          {isMobile ? '' : 'Plugin'}
+          {isMobile ? '' : t('pluginBack')}
         </Button>
       ) : overlay === 'add' ? (
         <TabSwitcher
@@ -110,8 +112,8 @@ export function PluginsViewHeader() {
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          aria-label="Manage plugins and tools"
-          title="Manage plugins and tools"
+          aria-label={t('manageTitle')}
+          title={t('manageTitle')}
           onClick={() => setOverlay('manage')}
         >
           <Settings className="h-3.5 w-3.5" />
@@ -127,14 +129,14 @@ export function PluginsViewHeader() {
               useAgentSettingsStore.getState().setSelectedAgent(value);
           }}
         >
-          <SelectTrigger className="w-28" aria-label="Connector configuration target">
+          <SelectTrigger className="w-28" aria-label={t('targetAria')}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="codex">Codex</SelectItem>
-              <SelectItem value="cc">Claude</SelectItem>
-              <SelectItem value="bots">Bots</SelectItem>
+              <SelectItem value="codex">{t('targetCodex')}</SelectItem>
+              <SelectItem value="cc">{t('targetClaude')}</SelectItem>
+              <SelectItem value="bots">{t('targetBots')}</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
@@ -145,8 +147,8 @@ export function PluginsViewHeader() {
         <Button
           size="icon"
           variant="ghost"
-          aria-label="Back to bot"
-          title="Back to bot"
+          aria-label={t('backToBot')}
+          title={t('backToBot')}
           onClick={() => useLayoutStore.getState().setView('bot')}
         >
           <ArrowLeft />

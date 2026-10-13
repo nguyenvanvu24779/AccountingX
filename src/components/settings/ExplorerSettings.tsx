@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useSettingsStore } from '@/stores/settings';
 
 export function ExplorerSettings() {
+  const { t } = useTranslation('settings');
   const { hiddenNames, addHiddenName, removeHiddenName, resetHiddenNames } = useSettingsStore();
   const [draftHiddenNames, setDraftHiddenNames] = useState('');
   const hasHiddenNames = hiddenNames.length > 0;
@@ -28,17 +30,15 @@ export function ExplorerSettings() {
 
   return (
     <section className="space-y-3">
-      <h3 className="text-sm font-medium px-1">Explorer</h3>
+      <h3 className="text-sm font-medium px-1">{t('explorer')}</h3>
       <Card>
         <CardContent className="p-4 space-y-6">
           <form className="space-y-3" onSubmit={handleHiddenNamesSubmit}>
             <div className="space-y-1">
               <Label htmlFor="hidden-names" className="text-sm font-medium">
-                Explorer filters
+                {t('explorerFiltersTitle')}
               </Label>
-              <p className="text-xs text-muted-foreground">
-                Exclude files or folders by name. Matching is case-insensitive.
-              </p>
+              <p className="text-xs text-muted-foreground">{t('explorerFiltersDescription')}</p>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Input
@@ -46,7 +46,7 @@ export function ExplorerSettings() {
                 className="h-8 text-xs"
                 value={draftHiddenNames}
                 onChange={(event) => setDraftHiddenNames(event.target.value)}
-                placeholder={placeholder || 'node_modules, DS_Store'}
+                placeholder={placeholder || t('explorerFiltersPlaceholder')}
               />
               <Button
                 type="submit"
@@ -54,7 +54,7 @@ export function ExplorerSettings() {
                 className="sm:w-28 h-8 text-xs"
                 disabled={!draftHiddenNames.trim()}
               >
-                Add
+                {t('add')}
               </Button>
             </div>
           </form>
@@ -71,14 +71,12 @@ export function ExplorerSettings() {
                     onClick={() => removeHiddenName(name)}
                   >
                     <X className="h-2 w-2" />
-                    <span className="sr-only">Remove</span>
+                    <span className="sr-only">{t('remove')}</span>
                   </Button>
                 </Badge>
               ))
             ) : (
-              <div className="text-xs text-muted-foreground italic">
-                No hidden names configured.
-              </div>
+              <div className="text-xs text-muted-foreground italic">{t('noHiddenNames')}</div>
             )}
           </div>
 
@@ -90,7 +88,7 @@ export function ExplorerSettings() {
               className="h-7 text-xs font-normal"
               onClick={resetHiddenNames}
             >
-              Reset defaults
+              {t('resetDefaults')}
             </Button>
           </div>
         </CardContent>

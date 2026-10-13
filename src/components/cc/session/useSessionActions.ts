@@ -29,7 +29,7 @@ export function useSessionActions({ onSessionDeleted }: UseSessionActionsArgs) {
   const doDeleteWorktree = useCallback(
     async (session: SdkSessionInfo) => {
       const sessionProject = session.cwd ?? '';
-      if (!sessionProject.includes('/.codexia/worktrees/')) return;
+      if (!sessionProject.includes('/.accountingx/worktrees/')) return;
       const worktreeKey = sessionProject.split('/').pop() ?? '';
       const mainCwd = useWorkspaceStore.getState().cwd;
       if (!mainCwd) return;

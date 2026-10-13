@@ -2,6 +2,7 @@ import type { UnlistenFn } from '@tauri-apps/api/event';
 import { listen } from '@tauri-apps/api/event';
 import { Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useThemeContext } from '@/contexts/ThemeContext';
 import { isTauri } from '@/hooks/runtime';
@@ -31,6 +32,7 @@ const getFileExtension = (path: string) => {
 };
 
 export function FileViewer({ filePath }: FileViewerProps) {
+  const { t } = useTranslation('explorer');
   const isTauriRuntime = isTauri();
   const [content, setContent] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -202,7 +204,7 @@ export function FileViewer({ filePath }: FileViewerProps) {
           <div
             className={`px-3 py-2 text-xs flex items-center justify-between ${resolvedTheme === 'dark' ? 'bg-amber-950 text-amber-300' : 'bg-amber-50 text-amber-800'}`}
           >
-            <span>File changed on disk.</span>
+            <span>{t('fileChangedOnDisk')}</span>
             <div className="space-x-2">
               <Button
                 variant="outline"
@@ -210,10 +212,10 @@ export function FileViewer({ filePath }: FileViewerProps) {
                 className="h-6 px-2"
                 onClick={() => setDiskChanged(false)}
               >
-                Dismiss
+                {t('dismiss')}
               </Button>
               <Button variant="default" size="sm" className="h-6 px-2" onClick={loadFile}>
-                Reload
+                {t('reload')}
               </Button>
             </div>
           </div>
@@ -224,7 +226,7 @@ export function FileViewer({ filePath }: FileViewerProps) {
           >
             <div className="flex items-center gap-2">
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="text-sm font-medium">Loading file...</span>
+              <span className="text-sm font-medium">{t('loadingFile')}</span>
             </div>
             <div className="w-full max-w-xl space-y-2">
               <div
@@ -267,10 +269,10 @@ export function FileViewer({ filePath }: FileViewerProps) {
                 <p
                   className={`text-sm mb-2 ${resolvedTheme === 'dark' ? 'text-muted-foreground' : 'text-gray-600'}`}
                 >
-                  Showing first {MAX_LINES} lines of {content.split('\n').length} total lines
+                  {t('showingFirstLines', { max: MAX_LINES, total: content.split('\n').length })}
                 </p>
                 <Button variant="outline" size="sm" onClick={handleToggleContent}>
-                  Show All Lines
+                  {t('showAllLines')}
                 </Button>
               </div>
             )}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { AcpSessionList } from '@/components/acp/AcpSessionList';
 import { SessionList } from '@/components/cc/session';
 import { ThreadList } from '@/components/codex/thread/ThreadList';
@@ -9,12 +10,13 @@ type SideBarClaudeTabProps = {
 };
 
 export function SideBarClaudeTab({ onStartNewSession }: SideBarClaudeTabProps) {
+  const { t } = useTranslation('sidebar');
   const { handleSessionSelect } = useCCSessionManager();
 
   return (
     <SideBarProjectList
       onNewAction={onStartNewSession}
-      newActionTitle={(name) => `Start new session in ${name}`}
+      newActionTitle={(name) => t('startNewSessionIn', { name })}
       renderList={(directory) => (
         <SessionList directory={directory} onSelectSession={handleSessionSelect} />
       )}
@@ -27,10 +29,11 @@ type SideBarCodexTabProps = {
 };
 
 export function SideBarCodexTab({ onCreateNewThread }: SideBarCodexTabProps) {
+  const { t } = useTranslation('sidebar');
   return (
     <SideBarProjectList
       onNewAction={onCreateNewThread}
-      newActionTitle={(name) => `Start new thread in ${name}`}
+      newActionTitle={(name) => t('startNewThreadIn', { name })}
       renderList={(project) => <ThreadList cwd={project} />}
     />
   );
@@ -41,10 +44,11 @@ type SideBarAcpTabProps = {
 };
 
 export function SideBarAcpTab({ onStartNewSession }: SideBarAcpTabProps) {
+  const { t } = useTranslation('sidebar');
   return (
     <SideBarProjectList
       onNewAction={onStartNewSession}
-      newActionTitle={(name) => `Start new ACP session in ${name}`}
+      newActionTitle={(name) => t('startNewAcpSessionIn', { name })}
       renderList={(project) => <AcpSessionList directory={project} />}
     />
   );

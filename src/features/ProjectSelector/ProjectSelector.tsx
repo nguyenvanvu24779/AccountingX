@@ -1,6 +1,7 @@
 import { open as openDialog } from '@tauri-apps/plugin-dialog';
 import { ChevronDown, Folder, FolderPlus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Command } from '@/components/ui/command';
 import {
@@ -18,6 +19,7 @@ import { getFilename } from '@/utils/getFilename';
 type SelectorMode = 'workspace' | 'browse';
 
 export function ProjectSelector() {
+  const { t } = useTranslation('project');
   const { cwd, setCwd, projects, addProject } = useWorkspaceStore();
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [mode, setMode] = useState<SelectorMode>('workspace');
@@ -26,10 +28,10 @@ export function ProjectSelector() {
 
   const triggerText = useMemo(() => {
     if (cwd === '/' || !cwd) {
-      return 'Select a folder';
+      return t('selectFolder');
     }
     return getFilename(cwd) || cwd;
-  }, [cwd]);
+  }, [cwd, t]);
 
   useEffect(() => {
     if (!popoverOpen) {
@@ -75,7 +77,7 @@ export function ProjectSelector() {
             {mode !== 'browse' && (
               <Button variant="ghost" size="sm" onClick={() => void handleAddProject()}>
                 <FolderPlus className="h-4 w-4" />
-                Add New Project
+                {t('addNewProjectTitle')}
               </Button>
             )}
           </div>

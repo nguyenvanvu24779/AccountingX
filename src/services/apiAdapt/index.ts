@@ -2,6 +2,7 @@ import { readTextFile, writeFile } from './filesystem';
 import { isDesktopTauri } from './shared';
 
 export * from './acp';
+export * from './approvals';
 export * from './automation';
 export * from './bots';
 
@@ -25,6 +26,7 @@ export type {
 export * from './telemetry';
 export * from './terminal';
 export * from './threadOps';
+export * from './zalo';
 
 const SESSION_META_STORAGE_KEY = 'codexia.session_meta';
 const SESSION_META_FILE_PATH = '~/.plux/session_meta.json';

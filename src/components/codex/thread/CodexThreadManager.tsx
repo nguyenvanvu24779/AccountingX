@@ -1,5 +1,6 @@
 import { Loader2, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Thread, ThreadListParams } from '@/bindings/v2';
 import { useCodexStore, useThreadListStore } from '@/components/codex/stores';
 import { DeleteConfirmDialog, Toolbar } from '@/components/common/SessionManagerShared';
@@ -22,6 +23,7 @@ interface CodexThreadManagerProps {
 const PAGE_SIZE = 20;
 
 export function CodexThreadManager({ onClose }: CodexThreadManagerProps) {
+  const { t } = useTranslation('thread');
   // This manager keeps its own thread list (fetched directly via listThreads)
   // instead of reading from useCodexStore, since that store only tracks the
   // globally-loaded/active thread set. currentThreadId is still read from the
@@ -167,7 +169,10 @@ export function CodexThreadManager({ onClose }: CodexThreadManagerProps) {
     // Refresh global thread list so sidebar (which still reads useCodexStore) updates.
     await codexService.loadThreads(cwd, false, sortKey);
     if (failed > 0) {
-      toast({ description: `Failed to delete ${failed} thread(s)`, variant: 'destructive' });
+      toast({
+        description: t('manager.deleteFailedCount', { count: failed }),
+        variant: 'destructive',
+      });
     }
   };
 
@@ -192,7 +197,7 @@ export function CodexThreadManager({ onClose }: CodexThreadManagerProps) {
           className="h-6 px-2 text-xs"
           onClick={() => setScopeToCwd(true)}
         >
-          Current folder
+          {t('manager.currentFolder')}
         </Button>
         <Button
           variant={!scopeToCwd ? 'secondary' : 'ghost'}
@@ -200,7 +205,7 @@ export function CodexThreadManager({ onClose }: CodexThreadManagerProps) {
           className="h-6 px-2 text-xs"
           onClick={() => setScopeToCwd(false)}
         >
-          All folders
+          {t('manager.allFolders')}
         </Button>
       </div>
 
@@ -208,11 +213,11 @@ export function CodexThreadManager({ onClose }: CodexThreadManagerProps) {
         {loading ? (
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-8 animate-in fade-in duration-150">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Loading threads…
+            {t('manager.loadingThreads')}
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-sm text-muted-foreground py-8 text-center animate-in fade-in duration-200">
-            No threads found
+            {t('manager.noThreadsFound')}
           </div>
         ) : (
           filtered.map((thread) => (
@@ -268,7 +273,7 @@ export function CodexThreadManager({ onClose }: CodexThreadManagerProps) {
             {loadingMore && (
               <>
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Loading more…
+                {t('manager.loadingMore')}
               </>
             )}
           </div>

@@ -1,4 +1,3 @@
-import { EDITION } from '@/lib/edition';
 import { Bug, ChevronDown, ChevronRight, Monitor, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +18,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useTrafficLightConfig } from '@/hooks';
 import { isPhone } from '@/hooks/runtime';
+import { EDITION } from '@/lib/edition';
 import { useLayoutStore } from '@/stores';
 import { UpdateIndicator } from '../../features/UpdateIndicator';
 import { SessionManagerDialog } from '../common/SessionManagerDialog';
@@ -54,7 +54,7 @@ export function AppSideBar() {
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              title="Manage sessions & threads"
+              title={t('manageSessions')}
               onClick={() => setSessionManagerOpen(true)}
             >
               <Search className="h-4 w-4" />
@@ -64,7 +64,7 @@ export function AppSideBar() {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8"
-                title="Desktops"
+                title={t('desktops')}
                 onClick={() => setDesktopDrawerOpen(true)}
               >
                 <Monitor className="h-4 w-4" />
@@ -134,7 +134,7 @@ export function AppSideBar() {
             <div className="flex items-center px-1">
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="flex-1 justify-start gap-2">
-                  <span>Projects</span>
+                  <span>{t('projects')}</span>
                   <ChevronDown
                     className={`h-4 w-4 text-muted-foreground/60 transition-transform ${projectsOpen ? '' : '-rotate-90'}`}
                   />

@@ -1,5 +1,6 @@
 import { Play, Settings2 } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -15,14 +16,15 @@ import { EditRunCommandsDialog } from './EditRunCommandsDialog';
 import { useProjectCommands } from './useProjectCommands';
 import { useProjectRunStore } from './useProjectRunStore';
 
-const RUN_ITEMS: { kind: RunKind; label: string }[] = [
-  { kind: 'dev', label: 'Dev' },
-  { kind: 'test', label: 'Test' },
-  { kind: 'build', label: 'Build' },
-  { kind: 'preview', label: 'Preview' },
+const RUN_ITEMS: { kind: RunKind; labelKey: string }[] = [
+  { kind: 'dev', labelKey: 'dev' },
+  { kind: 'test', labelKey: 'test' },
+  { kind: 'build', labelKey: 'build' },
+  { kind: 'preview', labelKey: 'preview' },
 ];
 
 export function ProjectRunMenu() {
+  const { t } = useTranslation('projectRun');
   const { cwd } = useWorkspaceStore();
   const { addTerminal, setActiveRightPanelTab, setRightPanelOpen } = useLayoutStore();
   const { defaults, commands } = useProjectCommands();
@@ -41,14 +43,20 @@ export function ProjectRunMenu() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-7 gap-1 px-2" title="Run project command">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 gap-1 px-2"
+            title={t('runProjectCommand')}
+          >
             <Play className="size-3.5" />
-            Run
+            {t('run')}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-64">
-          {RUN_ITEMS.map(({ kind, label }) => {
+          {RUN_ITEMS.map(({ kind, labelKey }) => {
             const command = commands[kind];
+            const label = t(labelKey);
             return (
               <DropdownMenuItem
                 key={kind}
@@ -58,7 +66,7 @@ export function ProjectRunMenu() {
               >
                 <span>{label}</span>
                 <span className="font-mono text-xs text-muted-foreground truncate w-full">
-                  {command ?? 'not set'}
+                  {command ?? t('notSet')}
                 </span>
               </DropdownMenuItem>
             );
@@ -66,7 +74,7 @@ export function ProjectRunMenu() {
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => setEditOpen(true)}>
             <Settings2 className="size-3.5" />
-            Edit commands…
+            {t('editCommands')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

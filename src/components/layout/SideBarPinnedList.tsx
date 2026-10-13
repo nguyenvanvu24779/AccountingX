@@ -1,6 +1,7 @@
 // Pinned threads/sessions across all projects, shown as a collapsible sidebar section.
 import { ChevronDown, ChevronRight, Pin, PinOff } from 'lucide-react';
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useCCSessionManager } from '@/hooks/useCCSessionManager';
@@ -12,6 +13,7 @@ import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { getFilename } from '@/utils/getFilename';
 
 export function SideBarPinnedList() {
+  const { t } = useTranslation('sidebar');
   const pinned = usePinStore((s) => s.pinned);
   const unpin = usePinStore((s) => s.unpin);
   const { setCwd } = useWorkspaceStore();
@@ -53,7 +55,7 @@ export function SideBarPinnedList() {
     <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-sm hover:bg-accent/50">
         <Pin className="h-4 w-4" />
-        <span className="flex-1 text-left">Pinned</span>
+        <span className="flex-1 text-left">{t('pinned')}</span>
         {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
       </CollapsibleTrigger>
       <CollapsibleContent>
@@ -66,14 +68,14 @@ export function SideBarPinnedList() {
             title={`${item.title}\n${item.cwd}`}
             className="group flex w-full items-center gap-2 rounded-md px-2.5 py-1 text-left hover:bg-accent/50"
           >
-            <span className="min-w-0 flex-1 truncate text-xs">{item.title || 'Untitled'}</span>
+            <span className="min-w-0 flex-1 truncate text-xs">{item.title || t('untitled')}</span>
             <span className="shrink-0 text-[10px] text-muted-foreground group-hover:hidden">
               {getFilename(item.cwd)}
             </span>
             <Button
               variant="ghost"
               size="icon-xs"
-              title="Unpin"
+              title={t('unpin')}
               className="hidden shrink-0 group-hover:inline-flex"
               onClick={(e) => {
                 e.stopPropagation();

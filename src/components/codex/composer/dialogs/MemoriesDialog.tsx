@@ -1,5 +1,6 @@
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useCodexStore } from '@/components/codex/stores/useCodexStore';
 import {
@@ -31,6 +32,7 @@ type MemoriesDialogProps = {
 };
 
 export function MemoriesDialog({ open, onClose }: MemoriesDialogProps) {
+  const { t } = useTranslation('composer');
   const currentThreadId = useCodexStore((state) => state.currentThreadId);
   // There is no read API for the current memory mode, so this switch only
   // reflects changes made from this dialog during the session.
@@ -48,10 +50,10 @@ export function MemoriesDialog({ open, onClose }: MemoriesDialogProps) {
         threadId: currentThreadId,
         mode: next ? 'enabled' : 'disabled',
       });
-      toast.success(next ? 'Memory enabled for this thread' : 'Memory disabled for this thread');
+      toast.success(next ? t('memoriesDialog.enabledToast') : t('memoriesDialog.disabledToast'));
     } catch (error) {
       setEnabled(previous);
-      toast.error(`Failed to update memory mode: ${error}`);
+      toast.error(t('memoriesDialog.updateFailed', { error: String(error) }));
     } finally {
       setSaving(false);
     }
@@ -61,9 +63,9 @@ export function MemoriesDialog({ open, onClose }: MemoriesDialogProps) {
     setResetting(true);
     try {
       await memoryReset();
-      toast.success('All memories were reset');
+      toast.success(t('memoriesDialog.resetSuccess'));
     } catch (error) {
-      toast.error(`Failed to reset memories: ${error}`);
+      toast.error(t('memoriesDialog.resetFailed', { error: String(error) }));
     } finally {
       setResetting(false);
     }
@@ -73,20 +75,17 @@ export function MemoriesDialog({ open, onClose }: MemoriesDialogProps) {
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Memories</DialogTitle>
-          <DialogDescription>
-            Control whether Codex records memories from this thread, and clear everything it has
-            stored so far.
-          </DialogDescription>
+          <DialogTitle>{t('memoriesDialog.title')}</DialogTitle>
+          <DialogDescription>{t('memoriesDialog.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="flex items-center justify-between gap-4 rounded-md border p-3">
           <div className="space-y-1">
-            <Label htmlFor="memory-mode">Memory for this thread</Label>
+            <Label htmlFor="memory-mode">{t('memoriesDialog.memoryForThread')}</Label>
             <p className="text-muted-foreground text-xs">
               {currentThreadId
-                ? 'Applies going forward. The current mode cannot be read back, so this reflects your latest change only.'
-                : 'Start or open a thread to change its memory mode.'}
+                ? t('memoriesDialog.appliesGoingForward')
+                : t('memoriesDialog.startOrOpenThread')}
             </p>
           </div>
           <Switch
@@ -99,28 +98,28 @@ export function MemoriesDialog({ open, onClose }: MemoriesDialogProps) {
 
         <div className="flex items-center justify-between gap-4 rounded-md border p-3">
           <div className="space-y-1">
-            <Label>Reset all memories</Label>
-            <p className="text-muted-foreground text-xs">
-              Permanently deletes every stored memory across all threads.
-            </p>
+            <Label>{t('memoriesDialog.resetAll')}</Label>
+            <p className="text-muted-foreground text-xs">{t('memoriesDialog.resetDescription')}</p>
           </div>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm" disabled={resetting}>
                 <Trash2 className="size-4" />
-                Reset
+                {t('memoriesDialog.reset')}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Reset all memories?</AlertDialogTitle>
+                <AlertDialogTitle>{t('memoriesDialog.resetConfirmTitle')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This wipes every memory Codex has stored. This action cannot be undone.
+                  {t('memoriesDialog.resetConfirmDescription')}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleReset}>Reset</AlertDialogAction>
+                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                <AlertDialogAction onClick={handleReset}>
+                  {t('memoriesDialog.reset')}
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

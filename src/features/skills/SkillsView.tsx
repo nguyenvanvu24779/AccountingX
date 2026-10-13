@@ -1,5 +1,6 @@
 import { Search } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { v4 as uuidv4 } from 'uuid';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
@@ -16,6 +17,7 @@ import {
 import { useLayoutStore, usePluginStore, useWorkspaceStore } from '@/stores';
 
 export default function SkillsView() {
+  const { t } = useTranslation('skills');
   const { cwd } = useWorkspaceStore();
   const { isSidebarOpen } = useLayoutStore();
   const { skillScope: scope } = usePluginStore();
@@ -43,16 +45,19 @@ export default function SkillsView() {
       .catch(() => {});
   }, []);
 
-  const saveGroups = useCallback(async (config: SkillGroupsConfig) => {
-    setGroupsConfig(config);
-    try {
-      await writeSkillGroups(config);
-    } catch (err) {
-      toast.error('Failed to save groups', {
-        description: err instanceof Error ? err.message : String(err),
-      });
-    }
-  }, []);
+  const saveGroups = useCallback(
+    async (config: SkillGroupsConfig) => {
+      setGroupsConfig(config);
+      try {
+        await writeSkillGroups(config);
+      } catch (err) {
+        toast.error(t('market.saveGroupsFailed'), {
+          description: err instanceof Error ? err.message : String(err),
+        });
+      }
+    },
+    [t]
+  );
 
   const refreshInstalled = useCallback(() => {
     setInstalledRefreshKey((k) => k + 1);
@@ -72,7 +77,7 @@ export default function SkillsView() {
         <div className="relative mx-20 py-4">
           <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <Input
-            placeholder="Search skills…"
+            placeholder={t('market.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-8 text-xs bg-muted/30 border-none ring-offset-background focus-visible:ring-1"

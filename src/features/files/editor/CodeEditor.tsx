@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, FileText, Save, Search, Send, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as ReactAceModule from 'react-ace';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useThemeContext } from '@/contexts/ThemeContext';
@@ -66,6 +67,7 @@ export function CodeEditor({
   onAddToTodo,
   className = '',
 }: CodeEditorProps) {
+  const { t } = useTranslation('explorer');
   // Local state
   const [editedContent, setEditedContent] = useState(content);
   const [isSaving, setIsSaving] = useState(false);
@@ -390,7 +392,7 @@ export function CodeEditor({
             onClick={handleSave}
             disabled={isSaving}
             className="p-1 h-auto"
-            title="Save changes (Ctrl+S)"
+            title={t('saveChanges')}
           >
             <Save className="w-4 h-4" />
           </Button>
@@ -401,7 +403,7 @@ export function CodeEditor({
           size="sm"
           onClick={toggleSearch}
           className="p-1 h-auto"
-          title="Search in file"
+          title={t('searchInFile')}
         >
           <Search className="w-4 h-4" />
         </Button>
@@ -417,7 +419,7 @@ export function CodeEditor({
           />
           <Input
             type="text"
-            placeholder="Search in file..."
+            placeholder={t('searchInFilePlaceholder')}
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
             onKeyDown={(e) => {
@@ -440,14 +442,14 @@ export function CodeEditor({
               <span
                 className={`text-xs ${resolvedTheme === 'dark' ? 'text-muted-foreground' : 'text-gray-600'}`}
               >
-                {currentSearchIndex + 1} of {searchResults.length}
+                {t('matchCount', { current: currentSearchIndex + 1, total: searchResults.length })}
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSearchPrev}
                 className="p-1 h-auto"
-                title="Previous match"
+                title={t('previousMatch')}
               >
                 <ChevronUp className="w-3 h-3" />
               </Button>
@@ -456,7 +458,7 @@ export function CodeEditor({
                 size="sm"
                 onClick={handleSearchNext}
                 className="p-1 h-auto"
-                title="Next match"
+                title={t('nextMatch')}
               >
                 <ChevronDown className="w-3 h-3" />
               </Button>
@@ -467,7 +469,7 @@ export function CodeEditor({
             size="sm"
             onClick={toggleSearch}
             className="p-1 h-auto"
-            title="Close search"
+            title={t('closeSearch')}
           >
             <X className="w-3 h-3" />
           </Button>
@@ -498,7 +500,7 @@ export function CodeEditor({
                   setSelection(null);
                 }}
                 className="p-1 h-auto"
-                title="Send selected text to AI"
+                title={t('sendToAI')}
               >
                 <Send className="w-4 h-4" />
               </Button>
@@ -512,7 +514,7 @@ export function CodeEditor({
                   setSelection(null);
                 }}
                 className="p-1 h-auto"
-                title="Add selected text to todo"
+                title={t('addToTodo')}
               >
                 <FileText className="w-4 h-4" />
               </Button>

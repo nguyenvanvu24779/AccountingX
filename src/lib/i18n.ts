@@ -3,7 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import { type AppLocale, localeLabels, localeResources } from '@/locales';
 import { useLocaleStore } from '@/stores/settings/useLocaleStore';
 
-const fallbackLocale: AppLocale = 'en';
+const fallbackLocale: AppLocale = 'vi';
 
 // Helper to detect locale from navigator
 const detectLocale = (): AppLocale => {
@@ -12,7 +12,7 @@ const detectLocale = (): AppLocale => {
   }
   const lang = navigator.language.slice(0, 2).toLowerCase();
   // Check if the detected language is supported
-  if (['en', 'zh', 'ja'].includes(lang as AppLocale)) {
+  if (['vi', 'en', 'zh', 'ja'].includes(lang as AppLocale)) {
     return lang as AppLocale;
   }
   return fallbackLocale;

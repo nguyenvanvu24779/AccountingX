@@ -1,4 +1,3 @@
-import { EDITION } from '@/lib/edition';
 import { ChevronDown, ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -21,7 +20,9 @@ import {
 } from '@/components/ui/sidebar';
 import { isTauri } from '@/hooks/runtime';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { EDITION } from '@/lib/edition';
 import { useLayoutStore } from '@/stores';
+import { ApprovalsSettings } from './ApprovalsSettings';
 import { ClaudeSettings } from './ClaudeSettings';
 import {
   ArchivedThreadSettings,
@@ -35,6 +36,7 @@ import { ExplorerSettings } from './ExplorerSettings';
 import { GeneralSettings } from './GeneralSettings';
 import { ProjectsSettings } from './ProjectsSettings';
 import { RemoteAccessSettings } from './RemoteAccessSettings';
+import { ZaloSettings } from './ZaloSettings';
 
 type SettingsSection =
   | 'general'
@@ -47,7 +49,9 @@ type SettingsSection =
   | 'task'
   | 'agents'
   | 'claude'
-  | 'remote';
+  | 'remote'
+  | 'approvals'
+  | 'zalo';
 
 const codexSections = ['task', 'agents', 'config', 'personalization', 'archived'] as const;
 const topLevelSections = (
@@ -58,6 +62,8 @@ const topLevelSections = (
     'projects',
     EDITION.claudeAgent ? 'claude' : null,
     'explorer',
+    'approvals',
+    'zalo',
   ] as const
 ).filter((s): s is Exclude<typeof s, null> => s !== null);
 
@@ -81,6 +87,8 @@ export default function SettingsView() {
       {activeSection === 'agents' && <SettingsAgentsSection />}
       {activeSection === 'claude' && <ClaudeSettings />}
       {activeSection === 'remote' && <RemoteAccessSettings />}
+      {activeSection === 'approvals' && <ApprovalsSettings />}
+      {activeSection === 'zalo' && <ZaloSettings />}
     </>
   );
 
@@ -95,7 +103,7 @@ export default function SettingsView() {
             onClick={() => setView('agent')}
           >
             <ChevronLeft className="h-4 w-4" />
-            <span className="text-xs">Back</span>
+            <span className="text-xs">{t('back')}</span>
           </Button>
           <Select
             value={activeSection}
@@ -112,7 +120,7 @@ export default function SettingsView() {
               ))}
               {codexSections.map((section) => (
                 <SelectItem key={section} value={section}>
-                  Codex: {t(section)}
+                  {t('codexSectionOption', { section: t(section) })}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -178,7 +186,7 @@ export default function SettingsView() {
                       type="button"
                       className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
                     >
-                      <span>Codex</span>
+                      <span>{t('codexGroupLabel')}</span>
                       <ChevronDown
                         className={`h-4 w-4 transition-transform ${codexOpen ? 'rotate-180' : ''}`}
                       />

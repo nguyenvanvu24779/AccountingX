@@ -1,5 +1,6 @@
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -25,6 +26,7 @@ export function SkillGroupsBar({
   onSelectGroup,
   onAddGroup,
 }: SkillGroupsBarProps) {
+  const { t } = useTranslation('skills');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
 
@@ -51,7 +53,7 @@ export function SkillGroupsBar({
           size="icon-sm"
           variant="ghost"
           onClick={() => setDialogOpen(true)}
-          title="New group"
+          title={t('market.newGroup')}
         >
           <Plus />
         </Button>
@@ -67,7 +69,7 @@ export function SkillGroupsBar({
                 : 'border-muted text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground'
             )}
           >
-            All groups
+            {t('market.allGroups')}
           </button>
 
           {groupsConfig.groups.map((g) => (
@@ -94,12 +96,12 @@ export function SkillGroupsBar({
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New Skill Group</DialogTitle>
+            <DialogTitle>{t('market.newSkillGroupTitle')}</DialogTitle>
           </DialogHeader>
           <Input
             value={newGroupName}
             onChange={(e) => setNewGroupName(e.target.value)}
-            placeholder="Group name..."
+            placeholder={t('market.groupNamePlaceholder')}
             autoFocus
             onKeyDown={(e) => {
               if (e.key === 'Enter') void handleSave();
@@ -107,9 +109,9 @@ export function SkillGroupsBar({
           />
           <DialogFooter>
             <Button variant="ghost" onClick={handleCancel}>
-              Cancel
+              {t('market.cancel')}
             </Button>
-            <Button onClick={() => void handleSave()}>Save changes</Button>
+            <Button onClick={() => void handleSave()}>{t('market.saveChanges')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

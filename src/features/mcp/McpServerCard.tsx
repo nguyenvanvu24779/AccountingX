@@ -1,6 +1,7 @@
 import { listen } from '@tauri-apps/api/event';
 import { Edit, KeyRound, Loader2, Trash2 } from 'lucide-react';
 import { type Dispatch, type SetStateAction, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import type { ServerNotification } from '@/bindings/ServerNotification';
 import type { McpAuthStatus, McpServerOauthLoginCompletedNotification } from '@/bindings/v2';
@@ -18,11 +19,11 @@ import {
   unifiedRemoveMcpServer,
 } from '@/services';
 
-const AUTH_STATUS_LABEL: Record<McpAuthStatus, string> = {
-  unsupported: 'No auth',
-  notLoggedIn: 'Not logged in',
-  bearerToken: 'Token',
-  oAuth: 'OAuth',
+const AUTH_STATUS_LABEL_KEY: Record<McpAuthStatus, string> = {
+  unsupported: 'authStatus.noAuth',
+  notLoggedIn: 'authStatus.notLoggedIn',
+  bearerToken: 'authStatus.token',
+  oAuth: 'authStatus.oAuth',
 };
 
 export const getServerProtocol = (config: McpServerConfig): 'stdio' | 'http' | 'sse' =>
@@ -47,6 +48,7 @@ export function McpServerCard({
   authStatus,
   onAuthChanged,
 }: McpServerCardProps) {
+  const { t } = useTranslation('mcp');
   const serverType = getServerProtocol(config);
   const isEnabled = config.enabled ?? true;
   const { openExternalUrl } = useExternalUrl();
@@ -71,9 +73,9 @@ export function McpServerCard({
       }
       setIsAuthorizing(false);
       if (payload.success) {
-        toast.success(`Authorized "${name}"`);
+        toast.success(t('authorizedToast', { name }));
       } else {
-        toast.error(`Authorization failed: ${payload.error ?? 'unknown error'}`);
+        toast.error(t('authorizationFailedToast', { error: payload.error ?? 'unknown error' }));
       }
       onAuthChanged?.();
     });
@@ -81,7 +83,7 @@ export function McpServerCard({
     return () => {
       unlistenPromise.then((unlisten) => unlisten());
     };
-  }, [isAuthorizing, name, onAuthChanged]);
+  }, [isAuthorizing, name, onAuthChanged, t]);
 
   const handleAuthorize = async () => {
     setIsAuthorizing(true);
@@ -93,10 +95,10 @@ export function McpServerCard({
         timeoutSecs: null,
       });
       await openExternalUrl(response.authorizationUrl);
-      toast.info('Complete the authorization in your browser');
+      toast.info(t('completeInBrowser'));
     } catch (error) {
       setIsAuthorizing(false);
-      toast.error('Failed to start authorization: ' + error);
+      toast.error(t('startAuthFailed', { error: String(error) }));
     }
   };
 
@@ -106,7 +108,7 @@ export function McpServerCard({
       await loadServers();
     } catch (error) {
       console.error('Failed to delete MCP server:', error);
-      toast.error('Failed to delete MCP server: ' + error);
+      toast.error(t('deleteFailed', { error: String(error) }));
     }
   };
 
@@ -132,7 +134,7 @@ export function McpServerCard({
       });
     } catch (error) {
       console.error('Failed to update MCP server enabled flag:', error);
-      toast.error('Failed to update MCP server enabled flag: ' + error);
+      toast.error(t('toggleEnabledFailed', { error: String(error) }));
     }
   };
 
@@ -153,7 +155,7 @@ export function McpServerCard({
                       : 'bg-green-500/10 text-green-500'
                 }`}
               >
-                {AUTH_STATUS_LABEL[authStatus]}
+                {t(AUTH_STATUS_LABEL_KEY[authStatus])}
               </Badge>
             )}
           </span>
@@ -171,13 +173,13 @@ export function McpServerCard({
                 ) : (
                   <KeyRound className="h-3.5 w-3.5 mr-1" />
                 )}
-                Authorize
+                {t('authorize')}
               </Button>
             )}
             <Switch
               checked={isEnabled}
               onCheckedChange={(checked) => handleToggleServerEnabled(checked)}
-              aria-label={`Toggle ${name} server`}
+              aria-label={t('toggleServerAria', { name })}
             />
             <Button size="sm" variant="ghost" onClick={() => onEdit(name, config)}>
               <Edit className="h-4 w-4" />

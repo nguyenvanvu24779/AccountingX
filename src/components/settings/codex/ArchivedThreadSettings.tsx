@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ThreadId } from '@/bindings';
 import type { Thread, ThreadListParams, ThreadListResponse } from '@/bindings/v2';
 import { modelProviders } from '@/components/codex/constants';
@@ -11,6 +12,7 @@ import { getFilename } from '@/utils/getFilename';
 const EMPTY_LIST: ThreadListResponse = { data: [], nextCursor: null, backwardsCursor: null };
 
 export function ArchivedThreadSettings() {
+  const { t } = useTranslation('settings');
   const [response, setResponse] = useState<ThreadListResponse>(EMPTY_LIST);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,18 +68,20 @@ export function ArchivedThreadSettings() {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between px-1">
-        <h3 className="text-sm font-medium">Archived Threads</h3>
+        <h3 className="text-sm font-medium">{t('archived')}</h3>
         <Button size="sm" variant="ghost" onClick={loadArchivedThreads} disabled={isLoading}>
-          Refresh
+          {t('archivedSection.refresh')}
         </Button>
       </div>
       <Card>
         <CardContent className="p-4 space-y-3">
           {error ? (
-            <div className="text-xs text-destructive">Failed to load archived threads: {error}</div>
+            <div className="text-xs text-destructive">
+              {t('archivedSection.loadFailed', { error })}
+            </div>
           ) : null}
           {!error && !isLoading && threads.length === 0 ? (
-            <div className="text-xs text-muted-foreground">No archived threads found.</div>
+            <div className="text-xs text-muted-foreground">{t('archivedSection.empty')}</div>
           ) : null}
           {threads.map((thread) => (
             <div
@@ -86,7 +90,7 @@ export function ArchivedThreadSettings() {
             >
               <div className="min-w-0 space-y-1">
                 <div className="text-sm font-medium truncate">
-                  {thread.preview || 'Untitled thread'}
+                  {thread.preview || t('archivedSection.untitledThread')}
                 </div>
                 <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                   <span>{formatThreadAge(thread.createdAt ?? 0)}</span>
@@ -99,11 +103,13 @@ export function ArchivedThreadSettings() {
                 onClick={() => handleUnarchive(thread.id)}
                 disabled={isLoading}
               >
-                Unarchive
+                {t('archivedSection.unarchive')}
               </Button>
             </div>
           ))}
-          {isLoading ? <div className="text-xs text-muted-foreground">Loading...</div> : null}
+          {isLoading ? (
+            <div className="text-xs text-muted-foreground">{t('archivedSection.loading')}</div>
+          ) : null}
         </CardContent>
       </Card>
     </section>

@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCodexStore } from '@/components/codex/stores';
 import { gitRemoveWorktree } from '@/services/apiAdapt/git';
 import { codexService } from '@/services/codexService';
@@ -34,6 +35,7 @@ function ColumnLabel({
 }
 
 export default function TasksPanel() {
+  const { t } = useTranslation('agent');
   const { cards, removeCard, setCurrentAgentCardId, currentAgentCardId } = useAgentCenterStore();
   const { switchToSession, sessionLoadingMap, activeSessionId, setActiveSessionId } = useCCStore();
   const { threadStatusMap, currentThreadId } = useCodexStore();
@@ -85,11 +87,11 @@ export default function TasksPanel() {
     <div className="flex flex-row h-full w-full min-w-0 overflow-hidden">
       {/* Running section */}
       <div className="flex-1 min-w-0 flex flex-col border-r border-white/10">
-        <ColumnLabel dot="green" label="Running" count={runningCards.length} />
+        <ColumnLabel dot="green" label={t('running')} count={runningCards.length} />
         <div className="flex-1 min-h-0 overflow-y-auto p-2 flex flex-col gap-2">
           {runningCards.length === 0 ? (
             <div className="flex h-full items-center justify-center text-xs text-muted-foreground/40 py-4">
-              No running agents
+              {t('noRunningAgents')}
             </div>
           ) : (
             runningCards.map((card) => (
@@ -119,11 +121,11 @@ export default function TasksPanel() {
 
       {/* Idle section */}
       <div className="flex-1 min-w-0 flex flex-col">
-        <ColumnLabel dot="muted" label="Idle" count={idleCards.length} />
+        <ColumnLabel dot="muted" label={t('idle')} count={idleCards.length} />
         <div className="flex-1 min-h-0 overflow-y-auto p-2 flex flex-col gap-2">
           {idleCards.length === 0 ? (
             <div className="flex h-full items-center justify-center text-xs text-muted-foreground/40 py-4">
-              No idle agents
+              {t('noIdleAgents')}
             </div>
           ) : (
             idleCards.map((card) => (

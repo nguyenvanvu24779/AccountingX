@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { init as initPptxPreviewer } from 'pptx-preview';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Document, Page, pdfjs } from 'react-pdf';
 import * as XLSX from 'xlsx';
 import { Button } from '@/components/ui/button';
@@ -89,6 +90,7 @@ interface OfficeViewProps {
 }
 
 export function OfficeView({ filePath }: OfficeViewProps) {
+  const { t } = useTranslation('explorer');
   const { resolvedTheme } = useThemeContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -206,7 +208,7 @@ export function OfficeView({ filePath }: OfficeViewProps) {
       <div className="flex flex-1 items-center justify-center p-6 text-center">
         <div className="max-w-md">
           <p className="mb-2 text-sm text-destructive">{error}</p>
-          <p className="text-xs text-muted-foreground">Path: {filePath}</p>
+          <p className="text-xs text-muted-foreground">{t('pathLabel', { path: filePath })}</p>
         </div>
       </div>
     );
@@ -249,7 +251,7 @@ export function OfficeView({ filePath }: OfficeViewProps) {
               className="h-6 w-6"
               onClick={() => setScale((prev) => Math.max(prev - 0.1, 0.5))}
               disabled={scale <= 0.5}
-              title="Zoom out"
+              title={t('zoomOut')}
             >
               <ZoomOut className="h-3.5 w-3.5" />
             </Button>
@@ -262,7 +264,7 @@ export function OfficeView({ filePath }: OfficeViewProps) {
               className="h-6 w-6"
               onClick={() => setScale((prev) => Math.min(prev + 0.1, 2.0))}
               disabled={scale >= 2.0}
-              title="Zoom in"
+              title={t('zoomIn')}
             >
               <ZoomIn className="h-3.5 w-3.5" />
             </Button>
@@ -272,7 +274,7 @@ export function OfficeView({ filePath }: OfficeViewProps) {
               size="icon"
               className="h-6 w-6"
               onClick={() => setScale(1.0)}
-              title="Reset zoom"
+              title={t('resetZoom')}
             >
               <RotateCcw className="h-3.5 w-3.5" />
             </Button>
@@ -316,7 +318,7 @@ export function OfficeView({ filePath }: OfficeViewProps) {
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
               }
-              error={<p className="p-6 text-sm text-destructive">Failed to load PDF document.</p>}
+              error={<p className="p-6 text-sm text-destructive">{t('pdfLoadFailed')}</p>}
               className="flex flex-col gap-4"
             >
               {Array.from({ length: numPages ?? 0 }, (_, index) => (

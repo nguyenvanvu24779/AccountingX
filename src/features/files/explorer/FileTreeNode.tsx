@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronRight, FileText, FolderPlus, Plus } from 'lucide-react';
 import { defaultStyles, FileIcon } from 'react-file-icon';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { isTauri } from '@/hooks/runtime';
 import { useEditorStore, useInputStore, useLayoutStore, useWorkspaceStore } from '@/stores';
@@ -27,6 +28,7 @@ export function FileTreeNode({
   onLoadChildren,
   onFileSelect,
 }: FileTreeNodeProps) {
+  const { t } = useTranslation('explorer');
   const { selectedFilePath, setSelectedFilePath } = useEditorStore();
   const { addProject } = useWorkspaceStore();
   const { setRightPanelOpen, setActiveRightPanelTab } = useLayoutStore();
@@ -102,9 +104,9 @@ export function FileTreeNode({
                 onClick={handleInsert}
                 variant="ghost"
                 size="icon"
-                title={`Insert ${node.name}`}
+                title={t('insert', { name: node.name })}
                 className="absolute inset-0 h-4 w-4 min-h-0 min-w-0 rounded-sm border border-border bg-background p-0 text-foreground opacity-0 transition-opacity group-hover/file-row:opacity-100"
-                aria-label={`Insert ${node.name}`}
+                aria-label={t('insert', { name: node.name })}
               >
                 <Plus className="h-3.5 w-3.5" />
               </Button>
@@ -127,9 +129,9 @@ export function FileTreeNode({
                 onClick={handleInsert}
                 variant="ghost"
                 size="icon"
-                title={`Insert ${node.name}`}
+                title={t('insert', { name: node.name })}
                 className="absolute inset-0 h-4 w-4 min-h-0 min-w-0 rounded-none p-0 text-muted-foreground opacity-0 transition-opacity group-hover/file-row:opacity-100"
-                aria-label={`Insert ${node.name}`}
+                aria-label={t('insert', { name: node.name })}
               >
                 <Plus className="h-3.5 w-3.5" />
               </Button>
@@ -149,15 +151,15 @@ export function FileTreeNode({
               e.stopPropagation();
               addProject(node.path);
             }}
-            title="Add as project"
-            aria-label="Add as project"
+            title={t('addAsProject')}
+            aria-label={t('addAsProject')}
           >
             <FolderPlus className="h-3.5 w-3.5" />
           </Button>
         )}
 
         {isLoadingChildren && (
-          <span className="ml-auto text-xs text-muted-foreground">Loading...</span>
+          <span className="ml-auto text-xs text-muted-foreground">{t('loadingShort')}</span>
         )}
       </div>
 

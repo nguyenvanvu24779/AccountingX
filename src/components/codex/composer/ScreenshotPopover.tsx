@@ -1,6 +1,7 @@
 import { Camera, Monitor, Square } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   getMonitorScreenshot,
   getScreenshotableMonitors,
@@ -17,6 +18,7 @@ interface ScreenshotPopoverProps {
 }
 
 export const ScreenshotPopover: React.FC<ScreenshotPopoverProps> = ({ onScreenshotTaken }) => {
+  const { t } = useTranslation('composer');
   const [isOpen, setIsOpen] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [windows, setWindows] = useState<ScreenshotableWindow[]>([]);
@@ -132,33 +134,33 @@ export const ScreenshotPopover: React.FC<ScreenshotPopoverProps> = ({ onScreensh
           disabled={isCapturing}
         >
           <Camera className="w-4 h-4" />
-          <span>Screenshot</span>
+          <span>{t('screenshot.button')}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="p-2 w-full">
         <div className="space-y-2">
           {isLoading ? (
-            <div className="text-sm text-muted-foreground px-2 py-1">Loading...</div>
+            <div className="text-sm text-muted-foreground px-2 py-1">{t('loading')}</div>
           ) : (
             <>
               <div className="max-w-xs p-3 rounded-lg border bg-card">
                 <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-3">
-                  Setup Instructions
+                  {t('screenshot.setupInstructions')}
                 </div>
 
                 <ol className="relative space-y-4 ml-2 border-l border-muted pb-1">
                   {[
-                    'Open Settings',
-                    'Privacy & Security',
-                    'Screen & System Audio Recording',
-                    'Add App',
-                  ].map((step, index) => (
-                    <li key={step} className="relative pl-6">
+                    'screenshot.stepOpenSettings',
+                    'screenshot.stepPrivacySecurity',
+                    'screenshot.stepScreenRecording',
+                    'screenshot.stepAddApp',
+                  ].map((stepKey, index) => (
+                    <li key={stepKey} className="relative pl-6">
                       <span className="absolute left-[-13px] flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold border-4 border-card">
                         {index + 1}
                       </span>
                       <span className="text-sm font-medium text-foreground leading-6 whitespace-nowrap">
-                        {step}
+                        {t(stepKey)}
                       </span>
                     </li>
                   ))}
@@ -168,7 +170,7 @@ export const ScreenshotPopover: React.FC<ScreenshotPopoverProps> = ({ onScreensh
               {monitors.length > 0 && (
                 <div>
                   <div className="text-xs text-muted-foreground px-2 py-1 font-medium">
-                    Monitors
+                    {t('screenshot.monitors')}
                   </div>
                   <div className="space-y-1">
                     {monitors.map((monitor) => (
@@ -190,7 +192,9 @@ export const ScreenshotPopover: React.FC<ScreenshotPopoverProps> = ({ onScreensh
               {/* Windows section */}
               {windows.length > 0 && (
                 <div className={monitors.length > 0 ? 'border-t pt-2' : ''}>
-                  <div className="text-xs text-muted-foreground px-2 py-1 font-medium">Windows</div>
+                  <div className="text-xs text-muted-foreground px-2 py-1 font-medium">
+                    {t('screenshot.windows')}
+                  </div>
                   <div className="max-h-48 overflow-y-auto space-y-1">
                     {windows.map((window) => (
                       <Button
@@ -214,7 +218,7 @@ export const ScreenshotPopover: React.FC<ScreenshotPopoverProps> = ({ onScreensh
 
               {monitors.length === 0 && windows.length === 0 && !isLoading && (
                 <div className="text-sm text-muted-foreground px-2 py-1">
-                  No screenshots available
+                  {t('screenshot.noScreenshots')}
                 </div>
               )}
             </>

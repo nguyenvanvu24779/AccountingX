@@ -61,12 +61,13 @@ export function SideBarAgentHeader() {
 
 /** Project-specific sorting and creation actions. */
 export function SideBarProjectActions() {
+  const { t } = useTranslation('sidebar');
   const { selectedAgent } = useAgentSettingsStore();
   const { open: isSidebarOpen } = useSidebar();
   const { sortKey, setSortKey } = useThreadList({
     enabled: isSidebarOpen && selectedAgent === 'codex',
   });
-  const currentThreadSortLabel = sortKey === 'created_at' ? 'Created' : 'Updated';
+  const currentThreadSortLabel = sortKey === 'created_at' ? t('sortCreated') : t('sortUpdated');
 
   return (
     <div className="flex items-center justify-end gap-1">
@@ -76,7 +77,7 @@ export function SideBarProjectActions() {
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            title={`Filter threads (current: ${currentThreadSortLabel})`}
+            title={t('filterThreads', { sort: currentThreadSortLabel })}
           >
             <ListFilter className="h-4 w-4" />
           </Button>
@@ -86,8 +87,8 @@ export function SideBarProjectActions() {
             value={sortKey}
             onValueChange={(v) => setSortKey(v as 'created_at' | 'updated_at')}
           >
-            <DropdownMenuRadioItem value="created_at">Sort by Created</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="updated_at">Sort by Updated</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="created_at">{t('sortByCreated')}</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="updated_at">{t('sortByUpdated')}</DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>

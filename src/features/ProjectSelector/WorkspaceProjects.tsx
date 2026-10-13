@@ -1,4 +1,5 @@
 import { Check, Folder } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import { getFilename } from '@/utils/getFilename';
@@ -10,10 +11,11 @@ type WorkspaceProjectsProps = {
 };
 
 export function WorkspaceProjects({ projects, cwd, onSelectProject }: WorkspaceProjectsProps) {
+  const { t } = useTranslation('project');
   return (
     <CommandList className="max-h-[360px]">
       {projects.length > 0 && (
-        <CommandGroup heading="Select project">
+        <CommandGroup heading={t('selectProjectHeading')}>
           {projects.map((projectPath) => {
             const isSelected = cwd === projectPath;
             return (
@@ -36,7 +38,7 @@ export function WorkspaceProjects({ projects, cwd, onSelectProject }: WorkspaceP
         </CommandGroup>
       )}
 
-      {projects.length === 0 && <CommandEmpty>No workspace projects found</CommandEmpty>}
+      {projects.length === 0 && <CommandEmpty>{t('noWorkspaceProjects')}</CommandEmpty>}
     </CommandList>
   );
 }

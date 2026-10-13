@@ -1,7 +1,7 @@
-import { EDITION } from '@/lib/edition';
 import { open as openDialog } from '@tauri-apps/plugin-dialog';
 import { Clock3, FolderPlus, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -15,6 +15,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BrowserProjects } from '@/features/ProjectSelector/BrowserProjects';
 import { isDesktopTauri } from '@/hooks/runtime';
+import { EDITION } from '@/lib/edition';
 import { cn } from '@/lib/utils';
 import { codexService } from '@/services/codexService';
 import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
@@ -23,6 +24,7 @@ import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { getFilename } from '@/utils/getFilename';
 
 export function HistoryProjectsDialog() {
+  const { t } = useTranslation('project');
   const { projects, historyProjects, setCwd, addProject } = useWorkspaceStore();
   const { selectedAgent, setSelectedAgent } = useAgentSettingsStore();
   const { setView, setActiveSidebarTab } = useLayoutStore();
@@ -129,7 +131,7 @@ export function HistoryProjectsDialog() {
       <DialogContent showCloseButton={projects.length > 0}>
         <DialogHeader>
           <DialogTitle className="flex justify-between">
-            Select a project
+            {t('selectAProject')}
             {browseMode && (
               <Button
                 variant="ghost"
@@ -143,9 +145,7 @@ export function HistoryProjectsDialog() {
           </DialogTitle>
 
           <DialogDescription>
-            {browseMode
-              ? 'Browse and select a folder to add as a new project.'
-              : 'AccountingX will be able to edit files and run commands in selected folders. You can select multiple history projects and continue.'}
+            {browseMode ? t('browseSelectFolderNew') : t('canEditDescription')}
           </DialogDescription>
         </DialogHeader>
         {browseMode ? (
@@ -171,8 +171,10 @@ export function HistoryProjectsDialog() {
                 className="w-auto"
               >
                 <TabsList>
-                  <TabsTrigger value="codex">Codex</TabsTrigger>
-                  {EDITION.claudeAgent && <TabsTrigger value="cc">Claude Agent</TabsTrigger>}
+                  <TabsTrigger value="codex">{t('codexTab')}</TabsTrigger>
+                  {EDITION.claudeAgent && (
+                    <TabsTrigger value="cc">{t('claudeAgentTab')}</TabsTrigger>
+                  )}
                 </TabsList>
               </Tabs>
             </div>
@@ -184,10 +186,13 @@ export function HistoryProjectsDialog() {
                   onCheckedChange={toggleSelectAll}
                   disabled={!hasHistoryProjects}
                 />
-                <span className="text-sm font-medium">Select all</span>
+                <span className="text-sm font-medium">{t('selectAll')}</span>
               </div>
               <span className="text-xs text-muted-foreground">
-                {selectedProjects.length}/{historyOnlyProjects.length} selected
+                {t('selectedCount', {
+                  selected: selectedProjects.length,
+                  total: historyOnlyProjects.length,
+                })}
               </span>
             </div>
 
@@ -195,7 +200,7 @@ export function HistoryProjectsDialog() {
               <div className="p-2">
                 {historyOnlyProjects.length === 0 ? (
                   <p className="px-2 py-6 text-sm text-muted-foreground">
-                    No history projects found.
+                    {t('noHistoryProjects')}
                   </p>
                 ) : (
                   <div className="flex flex-col gap-1">
@@ -230,7 +235,7 @@ export function HistoryProjectsDialog() {
                 onClick={() => void handleAddProject()}
               >
                 <FolderPlus className="h-4 w-4" />
-                Add new project
+                {t('addNewProjectSentence')}
               </Button>
               <Button
                 variant="ghost"
@@ -238,13 +243,13 @@ export function HistoryProjectsDialog() {
                 disabled={selectedProjects.length === 0 || isContinuing}
                 onClick={() => void handleContinue()}
               >
-                {isContinuing ? 'Continuing...' : 'Continue'}
+                {isContinuing ? t('continuing') : t('continueBtn')}
               </Button>
             </div>
 
             <div className="flex justify-center">
               <Button variant="ghost" className="h-8" onClick={() => setOpen(false)}>
-                Skip
+                {t('skip')}
               </Button>
             </div>
           </div>

@@ -2,7 +2,6 @@ import { BarChart2, CheckCircle2, KeyRound, Plus, Settings, User, Users } from '
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import OpenAIIcon from '@/assets/openai.svg';
-import type { Account } from '@/bindings/v2';
 import { CodexAuthDialog } from '@/components/codex/CodexAuthDialog';
 import { useCodexStore } from '@/components/codex/stores';
 import { Button } from '@/components/ui/button';
@@ -15,20 +14,6 @@ import {
 } from '@/services';
 import { useLayoutStore } from '@/stores';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
-
-function accountLabel(account: Account | null): string | null {
-  if (!account) return null;
-  switch (account.type) {
-    case 'chatgpt':
-      return account.email ?? 'ChatGPT';
-    case 'apiKey':
-      return 'API Key';
-    case 'amazonBedrock':
-      return 'Amazon Bedrock';
-    default:
-      return null;
-  }
-}
 
 export function UserInfo() {
   const { setView } = useLayoutStore();
@@ -90,14 +75,21 @@ export function UserInfo() {
     } catch (error) {
       console.error('Failed to switch account:', error);
       setSwitchError(
-        `${error instanceof Error ? error.message : String(error)} — sign in to this account again.`
+        t('switchFailed', { error: error instanceof Error ? error.message : String(error) })
       );
     } finally {
       setSwitchingLabel(null);
     }
   };
 
-  const label = accountLabel(account);
+  const label =
+    account?.type === 'chatgpt'
+      ? (account.email ?? t('chatgptFallback'))
+      : account?.type === 'apiKey'
+        ? t('apiKeyLabel')
+        : account?.type === 'amazonBedrock'
+          ? t('amazonBedrockLabel')
+          : null;
   const plan = account?.type === 'chatgpt' ? account.planType : null;
   // The backend matches on auth.json's account_id; fall back to the live
   // account's email so older snapshots still get the current marker.
@@ -133,7 +125,7 @@ export function UserInfo() {
                 <Separator className="my-1" />
                 <div className="flex items-center gap-2 px-2 py-1">
                   <Users className="h-4 w-4" />
-                  <p className="text-xs text-muted-foreground">Accounts</p>
+                  <p className="text-xs text-muted-foreground">{t('accounts')}</p>
                 </div>
                 {savedAccounts.map((acc) => (
                   <Button
@@ -165,7 +157,7 @@ export function UserInfo() {
               }}
             >
               {label ? <Plus className="h-4 w-4" /> : <KeyRound className="h-4 w-4" />}
-              {label ? 'Add Account' : 'ChatGPT Login'}
+              {label ? t('addAccount') : t('chatgptLogin')}
             </Button>
             <Separator className="my-1" />
             <Button

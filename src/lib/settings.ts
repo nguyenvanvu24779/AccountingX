@@ -1,5 +1,5 @@
 /**
- * Persistent settings backed by ~/.codexia/settings.json
+ * Persistent settings backed by ~/.accountingx/settings.json
  *
  * Usage:
  *   - Call loadSettings() before rendering the app (hydrates all stores from file)
@@ -10,9 +10,12 @@
 import { getHomeDirectory, readTextFile, writeFile } from '@/services/apiAdapt';
 import { fetchRemoteSettings } from '@/services/apiAdapt/settings';
 import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
+import type { Company } from '@/stores/useWorkspaceStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 
-const SETTINGS_FILE = '/.codexia/settings.json';
+const SETTINGS_FILE = '/.accountingx/settings.json';
+/** Pre-fork Codexia data dir; read once to migrate projects/history, never written. */
+const LEGACY_SETTINGS_FILE = '/.codexia/settings.json';
 const SETTINGS_VERSION = 1;
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -24,6 +27,7 @@ type WorkspaceData = {
   cwd: string | undefined;
   projectSort: string;
   instructionType: string;
+  companies: Company[];
 };
 
 interface SettingsFile {
@@ -44,14 +48,17 @@ async function getFilePath(): Promise<string> {
   return filePath;
 }
 
-async function readSettingsFile(): Promise<SettingsFile | null> {
+async function readSettingsFileAt(path: string): Promise<SettingsFile | null> {
   try {
-    const path = await getFilePath();
     const raw = await readTextFile(path, { suppressToast: true });
     return JSON.parse(raw) as SettingsFile;
   } catch {
     return null;
   }
+}
+
+async function readSettingsFile(): Promise<SettingsFile | null> {
+  return readSettingsFileAt(await getFilePath());
 }
 
 // ── Hydration ─────────────────────────────────────────────────────────────────
@@ -64,6 +71,7 @@ function applySettings(data: SettingsFile): void {
       ...(ws.historyProjects !== undefined && { historyProjects: ws.historyProjects }),
       ...(ws.cwd !== undefined && { cwd: ws.cwd }),
       ...(ws.projectSort !== undefined && { projectSort: ws.projectSort as never }),
+      ...(ws.companies !== undefined && { companies: ws.companies }),
     });
     useAgentSettingsStore.setState({
       ...(ws.selectedAgent !== undefined && { selectedAgent: ws.selectedAgent as never }),
@@ -73,7 +81,21 @@ function applySettings(data: SettingsFile): void {
 }
 
 export async function loadSettings(): Promise<void> {
-  const data = await readSettingsFile();
+  let data = await readSettingsFile();
+  if (!data) {
+    // One-time migration: carry projects/history over from the pre-fork
+    // Codexia data dir, then start writing to ~/.accountingx from now on.
+    const legacyPath = (await getHomeDirectory()) + LEGACY_SETTINGS_FILE;
+    const legacy = await readSettingsFileAt(legacyPath);
+    if (legacy) {
+      data = legacy;
+      try {
+        await writeFile(await getFilePath(), JSON.stringify(legacy, null, 2));
+      } catch (err) {
+        console.error('[settings] migration write failed:', err);
+      }
+    }
+  }
   if (!data) return;
   applySettings(data);
 }
@@ -117,6 +139,7 @@ function snapshot(): SettingsFile {
       cwd: ws.cwd ?? undefined,
       projectSort: ws.projectSort,
       instructionType: as.instructionType,
+      companies: ws.companies,
     },
   };
 }
