@@ -6,7 +6,7 @@ interface AccountingApprovalsStore {
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
-  respond: (shortCode: string, approve: boolean, approverId?: string) => Promise<void>;
+  respond: (shortCode: string, approve: boolean) => Promise<void>;
 }
 
 /**
@@ -30,8 +30,8 @@ export const useAccountingApprovalsStore = create<AccountingApprovalsStore>((set
     }
   },
 
-  respond: async (shortCode, approve, approverId) => {
-    await respondApproval({ shortCode, approve, approverId });
+  respond: async (shortCode, approve) => {
+    await respondApproval({ shortCode, approve });
     set((state) => ({
       pending: state.pending.filter((ticket) => ticket.shortCode !== shortCode),
     }));

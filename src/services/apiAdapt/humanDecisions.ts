@@ -1,0 +1,37 @@
+import type { ApprovalTicket } from './approvals';
+import { invokeTauri, isDesktopTauri } from './shared';
+import type { ZaloApprover } from './zalo';
+
+/*
+ * Decisions only a person may make. They go through Tauri commands, never the
+ * local HTTP API: anything on this machine can call that API — including an
+ * agent's shell — and an agent must never approve its own request or add
+ * itself to the Zalo approver whitelist.
+ */
+
+function requireDesktop() {
+  if (!isDesktopTauri()) {
+    throw new Error('Chỉ thực hiện được trong ứng dụng AccountingX trên máy tính.');
+  }
+}
+
+export async function respondApproval(params: { shortCode: string; approve: boolean }) {
+  requireDesktop();
+  return await invokeTauri<ApprovalTicket>('approval_respond', params);
+}
+
+export async function zaloAddApprover(params: {
+  zaloUserId: string;
+  displayName: string;
+  botId?: string;
+  canApprove?: boolean;
+  canCommand?: boolean;
+}) {
+  requireDesktop();
+  return await invokeTauri<ZaloApprover>('zalo_add_approver', params);
+}
+
+export async function zaloRemoveApprover(zaloUserId: string) {
+  requireDesktop();
+  await invokeTauri<null>('zalo_remove_approver', { zaloUserId });
+}

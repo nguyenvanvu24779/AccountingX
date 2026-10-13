@@ -1,8 +1,8 @@
 # AccountingX — Tài liệu bàn giao cho AI tiếp theo
 
-> Ngày lập: 2026-10-09. Cập nhật lần gần nhất: 2026-10-10 (mục 11, 12).
+> Ngày lập: 2026-10-09. Cập nhật lần gần nhất: 2026-10-13 (mục 13).
 > Mục đích: để một phiên AI khác (Claude Code, Codex, hoặc người thật) tiếp tục dự án mà không mất ngữ cảnh.
-> **Đọc theo thứ tự ngược**: mục 12 mới nhất → mục 11 → các mục 1-10 là nền/lộ trình gốc, vẫn đúng trừ khi mục 11/12 ghi đè.
+> **Đọc theo thứ tự ngược**: mục 13 mới nhất → mục 12 → mục 11 → các mục 1-10 là nền/lộ trình gốc, vẫn đúng trừ khi mục 11/12 ghi đè.
 
 ---
 
@@ -117,6 +117,8 @@ Lỗi đã gặp & cách xử lý (để khỏi lặp lại):
 Tùy chọn về sau: sửa lỗi bảo mật ở dự án cũ (path traversal, tunnel, xoay key, whitelist Zalo).
 
 ## 8. Quyết định còn mở (cần hỏi người dùng)
+
+> **2026-10-13 — đã chốt phần lớn, xem mục 13.1.** Các mục dưới đây giữ lại để tham chiếu.
 
 1. Danh sách **người được duyệt qua Zalo** (bước E).
 2. Bộ cài nặng (≥ ~400 MB vì Codex 317 MB). Có muốn **tải Codex lúc cài lần đầu** (nhẹ hơn nhưng cần mạng) không?
@@ -267,3 +269,38 @@ Quyết định đã chốt với người dùng: **chỉ gửi** (không đọc
 - `src/features/mcp/appPresets.ts` đã quay lại đúng trạng thái trước khi có Playwright-MCP (8 preset, không có Playwright) — đừng thêm lại trừ khi được yêu cầu rõ.
 - Các lệnh `/api/zalo/*`, `/api/approvals/*` đã đăng ký trong `web/src/router.rs` và có test `router::tests::every_route_path_is_registered_once` tự bắt lỗi trùng route — chạy `cargo test -p codexia-web` sau khi thêm route mới.
 - 2 lỗi clippy có sẵn từ trước ở `crates/codex/src/runtime.rs:72-78` (collapsible_if, useless_conversion) **vẫn chưa sửa, cố ý** — không liên quan việc đang làm, đừng tự sửa nếu không được yêu cầu.
+
+## 13. Phiên Claude Code 2026-10-13 — commit + gia cố cổng duyệt
+
+### 13.1 Quyết định người dùng đã chốt (không hỏi lại)
+
+- Công ty chưa có MST: **bỏ qua**. MST là bắt buộc, không làm fallback.
+- Codex và các runtime cần thiết: **đóng sẵn trong bộ cài**, không tải khi cài.
+- Phát hành: **chỉ dùng nội bộ**, kết hợp tài khoản ChatGPT sẵn có. Không lo cấp phép phân phối công khai ở giai đoạn này.
+- Chứng chỉ ký mã, hosting updater, tra nhãn hiệu: **chưa có**. Updater vẫn tắt; không chặn việc khác vì các mục này.
+- Câu 8.1 (danh sách người duyệt Zalo) vẫn mở, nhưng người dùng tự nhập trong Settings → Zalo.
+
+### 13.2 Git
+
+- Toàn bộ thay đổi cũ đã commit trên nhánh **`accountingx/approvals-company-zalo`** (chưa merge vào `main`, chưa push).
+- Hook pre-commit (biome + tsc) chạy đầy đủ, **không dùng `--no-verify`**. Đã sửa 13 lỗi `useExhaustiveDependencies` do đợt dịch i18n gây ra (thiếu `t` trong deps).
+- `Cargo.lock` vẫn để ngoài commit theo quy ước.
+
+### 13.3 Cổng duyệt (approval gate) giờ là chặn thật, không chỉ là lời dặn
+
+Trước đây phiếu duyệt chỉ là bản ghi; `send_email` chỉ "dặn" AI. Hai lỗ hổng đã đóng:
+
+1. **AI tự duyệt được**: server `127.0.0.1:7419` miễn token cho loopback, mà agent chạy shell trên cùng máy. Đã **gỡ** `/api/approvals/respond` và `/api/zalo/approvers/{add,remove}` khỏi HTTP. Thay bằng Tauri command `approval_respond`, `zalo_add_approver`, `zalo_remove_approver` (`src-tauri/src/commands/approvals.rs`), chỉ webview gọi được. Frontend gom vào `src/services/apiAdapt/humanDecisions.ts` (được khai báo native-only trong `routes.test.ts`). Zalo vẫn duyệt được vì gọi DB trong tiến trình.
+2. **Duyệt A nhưng làm B / dùng lại**: phiếu giờ có `payload` (nội dung chính xác của hành động, lưu dạng JSON chuẩn hoá khoá) và `consumed_at`. Route mới `/api/approvals/consume` → `codexia_db::approvals::consume_approval(code, kind, payload)` chỉ thành công khi: đã duyệt, đúng loại, **đúng y nội dung**, trong 24 giờ, chưa dùng. Một câu `UPDATE … RETURNING` nên không bị race. Lỗi trả về câu giải thích cho agent (đang chờ / bị từ chối / đã dùng / hết hạn / khác nội dung).
+- UI "Chờ duyệt" hiển thị đầy đủ payload (người nhận / tiêu đề / nội dung), không chỉ dòng tóm tắt do AI viết.
+- MCP Gmail (`bots/gmail-send/server.js`): 2 tool `request_email_approval` → tạo phiếu, và `send_email(…, approvalCode)` → consume trước rồi mới gửi. Thêm kiểm tra `to` là 1 địa chỉ, `subject` 1 dòng (chặn chèn header).
+- **Mẫu cho MISA**: khi làm playbook ghi MISA, dùng đúng cơ chế này với `kind: misaAction` — tool thực thi phải tự gọi consume với payload chứng từ, không dựa vào lời dặn.
+- Đã kiểm thử: 6 unit test Rust mới (`crates/db/src/approvals.rs`); clippy `-D warnings` sạch cho db/web/codex/codexia; `tsc`; 59/59 Vitest; test sống bằng curl trên `bun tauri dev` (xem 13.4).
+- Phụ: sửa 2 lỗi clippy cũ ở `crates/codex/src/runtime.rs` và `DictationState::default()` → `new()` trong `src-tauri/src/lib.rs` (chặn clippy toàn crate; không đổi hành vi).
+
+### 13.4 Rủi ro còn lại (đã biết, chưa xử lý)
+
+- **Lệnh Zalo đi qua bot ACP/keke** (`web/src/zalo_routing.rs` → `run_bot_unattended`), không qua Codex. Bot `trust_level = "autonomous"` tự cho phép mọi tool. Cần quyết định: chuyển sang Codex App Server, hoặc buộc lệnh Zalo tạo phiếu `zaloCommand` trước khi chạy.
+- Ai đọc được `~/.accountingx/gmail/token.json` có thể gọi thẳng Gmail API, vượt qua MCP. Cần chặn sandbox agent đọc thư mục này.
+- `/api/approvals/create` vẫn mở trên loopback (cố ý — agent cần tạo phiếu). Có thể bị spam phiếu nhưng không tự duyệt được.
+

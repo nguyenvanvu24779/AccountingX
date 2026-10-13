@@ -1,7 +1,7 @@
 # Gmail-send MCP server
 
-A minimal MCP server with exactly one tool, `send_email`, scoped to the
-`gmail.send` OAuth permission only. It cannot read mail, list messages, or
+A minimal MCP server with two tools, `request_email_approval` and
+`send_email`, scoped to the `gmail.send` OAuth permission only. It cannot read mail, list messages, or
 do anything else — deliberately, since AccountingX's Email skill (V1) is
 send-only.
 
@@ -67,13 +67,24 @@ real end user.
 
 ## The safety contract
 
-`send_email` has no undo and no confirmation dialog of its own — by design,
-MCP tools don't have one. The contract lives one layer up, in how the agent
-is instructed to use it: draft the email, create an approval ticket (kind
-`emailSend`, via `/api/approvals/create`) with the draft as evidence, and
-only call `send_email` after that ticket is approved. This is a prompt-level
-rule enforced by the agent's own instructions, not a hard gate in this
-server — the same way `AGENTS.md` already asks the agent never to post a
-ledger entry on its own. Until a Skill is written and installed for this
-(not done yet — see the session's own open items), state this rule directly
-in the bot's system prompt if you wire this server into one.
+The approval is enforced by this server, not left to the model:
+
+1. `request_email_approval(to, subject, body, summary)` files an `emailSend`
+   ticket in AccountingX holding the exact email, and returns a 6-digit code.
+2. A person approves it in AccountingX (Settings → Chờ duyệt, which shows the
+   full recipient, subject and body) or by replying `<code> duyệt` on Zalo.
+3. `send_email(to, subject, body, approvalCode)` asks AccountingX to spend the
+   approval (`/api/approvals/consume`). It only succeeds when that code was
+   approved for exactly this email, within 24 hours, and never used before.
+   Otherwise nothing is sent and the error says why.
+
+The agent cannot approve its own request: deciding a ticket is not on the
+local HTTP API at all — only the desktop UI (via a Tauri command) and
+whitelisted Zalo approvers can do it.
+
+Requires AccountingX running (its local server on `127.0.0.1:7419`; override
+with `ACCOUNTINGX_API_URL`).
+
+Known limit: whoever can read the OAuth token in `~/.accountingx/gmail/` could
+call the Gmail API directly, bypassing this server. Keep the agent's sandbox
+from reading that folder.

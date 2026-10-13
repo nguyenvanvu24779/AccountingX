@@ -87,6 +87,20 @@ pub(crate) fn init_approval_tickets_table(conn: &Connection) -> Result<(), Strin
     )
     .map_err(|e| format!("Failed to create approval_tickets code index: {}", e))?;
 
+    // Added after the table shipped: the exact action a ticket approves, and
+    // when that approval was spent, so one "yes" can't be replayed or reused
+    // for a different action.
+    for (column, ddl) in [
+        ("payload", "ALTER TABLE approval_tickets ADD COLUMN payload TEXT"),
+        ("consumed_at", "ALTER TABLE approval_tickets ADD COLUMN consumed_at TEXT"),
+    ] {
+        if let Err(err) = conn.execute(ddl, [])
+            && !err.to_string().contains("duplicate column name")
+        {
+            return Err(format!("Failed to add approval_tickets.{column} column: {err}"));
+        }
+    }
+
     Ok(())
 }
 

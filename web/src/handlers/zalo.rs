@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::{Json, extract::State as AxumState};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 use codexia_db::zalo_approvers::ZaloApprover;
 use codexia_shared::zalo::ZaloSidecar;
@@ -88,51 +88,10 @@ async fn status(state: &WebServerState) -> Result<Json<ZaloStatus>, ErrorRespons
     }))
 }
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub(crate) struct AddApproverParams {
-    zalo_user_id: String,
-    display_name: String,
-    #[serde(default)]
-    bot_id: Option<String>,
-    #[serde(default = "default_true")]
-    can_approve: bool,
-    #[serde(default)]
-    can_command: bool,
-}
-
-fn default_true() -> bool {
-    true
-}
-
-#[derive(Deserialize)]
-pub(crate) struct ApproverIdParams {
-    #[serde(rename = "zaloUserId")]
-    zalo_user_id: String,
-}
+// Adding or removing approvers is not exposed here: whoever can edit the
+// whitelist can approve tickets over Zalo, and an agent's shell can reach this
+// API. The desktop UI manages approvers through Tauri commands instead.
 
 pub(crate) async fn api_zalo_list_approvers() -> Result<Json<Vec<ZaloApprover>>, ErrorResponse> {
     codexia_db::zalo_approvers::list_approvers().map(Json).map_err(err)
-}
-
-pub(crate) async fn api_zalo_add_approver(
-    Json(params): Json<AddApproverParams>,
-) -> Result<Json<ZaloApprover>, ErrorResponse> {
-    codexia_db::zalo_approvers::add_approver(
-        &params.zalo_user_id,
-        &params.display_name,
-        params.bot_id.as_deref(),
-        params.can_approve,
-        params.can_command,
-    )
-    .map(Json)
-    .map_err(err)
-}
-
-pub(crate) async fn api_zalo_remove_approver(
-    Json(params): Json<ApproverIdParams>,
-) -> Result<Json<()>, ErrorResponse> {
-    codexia_db::zalo_approvers::remove_approver(&params.zalo_user_id)
-        .map(Json)
-        .map_err(err)
 }

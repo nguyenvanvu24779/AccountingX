@@ -78,7 +78,7 @@ pub fn run() {
             .manage(WatchState::new())
             .manage(TerminalState::default())
             .manage(SleepState::default())
-            .manage(DictationState::default())
+            .manage(DictationState::new())
             .invoke_handler(tauri::generate_handler![
                 commands::keke_mcp::keke_read_mcp_servers,
                 commands::keke_mcp::keke_add_mcp_server,
@@ -87,6 +87,9 @@ pub fn run() {
                 commands::keke_mcp::keke_mcp_login,
                 commands::keke_mcp::keke_mcp_authorize_github,
                 commands::codex::initialize_codex_async,
+                commands::approvals::approval_respond,
+                commands::approvals::zalo_add_approver,
+                commands::approvals::zalo_remove_approver,
                 commands::dictation::dictation_model_status,
                 commands::dictation::dictation_download_model,
                 commands::dictation::dictation_cancel_download,

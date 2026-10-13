@@ -16,9 +16,9 @@ use super::{
         api_acp_set_mode, api_acp_set_model, api_acp_set_config_option,
         api_acp_load_session, api_acp_list_sessions, api_acp_get_session, api_acp_delete_session,
         api_telemetry_status, api_telemetry_set_consent, api_telemetry_active, api_list_bots, api_create_bot, api_update_bot, api_delete_bot, api_bot_sessions, api_bots_mcp,
-        api_create_approval, api_list_pending_approvals, api_respond_approval,
+        api_create_approval, api_list_pending_approvals, api_consume_approval,
         api_zalo_connect, api_zalo_disconnect, api_zalo_status,
-        api_zalo_list_approvers, api_zalo_add_approver, api_zalo_remove_approver,
+        api_zalo_list_approvers,
         api_cc_list_projects, api_cc_mcp_add, api_cc_mcp_disable, api_cc_mcp_enable,
         api_cc_mcp_get, api_cc_mcp_list, api_cc_mcp_remove,
         api_cc_connect, api_cc_disconnect, api_cc_get_installed_skills,
@@ -400,13 +400,11 @@ pub fn create_router(state: WebServerState) -> Router {
         .route("/api/bots/sessions", post(api_bot_sessions))
         .route("/api/approvals/create", post(api_create_approval))
         .route("/api/approvals/pending", post(api_list_pending_approvals))
-        .route("/api/approvals/respond", post(api_respond_approval))
+        .route("/api/approvals/consume", post(api_consume_approval))
         .route("/api/zalo/connect", post(api_zalo_connect))
         .route("/api/zalo/disconnect", post(api_zalo_disconnect))
         .route("/api/zalo/status", post(api_zalo_status))
         .route("/api/zalo/approvers/list", post(api_zalo_list_approvers))
-        .route("/api/zalo/approvers/add", post(api_zalo_add_approver))
-        .route("/api/zalo/approvers/remove", post(api_zalo_remove_approver))
         .route("/api/keke/mcp/read", post(crate::handlers::api_keke_read_mcp_servers))
         .route("/api/keke/mcp/add", post(crate::handlers::api_keke_add_mcp_server))
         .route("/api/keke/mcp/remove", post(crate::handlers::api_keke_remove_mcp_server))

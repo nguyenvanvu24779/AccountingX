@@ -189,6 +189,11 @@ export const vi = {
     openEvidence: 'Mở',
     requestedBy: 'Yêu cầu bởi {{who}}',
     code: 'Mã {{code}}',
+    field: {
+      to: 'Người nhận',
+      subject: 'Tiêu đề',
+      body: 'Nội dung',
+    },
     kind: {
       zaloCommand: 'Lệnh qua Zalo',
       emailSend: 'Gửi email',

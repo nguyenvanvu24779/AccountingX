@@ -6,6 +6,25 @@ import { Card, CardContent } from '@/components/ui/card';
 import type { ApprovalTicket } from '@/services';
 import { useAccountingApprovalsStore } from '@/stores/useAccountingApprovalsStore';
 
+function PayloadDetails({ payload }: { payload: Record<string, unknown> }) {
+  const { t } = useTranslation('approvals');
+
+  return (
+    <dl className="space-y-2 rounded-md border bg-muted/40 px-3 py-2 text-sm">
+      {Object.entries(payload).map(([key, value]) => (
+        <div key={key} className="space-y-0.5">
+          <dt className="text-xs text-muted-foreground">
+            {t(`field.${key}`, { defaultValue: key })}
+          </dt>
+          <dd className="whitespace-pre-wrap break-words">
+            {typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 function TicketCard({ ticket }: { ticket: ApprovalTicket }) {
   const { t } = useTranslation('approvals');
   const respond = useAccountingApprovalsStore((s) => s.respond);
@@ -22,6 +41,8 @@ function TicketCard({ ticket }: { ticket: ApprovalTicket }) {
             </div>
           </div>
         </div>
+
+        {ticket.payload && <PayloadDetails payload={ticket.payload} />}
 
         {ticket.evidence.length > 0 && (
           <div className="space-y-1">

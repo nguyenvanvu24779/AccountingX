@@ -14,18 +14,22 @@ export type ApprovalTicket = {
   kind: ApprovalKind;
   companyId: string | null;
   summary: string;
+  /** The exact action being approved — show this, not just the summary. */
+  payload: Record<string, unknown> | null;
   evidence: EvidenceRef[];
   status: ApprovalStatus;
   requestedBy: string | null;
   approverId: string | null;
   createdAt: string;
   resolvedAt: string | null;
+  consumedAt: string | null;
 };
 
 export async function createApproval(params: {
   kind: ApprovalKind;
   companyId?: string;
   summary: string;
+  payload?: Record<string, unknown>;
   evidence?: EvidenceRef[];
   requestedBy?: string;
 }) {
@@ -34,12 +38,4 @@ export async function createApproval(params: {
 
 export async function listPendingApprovals() {
   return await postJson<ApprovalTicket[]>('/api/approvals/pending', {});
-}
-
-export async function respondApproval(params: {
-  shortCode: string;
-  approve: boolean;
-  approverId?: string;
-}) {
-  return await postJson<ApprovalTicket>('/api/approvals/respond', params);
 }

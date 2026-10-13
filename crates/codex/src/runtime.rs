@@ -69,12 +69,12 @@ pub fn bundled_codex() -> Option<PathBuf> {
 
 /// The Codex executable to launch, or `None` when it cannot be found.
 pub fn resolve_codex_command() -> Option<PathBuf> {
-    if !use_system_codex() {
-        if let Some(path) = bundled_codex() {
-            return Some(path);
-        }
+    if !use_system_codex()
+        && let Some(path) = bundled_codex()
+    {
+        return Some(path);
     }
-    codex_finder::discover_codex_command().map(PathBuf::from)
+    codex_finder::discover_codex_command()
 }
 
 /// Message shown to the user when Codex cannot be started.

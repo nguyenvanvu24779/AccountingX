@@ -189,6 +189,11 @@ export const en = {
     openEvidence: 'Open',
     requestedBy: 'Requested by {{who}}',
     code: 'Code {{code}}',
+    field: {
+      to: 'To',
+      subject: 'Subject',
+      body: 'Body',
+    },
     kind: {
       zaloCommand: 'Zalo command',
       emailSend: 'Send email',

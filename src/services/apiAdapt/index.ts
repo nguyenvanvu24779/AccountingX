@@ -11,6 +11,7 @@ export * from './codex';
 export * from './dictation';
 export * from './filesystem';
 export * from './git';
+export * from './humanDecisions';
 export * from './lifecycle';
 export * from './openapp';
 export type {

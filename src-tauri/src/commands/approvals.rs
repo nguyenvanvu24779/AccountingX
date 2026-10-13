@@ -1,0 +1,38 @@
+//! Decisions only a person may make, reachable only from the app's own webview.
+//!
+//! These deliberately have no route on the local HTTP server: anything on this
+//! machine can call that server — including an agent's shell — and an agent
+//! must never be able to approve its own ticket or add itself as an approver.
+
+use codexia_db::approvals::ApprovalTicket;
+use codexia_db::zalo_approvers::ZaloApprover;
+
+/// Recorded as the approver when someone decides in the desktop app.
+const LOCAL_APPROVER: &str = "desktop";
+
+#[tauri::command]
+pub async fn approval_respond(short_code: String, approve: bool) -> Result<ApprovalTicket, String> {
+    codexia_db::approvals::respond_approval(&short_code, approve, Some(LOCAL_APPROVER))
+}
+
+#[tauri::command]
+pub async fn zalo_add_approver(
+    zalo_user_id: String,
+    display_name: String,
+    bot_id: Option<String>,
+    can_approve: Option<bool>,
+    can_command: Option<bool>,
+) -> Result<ZaloApprover, String> {
+    codexia_db::zalo_approvers::add_approver(
+        &zalo_user_id,
+        &display_name,
+        bot_id.as_deref(),
+        can_approve.unwrap_or(true),
+        can_command.unwrap_or(false),
+    )
+}
+
+#[tauri::command]
+pub async fn zalo_remove_approver(zalo_user_id: String) -> Result<(), String> {
+    codexia_db::zalo_approvers::remove_approver(&zalo_user_id)
+}
