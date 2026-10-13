@@ -10,6 +10,8 @@ pub mod terminal;
 pub mod types;
 mod websocket;
 mod server_web;
+pub mod zalo_routing;
+pub mod zalo_state;
 
 pub use router::create_router;
 pub use types::WebServerState;

@@ -25,6 +25,68 @@ fn init_tables(conn: &Connection) -> Result<(), String> {
     init_automation_runs_tables(conn)?;
     init_acp_sessions_tables(conn)?;
     init_bots_table(conn)?;
+    init_approval_tickets_table(conn)?;
+    init_zalo_approvers_table(conn)?;
+    Ok(())
+}
+
+/// Create the Zalo approver whitelist: people allowed to approve/reject
+/// tickets or hand the bot a free-form task, keyed by Zalo's own user id.
+fn init_zalo_approvers_table(conn: &Connection) -> Result<(), String> {
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS zalo_approvers (
+            zalo_user_id TEXT PRIMARY KEY,
+            display_name TEXT NOT NULL,
+            bot_id TEXT,
+            can_approve BOOLEAN NOT NULL DEFAULT 1,
+            can_command BOOLEAN NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL
+        )",
+        [],
+    )
+    .map_err(|e| format!("Failed to create zalo_approvers table: {}", e))?;
+    Ok(())
+}
+
+/// Create the approval-ticket queue: things with a side effect (a Zalo
+/// command, a drafted email, later a ledger write) waiting for a human to
+/// say yes, each identified by a short code an approver can type back.
+pub(crate) fn init_approval_tickets_table(conn: &Connection) -> Result<(), String> {
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS approval_tickets (
+            id TEXT PRIMARY KEY,
+            short_code TEXT NOT NULL,
+            kind TEXT NOT NULL,
+            company_id TEXT,
+            summary TEXT NOT NULL,
+            evidence TEXT NOT NULL DEFAULT '[]',
+            status TEXT NOT NULL,
+            requested_by TEXT,
+            approver_id TEXT,
+            created_at TEXT NOT NULL,
+            resolved_at TEXT
+        )",
+        [],
+    )
+    .map_err(|e| format!("Failed to create approval_tickets table: {}", e))?;
+
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_approval_tickets_status_created
+         ON approval_tickets(status, created_at ASC)",
+        [],
+    )
+    .map_err(|e| format!("Failed to create approval_tickets status index: {}", e))?;
+
+    // A pending ticket's code must be unique so a Zalo reply resolves exactly
+    // one ticket; a resolved ticket's code is free to reuse, so this is a
+    // partial index rather than a plain UNIQUE column.
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_approval_tickets_pending_code
+         ON approval_tickets(short_code) WHERE status = 'pending'",
+        [],
+    )
+    .map_err(|e| format!("Failed to create approval_tickets code index: {}", e))?;
+
     Ok(())
 }
 

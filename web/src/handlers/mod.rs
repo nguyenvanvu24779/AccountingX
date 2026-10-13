@@ -7,6 +7,7 @@ use codexia_codex::providers::{load_env_keys, load_and_fetch_models};
 use super::types::{ErrorResponse, WebServerState};
 
 mod acp;
+mod approvals;
 mod cc;
 mod claude_usage;
 mod codex;
@@ -25,8 +26,10 @@ mod settings;
 mod skillssh;
 mod terminal;
 mod types;
+mod zalo;
 
 pub(super) use acp::*;
+pub(super) use approvals::*;
 pub(super) use bots::*;
 pub(super) use bots_mcp::*;
 pub(super) use keke_mcp::*;
@@ -45,6 +48,7 @@ pub(super) use settings::*;
 pub(super) use skillssh::*;
 pub(super) use terminal::*;
 pub(super) use types::*;
+pub(super) use zalo::*;
 
 pub(super) async fn api_prevent_sleep(
     AxumState(state): AxumState<WebServerState>,

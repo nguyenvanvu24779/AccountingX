@@ -19,6 +19,7 @@ use crate::auth::DeviceToken;
 use crate::events::EventHub;
 use crate::watcher::WebWatchState;
 use crate::terminal::WebTerminalState;
+use crate::zalo_state::ZaloState;
 
 #[derive(Clone)]
 pub struct WebServerState {
@@ -30,6 +31,7 @@ pub struct WebServerState {
     pub(crate) sleep_state: Arc<SleepState>,
     pub(crate) terminal_state: Arc<WebTerminalState>,
     pub(crate) fs_watch_state: Arc<WebWatchState>,
+    pub(crate) zalo_state: Arc<ZaloState>,
     pub event_tx: broadcast::Sender<(String, Value)>,
     /// Sequenced view of `event_tx`, used by the WebSocket/SSE endpoints so
     /// clients can resume after a dropped connection.
@@ -63,6 +65,7 @@ impl WebServerState {
             sleep_state,
             terminal_state,
             fs_watch_state,
+            zalo_state: Arc::new(ZaloState::default()),
             event_tx,
             event_hub,
             device_token,
