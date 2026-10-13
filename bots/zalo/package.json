@@ -1,0 +1,13 @@
+{
+  "name": "accountingx-zalo-sidecar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Spawned by codexia-zalo (Rust) as a child process. Talks newline-delimited JSON over stdio — not a standalone bot like bots/telegram.",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "zca-js": "^2.0.0"
+  }
+}

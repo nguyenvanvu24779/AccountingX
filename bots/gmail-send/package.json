@@ -1,0 +1,16 @@
+{
+  "name": "accountingx-gmail-send-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal MCP server with one tool: send_email. Scoped to gmail.send only — deliberately not a general-purpose Gmail integration. Run `bun run setup` once (after creating a Google Cloud OAuth client) before registering this as an MCP server.",
+  "scripts": {
+    "setup": "node setup.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "googleapis": "^185.0.0",
+    "zod": "^3.23.0"
+  }
+}
