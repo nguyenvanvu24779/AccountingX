@@ -21,5 +21,23 @@ AccountingX chạy Codex CLI đi kèm, không dùng bản cài sẵn trên máy.
   File đã có sẽ không bị ghi đè.
 - Dùng Codex hệ thống để phát triển: đặt `ACCOUNTINGX_USE_SYSTEM_CODEX=1`.
 
+## Browser-use
+
+Luồng đã kiểm chứng trên máy phát triển:
+
+```text
+Codex CLI đóng kèm
+  → `cua_repl` local
+  → browser service/native messaging
+  → extension ChatGPT chính thức
+  → Chrome profile người dùng
+```
+
+- Extension Chrome chính thức: `hehggadaopoacecdllhhajmbjkdcmajg`.
+- AccountingX được phép phát hiện trạng thái và mở trang Chrome Web Store; người dùng phải tự cài extension và duyệt quyền.
+- `scripts/test-cloned-cua-standalone.ps1` kiểm tra chỉ đọc khi Codex Desktop đã đóng và không dùng native pipe được cấu hình bởi Desktop.
+- `.dev-vendor/openai-cua/` hiện là runtime thử nghiệm local, không được Git theo dõi và chưa phải thành phần phát hành.
+- Trước khi đóng gói cần có installer/health check cho native messaging host, chính sách cập nhật phiên bản và approval gate. Không dùng `--dangerously-bypass-approvals-and-sandbox` trong sản phẩm.
+
 ## Nâng phiên bản
 Chỉ nâng cùng một bản AccountingX mới, sau khi kiểm thử các tình huống MISA.

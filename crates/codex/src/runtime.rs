@@ -86,11 +86,16 @@ approval_policy = \"on-request\"\n\
 sandbox_mode = \"workspace-write\"\n\
 \n\
 [features]\n\
-code_mode = false\n\
-code_mode_host = false\n";
+code_mode = true\n\
+code_mode_host = true\n\
+browser_use = true\n\
+browser_use_external = true\n\
+browser_use_full_cdp_access = true\n";
 
-/// Appended to configs created before these keys existed.
-const CODE_MODE_OFF: &str = "\n[features]\ncode_mode = false\ncode_mode_host = false\n";
+/// Appended to configs created before these keys existed. `codex-code-mode-host.exe`
+/// ships alongside `codex.exe` (see scripts/fetch-codex.ps1), so code mode and the
+/// browser_use family it hosts can run.
+const CODE_MODE_FEATURES: &str = "\n[features]\ncode_mode = true\ncode_mode_host = true\nbrowser_use = true\nbrowser_use_external = true\nbrowser_use_full_cdp_access = true\n";
 
 /// Creates the private Codex home and a conservative default `config.toml`.
 /// An existing config is never overwritten.
@@ -100,11 +105,11 @@ pub fn ensure_codex_home(home: &Path) -> std::io::Result<()> {
     if !config.exists() {
         fs::write(config, DEFAULT_CONFIG)?;
     } else {
-        // Code mode needs a helper executable AccountingX does not ship; turn it
-        // off unless the user's config already mentions it.
+        // Migrate configs from before code mode / browser_use were turned on,
+        // unless the user's config already has its own [features] section.
         let existing = fs::read_to_string(&config)?;
         if !existing.contains("code_mode") && !existing.contains("[features]") {
-            fs::write(&config, format!("{existing}{CODE_MODE_OFF}"))?;
+            fs::write(&config, format!("{existing}{CODE_MODE_FEATURES}"))?;
         }
     }
     Ok(())

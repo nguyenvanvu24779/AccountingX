@@ -16,7 +16,9 @@ $base = "https://github.com/openai/codex/releases/download/$Version"
 $files = @(
   @{ asset = "codex-x86_64-pc-windows-msvc.exe.zip";                 target = "codex.exe" },
   @{ asset = "codex-command-runner-x86_64-pc-windows-msvc.exe.zip";  target = "codex-command-runner.exe" },
-  @{ asset = "codex-windows-sandbox-setup-x86_64-pc-windows-msvc.exe.zip"; target = "codex-windows-sandbox-setup.exe" }
+  @{ asset = "codex-windows-sandbox-setup-x86_64-pc-windows-msvc.exe.zip"; target = "codex-windows-sandbox-setup.exe" },
+  # Companion host for [features] code_mode_host / browser_use (code-mode sandbox + browser automation).
+  @{ asset = "codex-code-mode-host-x86_64-pc-windows-msvc.exe.zip";  target = "codex-code-mode-host.exe" }
 )
 
 foreach ($f in $files) {
