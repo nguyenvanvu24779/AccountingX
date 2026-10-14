@@ -63,7 +63,8 @@
     ],
     "createUpdaterArtifacts": false,
     "resources": {
-      "resources/codex/*": "resources/codex/"
+      "resources/codex/*": "resources/codex/",
+      "../bots/zalo/": "resources/bots/zalo/"
     },
     "icon": [
       "icons/32x32.png",
