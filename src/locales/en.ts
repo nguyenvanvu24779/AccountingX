@@ -203,7 +203,9 @@ export const en = {
       needsConnection: 'Connect Zalo first.',
       advanced: 'Advanced: enter a Zalo ID by hand',
       title: 'Add approver',
-      description: 'They only need to send one line to the bot on Zalo, no ID needed.',
+      description:
+        'They only need to send one line to the bot on Zalo, no ID needed. Anyone added is trusted: they can approve tickets and give the AI tasks over Zalo.',
+      preparing: 'Creating a code…',
       createCode: 'Create code',
       newCode: 'New code',
       expiresIn: 'Valid for {{time}}',

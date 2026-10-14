@@ -8,7 +8,6 @@
 
 use std::sync::{Arc, LazyLock};
 
-use codexia_acp::AcpState;
 use codexia_shared::zalo::ZaloSidecar;
 use regex::Regex;
 use serde_json::Value;
@@ -40,10 +39,9 @@ pub async fn start_zalo(state: &WebServerState) -> Result<(), String> {
     let script = codexia_shared::zalo::resolve_sidecar_script()
         .ok_or_else(|| "Zalo sidecar script (bots/zalo/index.js) was not found.".to_string())?;
 
-    let zalo_state = Arc::clone(&state.zalo_state);
-    let acp_state = Arc::clone(&state.acp_state);
+    let handler_state = state.clone();
     let on_notification = Arc::new(move |method: String, params: Value| {
-        handle_notification(method, params, Arc::clone(&zalo_state), Arc::clone(&acp_state));
+        handle_notification(method, params, handler_state.clone());
     });
 
     let sidecar = Arc::new(ZaloSidecar::spawn(&script, &session_dir()?, on_notification).await?);
@@ -70,12 +68,8 @@ pub async fn resume_zalo_if_saved(state: &WebServerState) {
     }
 }
 
-pub fn handle_notification(
-    method: String,
-    params: Value,
-    zalo_state: Arc<ZaloState>,
-    acp_state: Arc<AcpState>,
-) {
+pub fn handle_notification(method: String, params: Value, state: WebServerState) {
+    let zalo_state = Arc::clone(&state.zalo_state);
     match method.as_str() {
         "qr" => {
             if let Some(path) = params.get("path").and_then(Value::as_str) {
@@ -133,12 +127,13 @@ pub fn handle_notification(
             // expired, falling back to QR") would just be noise.
             log::warn!("zalo sidecar error: {params}");
         }
-        "message" => handle_message(params, zalo_state, acp_state),
+        "message" => handle_message(params, state),
         other => log::warn!("zalo sidecar: unhandled notification `{other}`"),
     }
 }
 
-fn handle_message(params: Value, zalo_state: Arc<ZaloState>, acp_state: Arc<AcpState>) {
+fn handle_message(params: Value, state: WebServerState) {
+    let zalo_state = Arc::clone(&state.zalo_state);
     let Some(sender_id) = params.get("senderId").and_then(Value::as_str).map(str::to_string) else {
         return;
     };
@@ -179,40 +174,37 @@ fn handle_message(params: Value, zalo_state: Arc<ZaloState>, acp_state: Arc<AcpS
             }
         };
 
-        let reply = if let Some(captures) = APPROVAL_REPLY.captures(&text) {
-            if !approver.can_approve {
-                Some("Bạn chưa có quyền duyệt.".to_string())
+        // A ticket answered with its code ("482913 duyệt").
+        if let Some(captures) = APPROVAL_REPLY.captures(&text) {
+            let answer = if !approver.can_approve {
+                "Bạn chưa có quyền duyệt.".to_string()
             } else {
                 let code = &captures[1];
                 let approve = captures[2].to_lowercase().starts_with("duy");
                 match codexia_db::approvals::respond_approval(code, approve, Some(&sender_id)) {
-                    Ok(ticket) => Some(format!(
+                    Ok(ticket) => format!(
                         "Đã {} phiếu {}: {}",
                         if approve { "duyệt" } else { "từ chối" },
                         ticket.short_code,
                         ticket.summary
-                    )),
-                    Err(e) => Some(format!("Không xử lý được mã này: {e}")),
+                    ),
+                    Err(e) => format!("Không xử lý được mã này: {e}"),
                 }
-            }
-        } else if approver.can_command {
-            match &approver.bot_id {
-                None => Some("Bạn chưa được gán công ty để giao việc.".to_string()),
-                Some(bot_id) => {
-                    match acp_state.run_bot_unattended(bot_id, &text, None, false, |_| {}).await {
-                        Ok(report) if !report.reply.is_empty() => Some(report.reply),
-                        Ok(_) => Some("Đã xử lý, nhưng không có nội dung trả lời.".to_string()),
-                        Err(e) => Some(format!("Có lỗi khi xử lý: {e}")),
-                    }
-                }
-            }
-        } else {
-            None
-        };
-
-        if let Some(text) = reply {
-            send_reply(&zalo_state, &thread_id, &thread_type, &text).await;
+            };
+            send_reply(&zalo_state, &thread_id, &thread_type, &answer).await;
+            return;
         }
+
+        // Anyone on the list is trusted: everything else is a message for the AI.
+        crate::zalo_agent::handle_user_message(
+            &state,
+            &sender_id,
+            approver.can_approve,
+            thread_id,
+            thread_type,
+            text,
+        )
+        .await;
     });
 }
 

@@ -6,6 +6,7 @@ pub mod bots;
 pub mod notes;
 pub mod zalo_approvers;
 pub mod zalo_pairings;
+pub mod zalo_threads;
 
 pub(crate) use conn::get_connection;
 pub use notes::*;

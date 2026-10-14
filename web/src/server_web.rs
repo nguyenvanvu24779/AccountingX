@@ -211,6 +211,10 @@ where
         crate::zalo_routing::resume_zalo_if_saved(&zalo_resume_state).await;
     });
 
+    // Answer on Zalo when the AI replies or needs a person.
+    let zalo_agent_state = state.clone();
+    tokio::spawn(crate::zalo_agent::run_event_loop(zalo_agent_state));
+
     let app = create_router(state);
     // A just-exited previous process can hold this port for a moment after
     // its own process has already disappeared (the OS hasn't released the

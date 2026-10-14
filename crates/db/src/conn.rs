@@ -28,6 +28,23 @@ fn init_tables(conn: &Connection) -> Result<(), String> {
     init_approval_tickets_table(conn)?;
     init_zalo_approvers_table(conn)?;
     init_zalo_pairings_table(conn)?;
+    init_zalo_threads_table(conn)?;
+    Ok(())
+}
+
+/// The Codex conversation each Zalo person has per company folder.
+pub(crate) fn init_zalo_threads_table(conn: &Connection) -> Result<(), String> {
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS zalo_threads (
+            sender_id TEXT NOT NULL,
+            cwd TEXT NOT NULL,
+            thread_id TEXT,
+            active BOOLEAN NOT NULL DEFAULT 0,
+            PRIMARY KEY (sender_id, cwd)
+        )",
+        [],
+    )
+    .map_err(|e| format!("Failed to create zalo_threads table: {}", e))?;
     Ok(())
 }
 

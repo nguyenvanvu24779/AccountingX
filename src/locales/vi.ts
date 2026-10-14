@@ -203,7 +203,9 @@ export const vi = {
       needsConnection: 'Kết nối Zalo trước.',
       advanced: 'Nâng cao: nhập ID Zalo thủ công',
       title: 'Thêm người duyệt',
-      description: 'Người đó chỉ cần nhắn một dòng cho Zalo của bot, không cần biết ID.',
+      description:
+        'Người đó chỉ cần nhắn một dòng cho Zalo của bot, không cần biết ID. Người được thêm là người tin cậy: duyệt phiếu và giao việc cho AI qua Zalo.',
+      preparing: 'Đang tạo mã…',
       createCode: 'Tạo mã',
       newCode: 'Tạo mã mới',
       expiresIn: 'Còn hiệu lực {{time}}',

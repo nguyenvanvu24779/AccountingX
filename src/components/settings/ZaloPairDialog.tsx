@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -50,8 +49,6 @@ export function ZaloPairDialog({
   onPaired,
 }: ZaloPairDialogProps) {
   const { t } = useTranslation('zalo');
-  const [canApprove, setCanApprove] = useState(true);
-  const [canCommand, setCanCommand] = useState(false);
   const [pairing, setPairing] = useState<ZaloPairing | null>(null);
   const [paired, setPaired] = useState<ZaloApprover | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -83,11 +80,17 @@ export function ZaloPairDialog({
     setError(null);
     cancelCode();
     try {
-      setPairing(await zaloCreatePairing({ canApprove, canCommand }));
+      setPairing(await zaloCreatePairing({ canApprove: true, canCommand: true }));
     } catch (err) {
       setError(String(err));
     }
   };
+
+  // A code is ready as soon as the dialog opens.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only react to opening
+  useEffect(() => {
+    if (open && !pairing && !paired) void createCode();
+  }, [open]);
 
   // Tick for the countdown, and watch the approver list for the person who pairs.
   useEffect(() => {
@@ -121,16 +124,7 @@ export function ZaloPairDialog({
             {t('pair.done', { name: paired.displayName })}
           </p>
         ) : !pairing ? (
-          <div className="space-y-3">
-            <label className="flex items-center gap-2 text-sm">
-              <Checkbox checked={canApprove} onCheckedChange={(v) => setCanApprove(v === true)} />
-              {t('canApproveBadge')}
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <Checkbox checked={canCommand} onCheckedChange={(v) => setCanCommand(v === true)} />
-              {t('canCommandBadge')}
-            </label>
-          </div>
+          <p className="text-sm text-muted-foreground">{t('pair.preparing')}</p>
         ) : expired ? (
           <p className="text-sm text-muted-foreground">{t('pair.expired')}</p>
         ) : (
@@ -153,14 +147,12 @@ export function ZaloPairDialog({
         <DialogFooter>
           {paired ? (
             <Button onClick={() => handleOpenChange(false)}>{t('pair.close')}</Button>
-          ) : !pairing || expired ? (
+          ) : expired ? (
             <>
               <Button variant="ghost" onClick={() => handleOpenChange(false)}>
                 {t('cancel')}
               </Button>
-              <Button disabled={!canApprove && !canCommand} onClick={() => void createCode()}>
-                {expired ? t('pair.newCode') : t('pair.createCode')}
-              </Button>
+              <Button onClick={() => void createCode()}>{t('pair.newCode')}</Button>
             </>
           ) : (
             <Button variant="outline" onClick={() => handleOpenChange(false)}>

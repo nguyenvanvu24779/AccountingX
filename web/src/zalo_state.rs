@@ -5,6 +5,7 @@ use codexia_shared::zalo::ZaloSidecar;
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 
+use crate::zalo_agent::ZaloAgentState;
 use crate::zalo_notify::SendLimiter;
 
 /// The Zalo account the bot is logged in as.
@@ -27,6 +28,8 @@ pub struct ZaloState {
     pub account: Mutex<Option<ZaloAccount>>,
     pub last_error: Mutex<Option<String>>,
     pub send_limiter: Mutex<SendLimiter>,
+    /// The AI conversations people have over Zalo.
+    pub agent: ZaloAgentState,
     /// Set while the QR has been scanned and the phone is waiting for approval.
     pub qr_scanned_by: Mutex<Option<String>>,
 }
