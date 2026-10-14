@@ -162,28 +162,55 @@ export const en = {
       'The AI uses your own Chrome to read MISA. You sign in to MISA yourself; the AI never types passwords.',
     recheck: 'Check again',
     checking: 'Checking…',
+    checkedAt: 'Checked at {{time}}',
     checkFailed: 'Could not check: {{error}}',
-    chrome: 'Google Chrome',
-    chromeMissing: 'Google Chrome is not installed.',
-    installChrome: 'Get Chrome',
-    extension: 'ChatGPT for Chrome extension',
-    extensionIn: 'Installed in profile: {{profiles}}',
-    extensionMissing: 'Not installed. Install it in the Chrome profile you use for MISA.',
-    installExtension: 'Install ChatGPT for Chrome',
-    nativeHost: 'Chrome ↔ desktop bridge',
-    nativeHostProblem: {
-      notRegistered:
-        'Missing. Install the ChatGPT (Codex) app for Windows once on this machine, then check again.',
-      manifestMissing:
-        'Registered but its config file is missing. Reinstall the ChatGPT (Codex) app for Windows.',
-      wrongExtension: 'The bridge is not set up for the official ChatGPT extension.',
-      hostMissing: 'The bridge program is missing. Reinstall the ChatGPT (Codex) app for Windows.',
+    desktopAppRunning:
+      'The ChatGPT (Codex) desktop app is open. Close it completely, including its tray icon (bottom right), so the AI controls your Chrome correctly.',
+    allReady: 'Ready',
+    stepsLeft: '{{count}} steps left',
+    step: {
+      chrome: {
+        title: 'Install Google Chrome',
+        help: 'The AI works in your Chrome. Install it, come back, and this screen updates by itself.',
+        done: 'Installed.',
+        action: 'Get Chrome',
+      },
+      extension: {
+        title: 'Install the ChatGPT extension for Chrome',
+        help: 'Open Chrome with the profile you use for MISA, press the button below, choose "Add to Chrome" and accept the permissions. You install it yourself; AccountingX does not install it for you.',
+        done: 'Installed in profile: {{profiles}}',
+        action: 'Open the extension page',
+      },
+      bridge: {
+        title: 'Bridge between Chrome and this computer',
+        help: 'Install the ChatGPT (Codex) app for Windows once on this machine and sign in, then come back. You do not need to keep that app open afterwards.',
+        done: 'Ready.',
+        problem: {
+          notRegistered:
+            'Missing. Install the ChatGPT (Codex) app for Windows once on this machine and sign in, then come back. You do not need to keep it open afterwards.',
+          manifestMissing:
+            'Registered but its config file is missing. Reinstall the ChatGPT (Codex) app for Windows.',
+          wrongExtension:
+            'The bridge is not set up for the official ChatGPT extension. Reinstall the ChatGPT (Codex) app for Windows.',
+          hostMissing:
+            'The bridge program is missing. Reinstall the ChatGPT (Codex) app for Windows.',
+        },
+      },
+      runtime: {
+        title: 'Browser control component',
+        help: 'Set up by whoever installed AccountingX. Contact them if this step is not done.',
+        done: 'Ready.',
+      },
     },
-    runtime: 'Browser control component',
-    runtimeMissing: 'Not configured. Contact whoever installed AccountingX.',
-    ok: 'Ready',
-    readyHint:
-      'Open MISA AMIS in Chrome, sign in to the right company yourself, then ask the AI, e.g. “Show this month’s inventory”. Chrome may ask to grant the extension permission the first time.',
+    howTo: {
+      title: 'How to use it',
+      step1:
+        'Open MISA AMIS in Chrome (profile {{profile}}) and sign in to the right company yourself.',
+      step2: 'In AccountingX, pick the same company on the left.',
+      step3: 'Ask the AI, e.g. "Show this month\'s inventory".',
+      step4:
+        'The first time, Chrome or AccountingX asks for access to the MISA site: choose Allow.',
+    },
   },
   accountUsage: {
     title: 'AI usage',

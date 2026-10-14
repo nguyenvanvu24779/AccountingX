@@ -72,14 +72,16 @@ export function useServerNotificationHandler(
         }
 
         if (method === 'thread/started') {
-          const { cwd } = payload.params.thread;
-          if (threadId && cwd) {
-            useCodexStore.setState((state) => ({
-              threads: state.threads.map((thread) =>
-                thread.id === threadId ? { ...thread, cwd: cwd } : thread
-              ),
-            }));
-          }
+          const started = payload.params.thread;
+          // A thread the app did not start itself (a Zalo conversation, a
+          // scheduled task) is added so the sidebar shows it without a reload.
+          useCodexStore.setState((state) => ({
+            threads: state.threads.some((thread) => thread.id === threadId)
+              ? state.threads.map((thread) =>
+                  thread.id === threadId && started.cwd ? { ...thread, cwd: started.cwd } : thread
+                )
+              : [started, ...state.threads],
+          }));
         }
 
         if (method === 'thread/name/updated') {

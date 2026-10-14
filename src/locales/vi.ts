@@ -162,28 +162,52 @@ export const vi = {
       'AI dùng Chrome của bạn để xem MISA. Bạn tự đăng nhập MISA; AI không nhập mật khẩu.',
     recheck: 'Kiểm tra lại',
     checking: 'Đang kiểm tra…',
+    checkedAt: 'Đã kiểm tra lúc {{time}}',
     checkFailed: 'Không kiểm tra được: {{error}}',
-    chrome: 'Google Chrome',
-    chromeMissing: 'Chưa cài Google Chrome.',
-    installChrome: 'Tải Chrome',
-    extension: 'Tiện ích ChatGPT for Chrome',
-    extensionIn: 'Đã cài trong profile: {{profiles}}',
-    extensionMissing: 'Chưa cài. Hãy cài vào đúng profile Chrome bạn dùng để đăng nhập MISA.',
-    installExtension: 'Cài ChatGPT for Chrome',
-    nativeHost: 'Cầu nối Chrome ↔ máy tính',
-    nativeHostProblem: {
-      notRegistered:
-        'Chưa có. Cài ứng dụng ChatGPT (Codex) cho Windows một lần trên máy này, rồi kiểm tra lại.',
-      manifestMissing:
-        'Đã đăng ký nhưng thiếu tệp cấu hình. Cài lại ứng dụng ChatGPT (Codex) cho Windows.',
-      wrongExtension: 'Cầu nối không dành cho tiện ích ChatGPT chính thức.',
-      hostMissing: 'Thiếu chương trình cầu nối. Cài lại ứng dụng ChatGPT (Codex) cho Windows.',
+    desktopAppRunning:
+      'Ứng dụng ChatGPT (Codex) trên máy tính đang mở. Hãy đóng hẳn nó, kể cả biểu tượng ở khay hệ thống (góc phải dưới), để AI điều khiển đúng Chrome của bạn.',
+    allReady: 'Đã sẵn sàng',
+    stepsLeft: 'Còn {{count}} bước để hoàn tất',
+    step: {
+      chrome: {
+        title: 'Cài Google Chrome',
+        help: 'AI làm việc trên Chrome của bạn. Cài xong, quay lại đây, màn hình sẽ tự cập nhật.',
+        done: 'Đã cài.',
+        action: 'Tải Chrome',
+      },
+      extension: {
+        title: 'Cài tiện ích ChatGPT cho Chrome',
+        help: 'Mở Chrome bằng đúng tài khoản/profile bạn dùng cho MISA, bấm nút bên dưới rồi chọn "Thêm vào Chrome" và cho phép các quyền được hỏi. Bạn tự bấm cài, AccountingX không cài thay.',
+        done: 'Đã cài trong profile: {{profiles}}',
+        action: 'Mở trang cài tiện ích',
+      },
+      bridge: {
+        title: 'Cầu nối giữa Chrome và máy tính',
+        help: 'Cài ứng dụng ChatGPT (Codex) cho Windows một lần trên máy này và đăng nhập, rồi quay lại đây. Sau đó không cần mở ứng dụng đó nữa.',
+        done: 'Đã sẵn sàng.',
+        problem: {
+          notRegistered:
+            'Chưa có. Cài ứng dụng ChatGPT (Codex) cho Windows một lần trên máy này và đăng nhập, rồi quay lại đây. Sau đó không cần mở ứng dụng đó nữa.',
+          manifestMissing:
+            'Đã đăng ký nhưng thiếu tệp cấu hình. Cài lại ứng dụng ChatGPT (Codex) cho Windows.',
+          wrongExtension:
+            'Cầu nối không dành cho tiện ích ChatGPT chính thức. Cài lại ứng dụng ChatGPT (Codex) cho Windows.',
+          hostMissing: 'Thiếu chương trình cầu nối. Cài lại ứng dụng ChatGPT (Codex) cho Windows.',
+        },
+      },
+      runtime: {
+        title: 'Thành phần điều khiển trình duyệt',
+        help: 'Thành phần này do người cài đặt AccountingX thiết lập. Hãy liên hệ họ nếu bước này chưa xong.',
+        done: 'Đã sẵn sàng.',
+      },
     },
-    runtime: 'Thành phần điều khiển trình duyệt',
-    runtimeMissing: 'Chưa cấu hình. Liên hệ người cài đặt AccountingX.',
-    ok: 'Sẵn sàng',
-    readyHint:
-      'Mở MISA AMIS trong Chrome, tự đăng nhập đúng công ty, rồi hỏi AI, ví dụ: “Xem tồn kho tháng này”. Lần đầu Chrome có thể hỏi quyền cho tiện ích.',
+    howTo: {
+      title: 'Cách dùng',
+      step1: 'Mở MISA AMIS trong Chrome (profile {{profile}}) và tự đăng nhập đúng công ty.',
+      step2: 'Trong AccountingX, chọn đúng công ty ở góc trái.',
+      step3: 'Hỏi AI, ví dụ: "Xem tồn kho tháng này".',
+      step4: 'Lần đầu Chrome hoặc AccountingX sẽ hỏi quyền truy cập trang MISA, chọn Cho phép.',
+    },
   },
   accountUsage: {
     title: 'Mức sử dụng AI',

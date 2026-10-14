@@ -58,3 +58,31 @@ describe.each(['thread/deleted', 'thread/archived'] as const)('%s notification',
     expect(useAgentCenterStore.getState().currentAgentCardId).toBe('kept');
   });
 });
+
+describe('thread/started notification', () => {
+  const started = (id: string, cwd = '/company') =>
+    ({ id, cwd, preview: 'chào', modelProvider: 'openai' }) as unknown as Thread;
+
+  beforeEach(() => {
+    useCodexStore.setState({ threads: [thread('mine')], currentThreadId: null });
+  });
+
+  function startedNotification(threadObj: Thread) {
+    const { result } = renderHook(() => useServerNotificationHandler(refs, async () => undefined));
+    result.current({ method: 'thread/started', params: { thread: threadObj } } as ServerNotification);
+  }
+
+  it('adds a thread the app did not start itself, such as a Zalo conversation', () => {
+    startedNotification(started('from-zalo'));
+
+    expect(useCodexStore.getState().threads.map((t) => t.id)).toEqual(['from-zalo', 'mine']);
+  });
+
+  it('does not duplicate a thread the app already knows', () => {
+    startedNotification(started('mine', '/other'));
+
+    const threads = useCodexStore.getState().threads;
+    expect(threads).toHaveLength(1);
+    expect(threads[0].cwd).toBe('/other');
+  });
+});

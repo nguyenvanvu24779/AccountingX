@@ -38,6 +38,9 @@ pub struct BrowserHealth {
     pub native_host: NativeHostStatus,
     /// `cua_repl` is configured for Codex and its program exists.
     pub browser_runtime: bool,
+    /// The ChatGPT / Codex desktop app is open. Browser control then sees two
+    /// browser connections and cannot tell which one is the user's Chrome.
+    pub desktop_app_running: bool,
     pub ready: bool,
 }
 
@@ -60,7 +63,40 @@ pub fn check(codex_home: &Path) -> BrowserHealth {
         profiles_with_extension,
         native_host,
         browser_runtime,
+        desktop_app_running: desktop_app_running(),
     }
+}
+
+/// Executable name of the ChatGPT / Codex desktop app.
+const DESKTOP_APP_EXE: &str = "ChatGPT.exe";
+
+#[cfg(windows)]
+fn desktop_app_running() -> bool {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
+    std::process::Command::new("tasklist")
+        .args(["/FI", &format!("IMAGENAME eq {DESKTOP_APP_EXE}"), "/FO", "CSV", "/NH"])
+        .creation_flags(CREATE_NO_WINDOW)
+        .output()
+        .map(|out| tasklist_lists_process(&String::from_utf8_lossy(&out.stdout), DESKTOP_APP_EXE))
+        .unwrap_or(false)
+}
+
+#[cfg(not(windows))]
+fn desktop_app_running() -> bool {
+    false
+}
+
+/// Whether `tasklist /FO CSV /NH` output names this process.
+#[cfg_attr(not(windows), allow(dead_code))]
+fn tasklist_lists_process(output: &str, exe: &str) -> bool {
+    output.lines().any(|line| {
+        line.trim_start_matches('"')
+            .split('"')
+            .next()
+            .is_some_and(|name| name.eq_ignore_ascii_case(exe))
+    })
 }
 
 fn chrome_executables() -> Vec<PathBuf> {
@@ -251,5 +287,14 @@ mod tests {
         assert!(!browser_runtime_configured("[mcp_servers.cua_repl]\ncommand = 'C:/nope/node.exe'\n"));
         assert!(!browser_runtime_configured("approval_policy = \"on-request\"\n"));
         std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn tasklist_output_is_matched_by_exact_process_name() {
+        let running = "\"ChatGPT.exe\",\"4242\",\"Console\",\"1\",\"120,000 K\"\r\n";
+        assert!(tasklist_lists_process(running, "ChatGPT.exe"));
+        assert!(tasklist_lists_process(&running.to_lowercase(), "ChatGPT.exe"));
+        assert!(!tasklist_lists_process("INFO: No tasks are running which match the specified criteria.", "ChatGPT.exe"));
+        assert!(!tasklist_lists_process("\"NotChatGPT.exe\",\"1\"", "ChatGPT.exe"));
     }
 }

@@ -13,6 +13,8 @@ export type BrowserHealth = {
   profilesWithExtension: string[];
   nativeHost: NativeHostStatus;
   browserRuntime: boolean;
+  /** The ChatGPT / Codex desktop app is open and can confuse browser control. */
+  desktopAppRunning: boolean;
   ready: boolean;
 };
 

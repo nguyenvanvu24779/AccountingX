@@ -287,6 +287,19 @@ async fn send_to_ai(
     start_turn(state, codex, &thread_id, &cwd, &text).await;
 }
 
+/// Name the conversation after the person so it is easy to spot in the app's
+/// list. Harmless to repeat, and it also renames conversations made before.
+async fn name_thread(codex: &Arc<CodexAppServer>, sender_id: &str, thread_id: &str) {
+    let person = codexia_db::zalo_approvers::get_approver(sender_id)
+        .ok()
+        .flatten()
+        .map(|a| a.display_name)
+        .unwrap_or_else(|| "Zalo".to_string());
+    let _ = codex
+        .send_request("thread/name/set", json!({ "threadId": thread_id, "name": format!("Zalo · {person}") }))
+        .await;
+}
+
 /// This person's Codex conversation for the company: the saved one if it can be
 /// resumed, otherwise a new one.
 async fn ensure_thread(
@@ -298,6 +311,7 @@ async fn ensure_thread(
     if let Some(saved) = codexia_db::zalo_threads::thread_for(sender_id, cwd).ok().flatten() {
         let known = state.zalo_state.agent.inner.lock().await.sessions.contains_key(&saved);
         if known || codex.send_request("thread/resume", json!({ "threadId": saved })).await.is_ok() {
+            name_thread(codex, sender_id, &saved).await;
             return Ok(saved);
         }
     }
@@ -323,6 +337,8 @@ async fn ensure_thread(
     if let Err(e) = codexia_db::zalo_threads::save_thread(sender_id, cwd, Some(&thread_id)) {
         log::warn!("zalo: could not remember the conversation: {e}");
     }
+
+    name_thread(codex, sender_id, &thread_id).await;
     Ok(thread_id)
 }
 
