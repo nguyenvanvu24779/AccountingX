@@ -960,7 +960,7 @@ dependencies = [
 
 [[package]]
 name = "codexia"
-version = "0.54.2"
+version = "0.1.0"
 dependencies = [
  "agent-insights",
  "anyhow",
@@ -970,9 +970,7 @@ dependencies = [
  "chrono",
  "claude-agent-sdk-rs",
  "codex-finder",
- "codexia-acp",
  "codexia-automation",
- "codexia-cc",
  "codexia-codex",
  "codexia-db",
  "codexia-git",
@@ -1032,29 +1030,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "codexia-acp"
-version = "0.54.2"
-dependencies = [
- "anyhow",
- "async-trait",
- "codexia-codex",
- "codexia-db",
- "codexia-shared",
- "codexia-telemetry",
- "dashmap",
- "dirs",
- "log",
- "reqwest 0.12.28",
- "serde",
- "serde_json",
- "tokio",
- "uuid",
- "which 6.0.3",
-]
-
-[[package]]
 name = "codexia-automation"
-version = "0.54.2"
+version = "0.1.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1072,31 +1049,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "codexia-cc"
-version = "0.54.2"
-dependencies = [
- "anyhow",
- "async-trait",
- "base64 0.22.1",
- "claude-agent-sdk-rs",
- "codexia-codex",
- "codexia-shared",
- "dashmap",
- "dirs",
- "futures",
- "log",
- "reqwest 0.12.28",
- "rusqlite",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "tokio",
- "uuid",
-]
-
-[[package]]
 name = "codexia-codex"
-version = "0.54.2"
+version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1120,7 +1074,7 @@ dependencies = [
 
 [[package]]
 name = "codexia-db"
-version = "0.54.2"
+version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1134,7 +1088,7 @@ dependencies = [
 
 [[package]]
 name = "codexia-git"
-version = "0.54.2"
+version = "0.1.0"
 dependencies = [
  "anyhow",
  "gix",
@@ -1146,7 +1100,7 @@ dependencies = [
 
 [[package]]
 name = "codexia-shared"
-version = "0.54.2"
+version = "0.1.0"
 dependencies = [
  "agent-insights",
  "anyhow",
@@ -1185,22 +1139,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "codexia-telemetry"
-version = "0.54.2"
-dependencies = [
- "chrono",
- "codexia-db",
- "dirs",
- "log",
- "reqwest 0.12.28",
- "serde",
- "serde_json",
- "tokio",
-]
-
-[[package]]
 name = "codexia-web"
-version = "0.54.2"
+version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1209,14 +1149,11 @@ dependencies = [
  "chrono",
  "claude-agent-sdk-rs",
  "codex-finder",
- "codexia-acp",
  "codexia-automation",
- "codexia-cc",
  "codexia-codex",
  "codexia-db",
  "codexia-git",
  "codexia-shared",
- "codexia-telemetry",
  "dashmap",
  "dirs",
  "env_logger",

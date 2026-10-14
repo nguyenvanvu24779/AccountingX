@@ -7,7 +7,6 @@ use tokio::sync::broadcast;
 
 use super::{router::create_router, types::WebServerState};
 use crate::auth::DeviceToken;
-use codexia_cc::CCState;
 use codexia_codex::{AppState, CodexInitializationState, connect_codex, initialize_codex};
 use codexia_shared::event_sink::EventSink;
 use crate::event_sink::WebSocketEventSink;
@@ -16,7 +15,6 @@ use crate::watcher::WebWatchState;
 
 pub async fn start_web_server_with_events(
     codex_state: Option<Arc<AppState>>,
-    cc_state: Arc<CCState>,
     event_tx: broadcast::Sender<(String, Value)>,
     host: &str,
     port: u16,
@@ -29,33 +27,23 @@ pub async fn start_web_server_with_events(
     }
     log::info!("[web] requested port: {}", port);
 
-    let acp_state = codexia_acp::AcpState::new(Arc::new(WebSocketEventSink::new(event_tx.clone())));
-    // A bot calls back into this server, not the desktop's loopback one.
-    acp_state.set_api_port(port);
-
     let automation_sink: Arc<dyn EventSink> = Arc::new(WebSocketEventSink::new(event_tx.clone()));
     let automation = codexia_automation::AutomationHandle::start(
         vec![
             Arc::new(codexia_codex::CodexAgentRunner::new(
                 codex_state.as_ref().map(|s| s.codex.clone()),
             )),
-            Arc::new(codexia_cc::CcAgentRunner::new(cc_state.as_ref().clone())),
-            Arc::new(codexia_acp::BotAgentRunner::new(acp_state.clone())),
         ],
         automation_sink,
     )
     .await
     .map_err(std::io::Error::other)?;
 
-    codexia_cc::scan::start_session_scanner();
-
     let device_token = DeviceToken::load_or_create().map_err(std::io::Error::other)?;
 
     let state = WebServerState::new(
         codex_state,
         Some(automation),
-        cc_state,
-        Arc::new(acp_state),
         Arc::new(SleepState::default()),
         Arc::new(super::terminal::WebTerminalState::default()),
         Arc::new(WebWatchState::default()),
@@ -137,9 +125,8 @@ pub async fn start_web_server(
         }
     };
 
-    let cc_state = Arc::new(CCState::new(Arc::new(WebSocketEventSink::new(event_tx.clone()))));
     log::info!("[web] boot completed in {:?}", boot_started_at.elapsed());
-    start_web_server_with_events(codex_state, cc_state, event_tx, host, port, ready).await
+    start_web_server_with_events(codex_state, event_tx, host, port, ready).await
 }
 
 /// Logs how to reach this server from another device, so the tailnet hostname
@@ -180,8 +167,6 @@ fn log_remote_access(host: &str, port: u16) {
 pub async fn serve_api<F>(
     codex_state: Option<Arc<AppState>>,
     automation: Option<codexia_automation::AutomationHandle>,
-    cc_state: Arc<CCState>,
-    acp_state: Arc<codexia_acp::AcpState>,
     event_tx: broadcast::Sender<(String, serde_json::Value)>,
     host: &str,
     port: u16,
@@ -195,8 +180,6 @@ where
     let state = WebServerState::new(
         codex_state,
         automation,
-        cc_state,
-        acp_state,
         Arc::new(SleepState::default()),
         Arc::new(super::terminal::WebTerminalState::default()),
         Arc::new(WebWatchState::default()),

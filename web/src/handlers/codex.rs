@@ -10,7 +10,69 @@ use crate::types::{ErrorResponse, WebServerState};
 
 use codexia_codex::AppState;
 use codexia_codex::accounts;
-use codexia_cc::mcp_unified as mcp;
+/// MCP server management for Codex (the only client this product has).
+mod mcp {
+    use codexia_codex::config::mcp::McpServerConfig;
+    use serde_json::Value as JsonValue;
+
+    fn only_codex(client_name: &str) -> Result<(), String> {
+        if client_name == "codex" {
+            Ok(())
+        } else {
+            Err(format!("Unknown client: {client_name}"))
+        }
+    }
+
+    pub async fn unified_add_mcp_server(
+        client_name: String,
+        _path: Option<String>,
+        server_name: String,
+        server_config: JsonValue,
+        _scope: Option<String>,
+    ) -> Result<(), String> {
+        only_codex(&client_name)?;
+        let config: McpServerConfig = serde_json::from_value(server_config)
+            .map_err(|e| format!("Failed to parse Codex MCP config: {e}"))?;
+        codexia_codex::add_mcp_server(server_name, config).await
+    }
+
+    pub async fn unified_enable_mcp_server(
+        client_name: String,
+        _path: Option<String>,
+        server_name: String,
+    ) -> Result<(), String> {
+        only_codex(&client_name)?;
+        codexia_codex::set_mcp_server_enabled(server_name, true).await
+    }
+
+    pub async fn unified_disable_mcp_server(
+        client_name: String,
+        _path: Option<String>,
+        server_name: String,
+    ) -> Result<(), String> {
+        only_codex(&client_name)?;
+        codexia_codex::set_mcp_server_enabled(server_name, false).await
+    }
+
+    pub async fn unified_remove_mcp_server(
+        client_name: String,
+        _path: Option<String>,
+        server_name: String,
+        _scope: Option<String>,
+    ) -> Result<(), String> {
+        only_codex(&client_name)?;
+        codexia_codex::delete_mcp_server(server_name).await
+    }
+
+    pub async fn unified_read_mcp_config(
+        client_name: String,
+        _path: Option<String>,
+    ) -> Result<JsonValue, String> {
+        only_codex(&client_name)?;
+        let servers = codexia_codex::read_mcp_servers().await?;
+        Ok(serde_json::json!({ "mcpServers": servers }))
+    }
+}
 
 fn require_codex(state: &WebServerState) -> Result<&AppState, ErrorResponse> {
     state.codex_state.as_deref().ok_or_else(|| ErrorResponse {

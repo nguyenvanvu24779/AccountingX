@@ -43,7 +43,7 @@ impl EventSink for BroadcastEventSink {
 ///
 /// The desktop always fans out to both the webview and the remote broadcast
 /// channel. Wiring this at startup — rather than swapping the sink when remote
-/// access is toggled — means the codex client and CCState keep the sink they
+/// access is toggled — means the codex client keeps the sink it
 /// were constructed with, so toggling cannot leave live sessions emitting into
 /// a stale destination.
 pub struct FanOutEventSink {

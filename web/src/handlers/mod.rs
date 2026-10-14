@@ -6,21 +6,14 @@ use codexia_codex::providers::{load_env_keys, load_and_fetch_models};
 
 use super::types::{ErrorResponse, WebServerState};
 
-mod acp;
 mod approvals;
 mod browser;
-mod cc;
-mod claude_usage;
 mod codex;
 mod file;
 mod git;
 mod openapp;
 mod publish;
 mod automation;
-mod bots;
-mod bots_mcp;
-mod keke_mcp;
-mod telemetry;
 mod insights;
 mod skills;
 mod settings;
@@ -29,15 +22,8 @@ mod terminal;
 mod types;
 mod zalo;
 
-pub(super) use acp::*;
 pub(super) use approvals::*;
 pub(super) use browser::*;
-pub(super) use bots::*;
-pub(super) use bots_mcp::*;
-pub(super) use keke_mcp::*;
-pub(super) use telemetry::*;
-pub(super) use cc::*;
-pub(super) use claude_usage::*;
 pub(super) use codex::*;
 pub(super) use file::*;
 pub(super) use git::*;

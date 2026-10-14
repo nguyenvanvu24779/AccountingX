@@ -11,22 +11,15 @@ use tower_http::services::{ServeDir, ServeFile};
 use super::{
     handlers::{
         api_account_rate_limits, api_allow_sleep, api_archive_thread, api_unarchive_thread, api_canonicalize_path,
-        api_acp_list_agents, api_acp_install_agent, api_acp_start, api_acp_prompt, api_acp_cancel,
-        api_acp_authenticate, api_acp_new_session, api_acp_respond_permission, api_acp_stop,
-        api_acp_set_mode, api_acp_set_model, api_acp_set_config_option,
-        api_acp_load_session, api_acp_list_sessions, api_acp_get_session, api_acp_delete_session,
-        api_telemetry_status, api_telemetry_set_consent, api_telemetry_active, api_list_bots, api_create_bot, api_update_bot, api_delete_bot, api_bot_sessions, api_bots_mcp,
+        
+        
         api_create_approval, api_list_pending_approvals, api_consume_approval, api_browser_health,
         api_zalo_connect, api_zalo_disconnect, api_zalo_status,
         api_zalo_list_approvers, api_zalo_send,
-        api_cc_list_projects, api_cc_mcp_add, api_cc_mcp_disable, api_cc_mcp_enable,
-        api_cc_mcp_get, api_cc_mcp_list, api_cc_mcp_remove,
-        api_cc_connect, api_cc_disconnect, api_cc_get_installed_skills,
-        api_claude_usage,
-        api_cc_delete_session, api_cc_get_session_messages, api_cc_list_sessions, api_cc_get_settings, api_cc_get_slash_commands,
-        api_cc_interrupt,
-        api_cc_new_session, api_cc_resolve_permission, api_cc_resume_session,
-        api_cc_send_message, api_cc_set_permission_mode, api_cc_update_settings,
+        
+        
+        
+        
         api_create_automation, api_delete_automation, api_list_automation_runs, api_list_automations, api_run_automation_now, api_set_automation_paused,
         api_update_automation,
         api_asset, api_codex_home, api_delete_file,
@@ -248,7 +241,6 @@ pub fn create_router(state: WebServerState) -> Router {
             "/api/codex/account/rate-limits",
             get(api_account_rate_limits),
         )
-        .route("/api/claude/usage", get(api_claude_usage))
         .route("/api/codex/account/get", post(api_get_account))
         .route("/api/codex/account/login", post(api_login_account))
         .route(
@@ -378,27 +370,6 @@ pub fn create_router(state: WebServerState) -> Router {
             "/api/git/has-worktree-changes",
             post(api_git_has_worktree_changes),
         )
-        .route("/api/acp/agents", get(api_acp_list_agents))
-        .route("/api/acp/install-agent", post(api_acp_install_agent))
-        .route("/api/acp/start", post(api_acp_start))
-        .route("/api/acp/prompt", post(api_acp_prompt))
-        .route("/api/acp/cancel", post(api_acp_cancel))
-        .route("/api/acp/authenticate", post(api_acp_authenticate))
-        .route("/api/acp/new-session", post(api_acp_new_session))
-        .route("/api/acp/load-session", post(api_acp_load_session))
-        .route("/api/acp/sessions", post(api_acp_list_sessions))
-        .route("/api/acp/session", post(api_acp_get_session))
-        .route("/api/acp/delete-session", post(api_acp_delete_session))
-        .route("/api/acp/set-mode", post(api_acp_set_mode))
-        .route("/api/acp/set-model", post(api_acp_set_model))
-        .route("/api/acp/set-config-option", post(api_acp_set_config_option))
-        .route("/api/acp/respond-permission", post(api_acp_respond_permission))
-        .route("/api/acp/stop", post(api_acp_stop))
-        .route("/api/bots/list", post(api_list_bots))
-        .route("/api/bots/create", post(api_create_bot))
-        .route("/api/bots/update", post(api_update_bot))
-        .route("/api/bots/delete", post(api_delete_bot))
-        .route("/api/bots/sessions", post(api_bot_sessions))
         .route("/api/approvals/create", post(api_create_approval))
         .route("/api/approvals/pending", post(api_list_pending_approvals))
         .route("/api/approvals/consume", post(api_consume_approval))
@@ -410,38 +381,7 @@ pub fn create_router(state: WebServerState) -> Router {
         .route("/api/zalo/status", post(api_zalo_status))
         .route("/api/zalo/approvers/list", post(api_zalo_list_approvers))
         .route("/api/zalo/send", post(api_zalo_send))
-        .route("/api/keke/mcp/read", post(crate::handlers::api_keke_read_mcp_servers))
-        .route("/api/keke/mcp/add", post(crate::handlers::api_keke_add_mcp_server))
-        .route("/api/keke/mcp/remove", post(crate::handlers::api_keke_remove_mcp_server))
-        .route("/api/keke/mcp/auth-statuses", post(crate::handlers::api_keke_mcp_auth_statuses))
-        .route("/api/keke/mcp/login", post(crate::handlers::api_keke_mcp_login))
-        .route("/api/keke/mcp/authorize-github", post(crate::handlers::api_keke_mcp_authorize_github))
         // Called by bots' own agent processes, over loopback — see `bots_mcp`.
-        .route("/mcp/bots", post(api_bots_mcp))
-        .route("/api/cc/connect", post(api_cc_connect))
-        .route("/api/cc/send-message", post(api_cc_send_message))
-        .route("/api/cc/disconnect", post(api_cc_disconnect))
-        .route("/api/cc/new-session", post(api_cc_new_session))
-        .route("/api/cc/interrupt", post(api_cc_interrupt))
-        .route("/api/cc/resume-session", post(api_cc_resume_session))
-        .route("/api/cc/resolve-permission", post(api_cc_resolve_permission))
-        .route("/api/cc/set-permission-mode", post(api_cc_set_permission_mode))
-        .route("/api/cc/installed-skills", get(api_cc_get_installed_skills))
-        .route("/api/cc/slash-commands", get(api_cc_get_slash_commands))
-        .route("/api/cc/settings", get(api_cc_get_settings).post(api_cc_update_settings))
-        .route("/api/telemetry/status", get(api_telemetry_status))
-        .route("/api/telemetry/consent", post(api_telemetry_set_consent))
-        .route("/api/telemetry/active", post(api_telemetry_active))
-        .route("/api/cc/sessions", get(api_cc_list_sessions))
-        .route("/api/cc/session-messages", post(api_cc_get_session_messages))
-        .route("/api/cc/delete-session", post(api_cc_delete_session))
-        .route("/api/cc/mcp/list", post(api_cc_mcp_list))
-        .route("/api/cc/mcp/get", post(api_cc_mcp_get))
-        .route("/api/cc/mcp/add", post(api_cc_mcp_add))
-        .route("/api/cc/mcp/remove", post(api_cc_mcp_remove))
-        .route("/api/cc/mcp/disable", post(api_cc_mcp_disable))
-        .route("/api/cc/mcp/enable", post(api_cc_mcp_enable))
-        .route("/api/cc/mcp/projects", get(api_cc_list_projects))
         .route("/api/insights/heatmaps", post(api_get_agent_heatmaps))
         .route("/api/insights/rankings", post(api_get_insight_rankings))
         .route("/api/insights/filter-options", post(api_get_insight_filter_options))

@@ -32,13 +32,11 @@ pub fn run() {
     // Desktop: full app with all plugins, commands, and setup.
     #[cfg(desktop)]
     let builder = {
-        use cc::CCState;
         use dictation::DictationState;
         use codexia_shared::terminal::TerminalState;
         use codexia_shared::sleep::SleepState;
         use codexia_shared::state::WatchState;
         use codexia_codex as codex;
-        use codexia_cc as cc;
         use std::sync::Arc;
         use std::time::Instant;
         use tauri::Manager;
@@ -80,12 +78,6 @@ pub fn run() {
             .manage(SleepState::default())
             .manage(DictationState::new())
             .invoke_handler(tauri::generate_handler![
-                commands::keke_mcp::keke_read_mcp_servers,
-                commands::keke_mcp::keke_add_mcp_server,
-                commands::keke_mcp::keke_remove_mcp_server,
-                commands::keke_mcp::keke_mcp_auth_statuses,
-                commands::keke_mcp::keke_mcp_login,
-                commands::keke_mcp::keke_mcp_authorize_github,
                 commands::codex::initialize_codex_async,
                 commands::approvals::approval_respond,
                 commands::approvals::zalo_add_approver,
@@ -102,10 +94,6 @@ pub fn run() {
                 commands::dictation::dictation_cancel,
                 quit_app,
                 commands::updater::is_homebrew_install,
-                commands::remote::remote_status,
-                commands::remote::remote_start,
-                commands::remote::remote_stop,
-                commands::remote::remote_rotate_token,
             ])
             .setup(|app| {
                 // fix_path_env::fix() ran in main() before the logger existed
@@ -118,19 +106,14 @@ pub fn run() {
                 );
                 let app_handle = app.handle().clone();
 
-                // Fan out to the webview and to the remote server's channel, so
-                // remote access can be toggled later without rebuilding the
-                // codex client or CCState around a different sink.
-                let (remote_event_tx, _) = tokio::sync::broadcast::channel(4096);
+                // Fan out to the webview and to the local server's channel, so
+                // the same events reach the app's own HTTP/WebSocket clients.
+                let (event_tx, _) = tokio::sync::broadcast::channel(4096);
                 let event_sink: Arc<dyn codexia_shared::event_sink::EventSink> =
                     Arc::new(event_sink::FanOutEventSink::new(vec![
                         Arc::new(event_sink::TauriEventSink::new(app_handle)),
-                        Arc::new(event_sink::BroadcastEventSink::new(remote_event_tx.clone())),
+                        Arc::new(event_sink::BroadcastEventSink::new(event_tx.clone())),
                     ]));
-
-                app.manage(commands::remote::RemoteState::new(remote_event_tx));
-                app.manage(CCState::new(Arc::clone(&event_sink)));
-                app.manage(codexia_acp::AcpState::new(Arc::clone(&event_sink)));
 
                 let codex_init_started_at = Instant::now();
                 let init_result = tauri::async_runtime::block_on(async {
@@ -169,16 +152,10 @@ pub fn run() {
 
                 // Start the scheduler here rather than on the first frontend call, so
                 // cron tasks fire even if the UI is never opened.
-                let cc_runner = Arc::new(cc::CcAgentRunner::new(
-                    app.state::<CCState>().inner().clone(),
-                ));
                 let codex_runner = Arc::new(codex::CodexAgentRunner::new(codex_runner_client));
-                let bot_runner = Arc::new(codexia_acp::BotAgentRunner::new(
-                    app.state::<codexia_acp::AcpState>().inner().clone(),
-                ));
                 let automation = match tauri::async_runtime::block_on(
                     codexia_automation::AutomationHandle::start(
-                        vec![codex_runner, cc_runner, bot_runner],
+                        vec![codex_runner],
                         Arc::clone(&event_sink),
                     ),
                 ) {
@@ -195,43 +172,10 @@ pub fn run() {
                     log::warn!("failed to clean up orphaned automation runs: {}", err);
                 }
 
-                cc::scan::start_session_scanner();
-
-                // Always serve the loopback API, independent of the remote
-                // toggle: the frontend calls it for endpoints that have been
-                // migrated off `#[tauri::command]` onto the same HTTP handlers
-                // the web build uses, so there is one implementation instead
-                // of two. Reuses the remote channel's sender so events flow to
-                // this server's `/ws` and `/api/events` too.
-                {
-                    let remote = app.state::<commands::remote::RemoteState>();
-                    commands::local_server::start_local_server(
-                        app.handle(),
-                        remote.event_tx.clone(),
-                    );
-                }
-
-                // Restore remote access if the user left it on, so a paired
-                // phone can reach this machine after a restart without someone
-                // walking over to flip the switch. Runs after the codex, cc,
-                // acp and automation states are managed — the server borrows
-                // all of them.
-                if commands::remote::remote_enabled() {
-                    let remote = app.state::<commands::remote::RemoteState>();
-                    let cc_state = app.state::<CCState>();
-                    match commands::remote::start_server(
-                        app.handle(),
-                        remote.inner(),
-                        cc_state.inner(),
-                    ) {
-                        Ok(status) => log::info!(
-                            "[remote] restored on {}:{}",
-                            status.host.unwrap_or_default(),
-                            status.port
-                        ),
-                        Err(err) => log::warn!("[remote] could not restore: {err}"),
-                    }
-                }
+                // Always serve the loopback API: the frontend calls these HTTP
+                // handlers instead of one `#[tauri::command]` per endpoint, and
+                // the local helpers (Zalo tools, approvals) use the same server.
+                commands::local_server::start_local_server(app.handle(), event_tx);
 
                 tauri::async_runtime::spawn(async {
                     tokio::task::spawn_blocking(codexia_git::scan_all_orphan_worktrees)

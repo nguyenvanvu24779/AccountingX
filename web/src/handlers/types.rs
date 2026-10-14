@@ -2,8 +2,6 @@ use codexia_codex::protocol::RequestId;
 use serde::Deserialize;
 use serde_json::Value;
 
-use codexia_cc::mcp::ClaudeCodeMcpServer;
-use codexia_cc::types::AgentOptions;
 use codexia_automation::{AutomationSchedule, CwdMode};
 
 #[derive(Deserialize)]
@@ -147,99 +145,6 @@ pub(crate) struct UnifiedMcpReadParams {
     #[serde(rename = "client_name", alias = "clientName")]
     pub(crate) client_name: String,
     pub(crate) path: Option<String>,
-}
-
-#[derive(Deserialize)]
-pub(crate) struct CcSessionIdParams {
-    #[serde(rename = "session_id", alias = "sessionId")]
-    pub(crate) session_id: String,
-}
-
-#[derive(Deserialize)]
-pub(crate) struct CcGetSessionsParams {
-    #[serde(default)]
-    pub(crate) directory: Option<String>,
-    #[serde(default)]
-    pub(crate) limit: Option<usize>,
-    #[serde(default)]
-    pub(crate) offset: Option<usize>,
-    #[serde(default, rename = "include_worktrees", alias = "includeWorktrees")]
-    pub(crate) include_worktrees: Option<bool>,
-}
-
-#[derive(Deserialize)]
-pub(crate) struct CcSendMessageParams {
-    #[serde(rename = "session_id", alias = "sessionId")]
-    pub(crate) session_id: String,
-    pub(crate) message: String,
-    #[serde(default)]
-    pub(crate) image_paths: Vec<String>,
-}
-
-#[derive(Deserialize)]
-pub(crate) struct CcNewSessionParams {
-    pub(crate) options: AgentOptions,
-}
-
-#[derive(Deserialize)]
-pub(crate) struct CcResumeSessionParams {
-    #[serde(rename = "session_id", alias = "sessionId")]
-    pub(crate) session_id: String,
-    pub(crate) options: AgentOptions,
-}
-
-#[derive(Deserialize)]
-pub(crate) struct CcUpdateSettingsParams {
-    pub(crate) settings: Value,
-}
-
-#[derive(Deserialize)]
-pub(crate) struct CcResolvePermissionParams {
-    #[serde(rename = "request_id", alias = "requestId")]
-    pub(crate) request_id: String,
-    pub(crate) decision: String,
-}
-
-#[derive(Deserialize)]
-pub(crate) struct CcSetPermissionModeParams {
-    #[serde(rename = "session_id", alias = "sessionId")]
-    pub(crate) session_id: String,
-    pub(crate) mode: String,
-}
-
-#[derive(Deserialize)]
-pub(crate) struct CcMcpListParams {
-    #[serde(rename = "working_dir", alias = "workingDir")]
-    pub(crate) working_dir: String,
-}
-
-#[derive(Deserialize)]
-pub(crate) struct CcMcpGetParams {
-    pub(crate) name: String,
-    #[serde(rename = "working_dir", alias = "workingDir")]
-    pub(crate) working_dir: String,
-}
-
-#[derive(Deserialize)]
-pub(crate) struct CcMcpAddParams {
-    pub(crate) request: ClaudeCodeMcpServer,
-    #[serde(rename = "working_dir", alias = "workingDir")]
-    pub(crate) working_dir: String,
-}
-
-#[derive(Deserialize)]
-pub(crate) struct CcMcpRemoveParams {
-    pub(crate) name: String,
-    #[serde(rename = "working_dir", alias = "workingDir")]
-    pub(crate) working_dir: String,
-    pub(crate) scope: String,
-}
-
-#[derive(Deserialize)]
-pub(crate) struct CcMcpToggleParams {
-    pub(crate) name: String,
-    #[serde(rename = "working_dir", alias = "workingDir")]
-    pub(crate) working_dir: String,
 }
 
 #[derive(Deserialize)]

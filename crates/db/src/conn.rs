@@ -23,8 +23,6 @@ pub(crate) fn get_connection() -> Result<Connection, String> {
 fn init_tables(conn: &Connection) -> Result<(), String> {
     init_notes_table(conn)?;
     init_automation_runs_tables(conn)?;
-    init_acp_sessions_tables(conn)?;
-    init_bots_table(conn)?;
     init_approval_tickets_table(conn)?;
     init_zalo_approvers_table(conn)?;
     init_zalo_pairings_table(conn)?;
@@ -137,113 +135,6 @@ pub(crate) fn init_approval_tickets_table(conn: &Connection) -> Result<(), Strin
     Ok(())
 }
 
-/// Create the bot registry. Conversations are not stored here: a bot's history
-/// is its ACP sessions, tagged with `acp_sessions.bot_id`.
-fn init_bots_table(conn: &Connection) -> Result<(), String> {
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS bots (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            title TEXT,
-            avatar TEXT NOT NULL,
-            color TEXT NOT NULL,
-            agent_id TEXT NOT NULL,
-            provider TEXT,
-            model TEXT,
-            reasoning_effort TEXT,
-            cwd TEXT NOT NULL,
-            system_prompt TEXT,
-            trust_level TEXT NOT NULL,
-            approved_tools TEXT NOT NULL DEFAULT '[]',
-            mcp_servers TEXT NOT NULL DEFAULT '[]',
-            pinned BOOLEAN NOT NULL DEFAULT 0,
-            archived BOOLEAN NOT NULL DEFAULT 0,
-            notifications_enabled BOOLEAN NOT NULL DEFAULT 1,
-            unread_count INTEGER NOT NULL DEFAULT 0,
-            last_viewed_at TEXT,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
-        )",
-        [],
-    )
-    .map_err(|e| format!("Failed to create bots table: {}", e))?;
-
-    // Existing bots opt in explicitly; never grant collaboration during migration.
-    if let Err(err) = conn.execute(
-        "ALTER TABLE bots ADD COLUMN allowed_bot_ids TEXT NOT NULL DEFAULT '[]'",
-        [],
-    ) && !err.to_string().contains("duplicate column name") {
-        return Err(format!("Failed to add bots.allowed_bot_ids column: {err}"));
-    }
-
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_bots_pinned_updated
-         ON bots(pinned DESC, updated_at DESC)",
-        [],
-    )
-    .map_err(|e| format!("Failed to create bots index: {}", e))?;
-
-    Ok(())
-}
-
-/// Create the ACP session list and its transcript table
-fn init_acp_sessions_tables(conn: &Connection) -> Result<(), String> {
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS acp_sessions (
-            session_id TEXT PRIMARY KEY,
-            agent_id TEXT NOT NULL,
-            agent_title TEXT,
-            cwd TEXT NOT NULL,
-            title TEXT,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
-        )",
-        [],
-    )
-    .map_err(|e| format!("Failed to create acp_sessions table: {}", e))?;
-
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS acp_session_updates (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_id TEXT NOT NULL,
-            payload TEXT NOT NULL,
-            created_at TEXT NOT NULL
-        )",
-        [],
-    )
-    .map_err(|e| format!("Failed to create acp_session_updates table: {}", e))?;
-
-    // Added after the table shipped, so an existing database gets it here.
-    if let Err(err) = conn.execute("ALTER TABLE acp_sessions ADD COLUMN bot_id TEXT", [])
-        && !err.to_string().contains("duplicate column name")
-    {
-        return Err(format!("Failed to add acp_sessions.bot_id column: {err}"));
-    }
-
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_acp_sessions_bot_updated
-         ON acp_sessions(bot_id, updated_at DESC)",
-        [],
-    )
-    .map_err(|e| format!("Failed to create acp_sessions bot index: {}", e))?;
-
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_acp_sessions_cwd_updated
-         ON acp_sessions(cwd, updated_at DESC)",
-        [],
-    )
-    .map_err(|e| format!("Failed to create acp_sessions cwd index: {}", e))?;
-
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_acp_session_updates_session
-         ON acp_session_updates(session_id, id ASC)",
-        [],
-    )
-    .map_err(|e| format!("Failed to create acp_session_updates index: {}", e))?;
-
-    Ok(())
-}
-
 /// Create notes table and indexes
 fn init_notes_table(conn: &Connection) -> Result<(), String> {
     conn.execute(
@@ -343,27 +234,4 @@ fn init_automation_runs_tables(conn: &Connection) -> Result<(), String> {
     .map_err(|e| format!("Failed to create automation_run_steps index: {}", e))?;
 
     Ok(())
-}
-
-#[cfg(test)]
-mod bot_migration_tests {
-    use super::*;
-
-    #[test]
-    fn collaboration_migration_is_idempotent_and_defaults_to_denied() {
-        let conn = Connection::open_in_memory().unwrap();
-        init_bots_table(&conn).unwrap();
-        conn.execute("ALTER TABLE bots DROP COLUMN allowed_bot_ids", []).unwrap();
-        conn.execute(
-            "INSERT INTO bots (id, name, avatar, color, agent_id, cwd, trust_level, created_at, updated_at)
-             VALUES ('old', 'Old', '', '', 'keke', '/', 'ask', '', '')",
-            [],
-        ).unwrap();
-        init_bots_table(&conn).unwrap();
-        init_bots_table(&conn).unwrap();
-        let allowed: String = conn.query_row(
-            "SELECT allowed_bot_ids FROM bots WHERE id = 'old'", [], |row| row.get(0),
-        ).unwrap();
-        assert_eq!(allowed, "[]");
-    }
 }
