@@ -16,7 +16,7 @@ use std::sync::Arc;
 use codexia_codex::app_server::CodexAppServer;
 use codexia_codex::protocol::RequestId;
 use serde_json::{Value, json};
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, OwnedMutexGuard};
 
 use crate::types::WebServerState;
 use crate::zalo_text::{
@@ -24,6 +24,15 @@ use crate::zalo_text::{
     parse_reply, request_kind, request_question, request_response, tidy_for_chat, user_input_is_secret,
     user_input_response,
 };
+
+/// Who the AI is talking with: one person in a private chat, or a whole group
+/// (which works on one company and shares one conversation).
+pub struct Conversation {
+    /// Person id, or `group:<id>`; keys the Codex conversation and the company.
+    pub key: String,
+    /// Shown in the app: the person's or group's name.
+    pub title: String,
+}
 
 #[derive(Default)]
 pub struct ZaloAgentState {
@@ -36,6 +45,9 @@ struct Inner {
     sessions: HashMap<String, Session>,
     /// A task waiting for its sender to say which company it is for.
     waiting_for_company: HashMap<String, Waiting>,
+    /// One lock per browser: work that shares a Chrome profile takes turns,
+    /// work on different profiles runs in parallel.
+    browser_locks: HashMap<String, Arc<Mutex<()>>>,
 }
 
 struct Waiting {
@@ -56,6 +68,8 @@ struct Session {
     queue: VecDeque<String>,
     /// Questions from Codex waiting for the person's answer.
     pending: VecDeque<PendingRequest>,
+    /// Held while this conversation has the browser; released when it is done.
+    guard: Option<OwnedMutexGuard<()>>,
 }
 
 struct PendingRequest {
@@ -88,6 +102,7 @@ async fn say(state: &WebServerState, thread_id: &str, thread_type: &str, text: &
 /// A message from someone on the approver list that is not a ticket reply.
 pub async fn handle_user_message(
     state: &WebServerState,
+    conversation: &Conversation,
     sender_id: &str,
     can_approve: bool,
     reply_thread: String,
@@ -101,7 +116,7 @@ pub async fn handle_user_message(
     }
 
     // 1. An answer to something the AI asked.
-    if answer_pending_request(state, sender_id, &reply_thread, &reply_type, &text).await {
+    if answer_pending_request(state, &conversation.key, &reply_thread, &reply_type, &text).await {
         return;
     }
     // 1b. A bare "ok"/"không" with exactly one ticket waiting decides that ticket.
@@ -131,7 +146,7 @@ pub async fn handle_user_message(
             inner
                 .sessions
                 .iter()
-                .find(|(_, s)| s.sender_id == sender_id && s.running)
+                .find(|(_, s)| s.sender_id == conversation.key && s.running)
                 .map(|(id, s)| (id.clone(), s.turn_id.clone()))
         };
         let answer = match target {
@@ -155,22 +170,22 @@ pub async fn handle_user_message(
     }
     if let Some(index) = parse_company_choice(&text, &companies) {
         let company = &companies[index];
-        if let Err(e) = codexia_db::zalo_threads::set_active_cwd(sender_id, &company.cwd.to_string_lossy()) {
+        if let Err(e) = codexia_db::zalo_threads::set_active_cwd(&conversation.key, &company.cwd.to_string_lossy()) {
             log::warn!("zalo: could not remember the company choice: {e}");
         }
-        let waiting = agent.inner.lock().await.waiting_for_company.remove(sender_id);
+        let waiting = agent.inner.lock().await.waiting_for_company.remove(&conversation.key);
         match waiting {
             Some(task) => {
                 say(state, &task.reply_thread, &task.reply_type, &format!("Đã chọn {}.", company.name)).await;
-                send_to_ai(state, &codex, sender_id, task.reply_thread, task.reply_type, company, task.text).await;
+                send_to_ai(state, &codex, conversation, task.reply_thread, task.reply_type, company, task.text).await;
             }
             None => say(state, &reply_thread, &reply_type, &format!("Đã chọn {}.", company.name)).await,
         }
         return;
     }
-    let Some(company) = current_company(sender_id, &companies) else {
+    let Some(company) = current_company(&conversation.key, &companies) else {
         agent.inner.lock().await.waiting_for_company.insert(
-            sender_id.to_string(),
+            conversation.key.clone(),
             Waiting { text, reply_thread: reply_thread.clone(), reply_type: reply_type.clone() },
         );
         say(state, &reply_thread, &reply_type, &company_menu(&companies)).await;
@@ -178,7 +193,7 @@ pub async fn handle_user_message(
     };
 
     // 4. Hand it to the AI.
-    send_to_ai(state, &codex, sender_id, reply_thread, reply_type, &company, text).await;
+    send_to_ai(state, &codex, conversation, reply_thread, reply_type, &company, text).await;
 }
 
 /// The company this person is working on: their last choice if it still
@@ -242,14 +257,14 @@ async fn answer_pending_request(
 async fn send_to_ai(
     state: &WebServerState,
     codex: &Arc<CodexAppServer>,
-    sender_id: &str,
+    conversation: &Conversation,
     reply_thread: String,
     reply_type: String,
     company: &Company,
     text: String,
 ) {
     let cwd = company.cwd.to_string_lossy().into_owned();
-    let thread_id = match ensure_thread(state, codex, sender_id, &cwd).await {
+    let thread_id = match ensure_thread(state, codex, conversation, &cwd).await {
         Ok(id) => id,
         Err(e) => {
             log::warn!("zalo: could not open a Codex conversation: {e}");
@@ -261,7 +276,7 @@ async fn send_to_ai(
     {
         let mut inner = state.zalo_state.agent.inner.lock().await;
         let session = inner.sessions.entry(thread_id.clone()).or_insert_with(|| Session {
-            sender_id: sender_id.to_string(),
+            sender_id: conversation.key.clone(),
             cwd: cwd.clone(),
             reply_thread: reply_thread.clone(),
             reply_type: reply_type.clone(),
@@ -270,6 +285,7 @@ async fn send_to_ai(
             final_text: None,
             queue: VecDeque::new(),
             pending: VecDeque::new(),
+            guard: None,
         });
         session.reply_thread = reply_thread.clone();
         session.reply_type = reply_type.clone();
@@ -283,20 +299,43 @@ async fn send_to_ai(
         session.final_text = None;
     }
 
+    // Work on the same browser takes turns; other browsers run in parallel.
+    let lock = {
+        let mut inner = state.zalo_state.agent.inner.lock().await;
+        Arc::clone(inner.browser_locks.entry(browser_key(&company.cwd)).or_default())
+    };
+    let guard = match Arc::clone(&lock).try_lock_owned() {
+        Ok(guard) => guard,
+        Err(_) => {
+            say(state, &reply_thread, &reply_type, "Đang có việc khác dùng trình duyệt này, em xếp hàng và làm ngay khi xong.").await;
+            lock.lock_owned().await
+        }
+    };
+    if let Some(session) = state.zalo_state.agent.inner.lock().await.sessions.get_mut(&thread_id) {
+        session.guard = Some(guard);
+    }
+
     say(state, &reply_thread, &reply_type, &format!("Dạ, em đang xử lý ({}).", company.name)).await;
     start_turn(state, codex, &thread_id, &cwd, &text).await;
 }
 
+/// Which Chrome profile this company's MISA work uses: the extension instance
+/// recorded in its `misa-binding.json`, or one shared "default" browser when
+/// nothing is recorded yet.
+fn browser_key(company_dir: &std::path::Path) -> String {
+    std::fs::read_to_string(company_dir.join("misa-binding.json"))
+        .ok()
+        .and_then(|raw| serde_json::from_str::<Value>(&raw).ok())
+        .and_then(|binding| binding.get("chromeInstanceId")?.as_str().map(str::to_string))
+        .filter(|id| !id.trim().is_empty())
+        .unwrap_or_else(|| "default".to_string())
+}
+
 /// Name the conversation after the person so it is easy to spot in the app's
 /// list. Harmless to repeat, and it also renames conversations made before.
-async fn name_thread(codex: &Arc<CodexAppServer>, sender_id: &str, thread_id: &str) {
-    let person = codexia_db::zalo_approvers::get_approver(sender_id)
-        .ok()
-        .flatten()
-        .map(|a| a.display_name)
-        .unwrap_or_else(|| "Zalo".to_string());
+async fn name_thread(codex: &Arc<CodexAppServer>, title: &str, thread_id: &str) {
     let _ = codex
-        .send_request("thread/name/set", json!({ "threadId": thread_id, "name": format!("Zalo · {person}") }))
+        .send_request("thread/name/set", json!({ "threadId": thread_id, "name": format!("Zalo · {title}") }))
         .await;
 }
 
@@ -305,13 +344,13 @@ async fn name_thread(codex: &Arc<CodexAppServer>, sender_id: &str, thread_id: &s
 async fn ensure_thread(
     state: &WebServerState,
     codex: &Arc<CodexAppServer>,
-    sender_id: &str,
+    conversation: &Conversation,
     cwd: &str,
 ) -> Result<String, String> {
-    if let Some(saved) = codexia_db::zalo_threads::thread_for(sender_id, cwd).ok().flatten() {
+    if let Some(saved) = codexia_db::zalo_threads::thread_for(&conversation.key, cwd).ok().flatten() {
         let known = state.zalo_state.agent.inner.lock().await.sessions.contains_key(&saved);
         if known || codex.send_request("thread/resume", json!({ "threadId": saved })).await.is_ok() {
-            name_thread(codex, sender_id, &saved).await;
+            name_thread(codex, &conversation.title, &saved).await;
             return Ok(saved);
         }
     }
@@ -334,11 +373,11 @@ async fn ensure_thread(
         .and_then(Value::as_str)
         .ok_or("thread/start response missing thread.id")?
         .to_string();
-    if let Err(e) = codexia_db::zalo_threads::save_thread(sender_id, cwd, Some(&thread_id)) {
+    if let Err(e) = codexia_db::zalo_threads::save_thread(&conversation.key, cwd, Some(&thread_id)) {
         log::warn!("zalo: could not remember the conversation: {e}");
     }
 
-    name_thread(codex, sender_id, &thread_id).await;
+    name_thread(codex, &conversation.title, &thread_id).await;
     Ok(thread_id)
 }
 
@@ -375,6 +414,7 @@ async fn start_turn(state: &WebServerState, codex: &Arc<CodexAppServer>, thread_
         }
         Err(e) => {
             session.running = false;
+            session.guard = None;
             let (thread, kind) = (session.reply_thread.clone(), session.reply_type.clone());
             drop(inner);
             log::warn!("zalo: turn/start failed: {e}");
@@ -478,6 +518,8 @@ async fn finish_turn(state: &WebServerState, thread_id: &str, params: &Value) {
         if next.is_some() {
             session.running = true;
             session.final_text = None;
+        } else {
+            session.guard = None;
         }
         (session.reply_thread.clone(), session.reply_type.clone(), answer, next, session.cwd.clone())
     };
@@ -489,3 +531,27 @@ async fn finish_turn(state: &WebServerState, thread_id: &str, params: &Value) {
         start_turn(state, &codex, thread_id, &cwd, &text).await;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_browser_comes_from_the_binding_or_falls_back_to_one_shared_default() {
+        let dir = std::env::temp_dir().join(format!("accountingx-binding-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        assert_eq!(browser_key(&dir), "default");
+
+        std::fs::write(dir.join("misa-binding.json"), r#"{"chromeInstanceId": "abc-123"}"#).unwrap();
+        assert_eq!(browser_key(&dir), "abc-123");
+
+        std::fs::write(dir.join("misa-binding.json"), r#"{"chromeInstanceId": "  "}"#).unwrap();
+        assert_eq!(browser_key(&dir), "default");
+
+        std::fs::write(dir.join("misa-binding.json"), "not json").unwrap();
+        assert_eq!(browser_key(&dir), "default");
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+}
+

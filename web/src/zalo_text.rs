@@ -50,6 +50,22 @@ pub fn is_stop(text: &str) -> bool {
     matches!(normalize(text).as_str(), "dừng" | "dung" | "dừng lại" | "dung lai" | "stop" | "hủy" | "huy")
 }
 
+/// In a group the bot only answers when it is spoken to: @mentioned, or the
+/// message starts with "bot". Everything else is people talking to each other.
+/// Returns the text to act on (without a leading "bot"), or `None` to stay quiet.
+pub fn addressed_to_bot(text: &str, mentioned: bool) -> Option<String> {
+    let trimmed = text.trim();
+    let lower = trimmed.to_lowercase();
+    for prefix in ["bot,", "bot:", "bot "] {
+        if let Some(_rest) = lower.strip_prefix(prefix) {
+            // Prefix is ASCII, so the same byte length applies to the original.
+            let rest = trimmed[prefix.len()..].trim();
+            return (!rest.is_empty()).then(|| rest.to_string());
+        }
+    }
+    mentioned.then(|| trimmed.to_string())
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Company {
     pub cwd: PathBuf,
@@ -390,5 +406,15 @@ mod tests {
         assert_eq!(user_input_response(&ask, " tháng 10 ").unwrap(), json!({ "answers": { "q1": { "answers": ["tháng 10"] } } }));
         assert!(!user_input_is_secret(&ask));
         assert_eq!(request_kind("codex/other", &cmd), None);
+    }
+
+    #[test]
+    fn in_a_group_the_bot_only_answers_when_addressed() {
+        assert_eq!(addressed_to_bot("mai họp lúc 9h nhé", false), None);
+        assert_eq!(addressed_to_bot("@Vu Nguyen xem tồn kho", true).as_deref(), Some("@Vu Nguyen xem tồn kho"));
+        assert_eq!(addressed_to_bot("Bot, xem tồn kho tháng này", false).as_deref(), Some("xem tồn kho tháng này"));
+        assert_eq!(addressed_to_bot("bot xem công nợ", false).as_deref(), Some("xem công nợ"));
+        assert_eq!(addressed_to_bot("bot", false), None);
+        assert_eq!(addressed_to_bot("robot đang chạy", false), None);
     }
 }

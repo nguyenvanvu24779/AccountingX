@@ -102,10 +102,16 @@ const CODE_MODE_FEATURES: &str = "\n[features]\ncode_mode = true\ncode_mode_host
 /// Skills AccountingX ships, written into `<CODEX_HOME>/skills/<name>/` on
 /// every start so an app update also updates them. The `accountingx-` prefix
 /// keeps them apart from skills the user installs; those are never touched.
-const BUNDLED_SKILLS: &[(&str, &str)] = &[(
-    "accountingx-misa-ton-kho",
-    include_str!("../skills/accountingx-misa-ton-kho/SKILL.md"),
-)];
+const BUNDLED_SKILLS: &[(&str, &str)] = &[
+    (
+        "accountingx-misa-phien",
+        include_str!("../skills/accountingx-misa-phien/SKILL.md"),
+    ),
+    (
+        "accountingx-misa-ton-kho",
+        include_str!("../skills/accountingx-misa-ton-kho/SKILL.md"),
+    ),
+];
 
 fn install_bundled_skills(home: &Path) -> std::io::Result<()> {
     for (name, content) in BUNDLED_SKILLS {

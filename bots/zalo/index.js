@@ -18,7 +18,7 @@
 //                  {"method": "qrScanned", "params": {"displayName"}}
 //                  {"method": "loginFailed", "params": {"message": "expired" | "declined" | "failed"}}
 //                  {"method": "loggedOut", "params": {}}
-//                  {"method": "message", "params": {"threadId", "threadType", "senderId", "senderName", "text", "isSelf"}}
+//                  {"method": "message", "params": {"threadId", "threadType", "senderId", "senderName", "groupName", "mentionedMe", "text", "isSelf"}}
 //                  {"method": "error", "params": {"message": "..."}}
 //
 // Session persistence: after a QR login we save the cookie plus the imei and
@@ -82,6 +82,22 @@ function loadSession() {
 }
 
 let api = null;
+
+const groupNames = new Map();
+
+/** A group's name, looked up once and remembered. Empty if it cannot be read. */
+async function groupName(groupId) {
+  if (groupNames.has(groupId)) return groupNames.get(groupId);
+  let name = '';
+  try {
+    const info = await api.getGroupInfo(groupId);
+    name = info?.gridInfoMap?.[groupId]?.name ?? '';
+  } catch {
+    // Not fatal: the app falls back to a generic name.
+  }
+  groupNames.set(groupId, name);
+  return name;
+}
 
 async function start() {
   const zalo = new Zalo();
@@ -150,14 +166,24 @@ async function start() {
     if (message.isSelf) return;
     const content = message.data?.content;
     if (typeof content !== 'string') return;
-    notify('message', {
-      threadId: message.threadId,
-      threadType: message.type === ThreadType.Group ? 'Group' : 'User',
-      senderId: message.data?.uidFrom,
-      senderName: message.data?.dName ?? '',
-      text: content,
-      isSelf: false,
-    });
+    const isGroup = message.type === ThreadType.Group;
+    // Was the bot @mentioned? (type 1 is "@all", which does not count.)
+    const ownId = String(api.getOwnId());
+    const mentionedMe = (message.data?.mentions ?? []).some(
+      (m) => m.type !== 1 && String(m.uid) === ownId
+    );
+    (async () => {
+      notify('message', {
+        threadId: message.threadId,
+        threadType: isGroup ? 'Group' : 'User',
+        senderId: message.data?.uidFrom,
+        senderName: message.data?.dName ?? '',
+        groupName: isGroup ? await groupName(message.threadId) : '',
+        mentionedMe,
+        text: content,
+        isSelf: false,
+      });
+    })();
   });
   api.listener.onConnectionError?.((err) => {
     notify('error', { message: `listener connection error: ${err}` });

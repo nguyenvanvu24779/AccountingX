@@ -148,6 +148,12 @@ fn handle_message(params: Value, state: WebServerState) {
         .and_then(Value::as_str)
         .unwrap_or_default()
         .to_string();
+    let mentioned_me = params.get("mentionedMe").and_then(Value::as_bool).unwrap_or(false);
+    let group_name = params
+        .get("groupName")
+        .and_then(Value::as_str)
+        .unwrap_or_default()
+        .to_string();
     let thread_type = params
         .get("threadType")
         .and_then(Value::as_str)
@@ -158,7 +164,11 @@ fn handle_message(params: Value, state: WebServerState) {
         let approver = match codexia_db::zalo_approvers::get_approver(&sender_id) {
             Ok(Some(approver)) => approver,
             Ok(None) => {
-                // Strangers can only pair with a code; anything else is ignored.
+                // Strangers can only pair with a code, and only in a private chat:
+                // a code posted in a group would be seen by everyone in it.
+                if thread_type == "Group" {
+                    return;
+                }
                 if let Some(answer) =
                     crate::zalo_pairing::handle_unregistered_sender(&sender_id, &sender_name, &text)
                 {
@@ -196,8 +206,28 @@ fn handle_message(params: Value, state: WebServerState) {
         }
 
         // Anyone on the list is trusted: everything else is a message for the AI.
+        // A group is one shared conversation about one company, and the bot
+        // only joins in when spoken to.
+        let is_group = thread_type == "Group";
+        let text = if is_group {
+            match crate::zalo_text::addressed_to_bot(&text, mentioned_me) {
+                Some(text) => text,
+                None => return,
+            }
+        } else {
+            text
+        };
+        let conversation = crate::zalo_agent::Conversation {
+            key: if is_group { format!("group:{thread_id}") } else { sender_id.clone() },
+            title: if is_group {
+                if group_name.is_empty() { "nhóm Zalo".to_string() } else { format!("nhóm {group_name}") }
+            } else {
+                approver.display_name.clone()
+            },
+        };
         crate::zalo_agent::handle_user_message(
             &state,
+            &conversation,
             &sender_id,
             approver.can_approve,
             thread_id,

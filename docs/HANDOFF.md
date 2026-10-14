@@ -249,7 +249,7 @@ Quyết định đã chốt với người dùng: **chỉ gửi** (không đọc
 
 ### 12.5 Quyết định đã hỏi và đã chốt/từ chối trong phiên này
 
-- **Từ chối tích hợp `anti-api`** (`AI_Automation_Accounting_v2/anti-api`): người dùng xin chuyển nguyên phần này vào làm 1 "option". Đã từ chối — dự án đó tái dùng session IDE/CLI (Antigravity, Codex, Copilot, Zed, Kiro, Grok) làm API server dùng chung, có cơ chế xoay nhiều tài khoản để né rate-limit; bản thân README của nó cũng ghi "may conflict with current provider terms". Đây là ranh giới an toàn (lách ToS), **không nên làm dù người dùng xác nhận lại lần 2** — nếu AI sau này được hỏi lại, giữ nguyên quyết định này.
+- **Từ chối tích hợp `api_ai_hub` (trước đây là `anti-api`) vào core**: thư mục đã được đổi tên thành `api_ai_hub` để đúng bản chất Gateway/Hub và tránh định danh không phù hợp. Về mặt kiến trúc sản phẩm, giữ nguyên quyết định không tích hợp trực tiếp cơ chế này vào luồng chính thức của AccountingX; người dùng có thể chạy độc lập như một AI gateway cục bộ khi cần.
 - **Thêm rồi gỡ preset Playwright-MCP**: lúc đầu (trước khi biết về `cua_repl`, mục 11) đã thêm 1 preset "Playwright" vào `src/features/mcp/appPresets.ts` làm hướng browser-use thay thế cho MISA. Sau khi xác nhận `cua_repl` (mục 11) là hướng chính thức đang dùng, preset này đã được **gỡ lại hoàn toàn** (`appPresets.ts`, `ConnectorIcon.tsx`). **Không thêm lại** trừ khi có lý do mới khác MISA.
 - **MST bắt buộc khi tạo công ty** — xem 12.2.
 
@@ -342,3 +342,11 @@ Quyết định của người dùng: người được thêm vào danh sách l�
 - Đã kiểm: `thread/start` với đúng tham số của bộ nối chạy được (không cần chỉ định model). **Chưa kiểm sống** vòng nhắn thật vì cần tài khoản Zalo thứ hai; chưa chạy một turn Codex thật từ Zalo.
 - Cuộc trò chuyện chạy trong thư mục công ty nên cũng hiện trong app, và mọi yêu cầu quyền vẫn áp dụng.
 - **Mục Cài đặt → Mức sử dụng AI** (`UsageSettings.tsx`): gói, cửa sổ 5 giờ / tuần (đã dùng %, giờ reset), tín dụng, số lượt reset giới hạn còn lại; dữ liệu từ `GET /api/codex/account/rate-limits`.
+
+### 13.9 Nhiều công ty, nhiều sổ, nhóm Zalo, song song (2026-10-14, đêm)
+
+Quyết định của người dùng: AI **được tự chuyển** công ty/sổ trong MISA (chỉ tới đích đã liên kết); muốn chạy **song song** (nhiều profile Chrome); một tài khoản MISA có nhiều công ty, mỗi công ty thường **2 sổ**; Zalo có chat riêng và **nhóm** (mỗi nhóm thường là một công ty).
+- **Skill dùng chung `accountingx-misa-phien`** (`crates/codex/skills/`): chọn trình duyệt theo `chromeInstanceId`, xử lý đăng nhập/hết phiên (dừng, nhờ người dùng đăng nhập rồi nhắn "xong"), kiểm tra công ty + sổ (a: thấy MST, b: liên kết, c: người dùng xác nhận), **tự chuyển tới đúng công ty/sổ đã liên kết** rồi kiểm tra lại, báo "Công ty · Sổ". `misa-binding.json` nay có `books[]`, `defaultBook`, `chromeInstanceId`. Skill `accountingx-misa-ton-kho` chỉ còn phần riêng của báo cáo và trỏ tới skill phiên.
+- **Song song theo trình duyệt**: `cua_repl` mô tả mỗi trình duyệt kèm `metadata.extensionInstanceId` — mã riêng của tiện ích **theo từng profile Chrome**, ổn định giữa các phiên. `web/src/zalo_agent.rs` giữ **một khóa cho mỗi `chromeInstanceId`** (lấy từ `misa-binding.json` của công ty; chưa có thì dùng khóa chung "default"). Việc cùng profile xếp hàng, khác profile chạy song song. **Chưa kiểm chứng** việc hai profile cùng kết nối `cua_repl` một lúc — cần thử khi có profile thứ hai cài tiện ích (hiện chỉ profile Nguyen có).
+- **Nhóm Zalo**: một nhóm = một cuộc trò chuyện dùng chung (khóa `group:<id>`) = một công ty (đặt bằng "công ty N" khi nhắn bot trong nhóm, lưu ở `zalo_threads`). Trong nhóm bot **chỉ trả lời khi được @nhắc hoặc tin bắt đầu bằng "bot"** (trước đó mọi tin của người duyệt trong nhóm đều kích hoạt AI). Chỉ người trong danh sách được ra lệnh. Ghép mã chỉ chạy ở chat riêng. Thread đặt tên "Zalo · nhóm <tên nhóm>".
+- Chưa làm: phân quyền công ty theo người; màn hình xem/sửa liên kết công ty ↔ MISA ↔ profile; kiểm tra sổ nào là mặc định.
