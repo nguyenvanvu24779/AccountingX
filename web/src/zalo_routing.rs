@@ -148,6 +148,11 @@ fn handle_message(params: Value, zalo_state: Arc<ZaloState>, acp_state: Arc<AcpS
     let Some(thread_id) = params.get("threadId").and_then(Value::as_str).map(str::to_string) else {
         return;
     };
+    let sender_name = params
+        .get("senderName")
+        .and_then(Value::as_str)
+        .unwrap_or_default()
+        .to_string();
     let thread_type = params
         .get("threadType")
         .and_then(Value::as_str)
@@ -158,7 +163,14 @@ fn handle_message(params: Value, zalo_state: Arc<ZaloState>, acp_state: Arc<AcpS
         let approver = match codexia_db::zalo_approvers::get_approver(&sender_id) {
             Ok(Some(approver)) => approver,
             Ok(None) => {
-                log::info!("zalo: message from unregistered sender {sender_id}, ignoring");
+                // Strangers can only pair with a code; anything else is ignored.
+                if let Some(answer) =
+                    crate::zalo_pairing::handle_unregistered_sender(&sender_id, &sender_name, &text)
+                {
+                    send_reply(&zalo_state, &thread_id, &thread_type, &answer).await;
+                } else {
+                    log::info!("zalo: message from unregistered sender {sender_id}, ignoring");
+                }
                 return;
             }
             Err(e) => {
@@ -199,12 +211,16 @@ fn handle_message(params: Value, zalo_state: Arc<ZaloState>, acp_state: Arc<AcpS
         };
 
         if let Some(text) = reply {
-            let sidecar = zalo_state.sidecar.lock().await.clone();
-            if let Some(sidecar) = sidecar
-                && let Err(e) = sidecar.send_message(&thread_id, &thread_type, &text).await
-            {
-                log::warn!("zalo: could not send reply: {e}");
-            }
+            send_reply(&zalo_state, &thread_id, &thread_type, &text).await;
         }
     });
+}
+
+async fn send_reply(zalo_state: &ZaloState, thread_id: &str, thread_type: &str, text: &str) {
+    let sidecar = zalo_state.sidecar.lock().await.clone();
+    if let Some(sidecar) = sidecar
+        && let Err(e) = sidecar.send_message(thread_id, thread_type, text).await
+    {
+        log::warn!("zalo: could not send reply: {e}");
+    }
 }

@@ -27,6 +27,22 @@ fn init_tables(conn: &Connection) -> Result<(), String> {
     init_bots_table(conn)?;
     init_approval_tickets_table(conn)?;
     init_zalo_approvers_table(conn)?;
+    init_zalo_pairings_table(conn)?;
+    Ok(())
+}
+
+/// Short-lived codes for adding a Zalo approver by having them message the bot.
+pub(crate) fn init_zalo_pairings_table(conn: &Connection) -> Result<(), String> {
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS zalo_pairings (
+            code TEXT PRIMARY KEY,
+            can_approve BOOLEAN NOT NULL,
+            can_command BOOLEAN NOT NULL,
+            expires_at TEXT NOT NULL
+        )",
+        [],
+    )
+    .map_err(|e| format!("Failed to create zalo_pairings table: {}", e))?;
     Ok(())
 }
 

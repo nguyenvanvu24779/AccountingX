@@ -90,6 +90,8 @@ pub fn run() {
                 commands::approvals::approval_respond,
                 commands::approvals::zalo_add_approver,
                 commands::approvals::zalo_remove_approver,
+                commands::approvals::zalo_create_pairing,
+                commands::approvals::zalo_cancel_pairing,
                 commands::dictation::dictation_model_status,
                 commands::dictation::dictation_download_model,
                 commands::dictation::dictation_cancel_download,

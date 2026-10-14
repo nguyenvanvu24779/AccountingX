@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -27,6 +28,7 @@ import {
   zaloRemoveApprover,
   zaloStatus,
 } from '@/services';
+import { ZaloPairDialog } from './ZaloPairDialog';
 
 function QrCode({ path }: { path: string }) {
   const [dataUri, setDataUri] = useState<string | null>(null);
@@ -72,29 +74,20 @@ function AccountAvatar({ account }: { account: ZaloAccount | null }) {
   );
 }
 
-function ConnectionCard() {
+function ConnectionCard({
+  status,
+  onStatus,
+}: {
+  status: ZaloStatus | null;
+  onStatus: (status: ZaloStatus) => void;
+}) {
   const { t } = useTranslation('zalo');
-  const [status, setStatus] = useState<ZaloStatus | null>(null);
   const [busy, setBusy] = useState(false);
-
-  const refresh = useCallback(async () => {
-    try {
-      setStatus(await zaloStatus());
-    } catch {
-      // The sidecar hasn't been started yet in this session — not an error to show.
-    }
-  }, []);
-
-  useEffect(() => {
-    void refresh();
-    const interval = setInterval(() => void refresh(), 3000);
-    return () => clearInterval(interval);
-  }, [refresh]);
 
   const toggle = async () => {
     setBusy(true);
     try {
-      setStatus(
+      onStatus(
         status?.connected || status?.connecting ? await zaloDisconnect() : await zaloConnect()
       );
     } finally {
@@ -161,8 +154,9 @@ function ConnectionCard() {
   );
 }
 
-function ApproversCard() {
+function ApproversCard({ status }: { status: ZaloStatus | null }) {
   const { t } = useTranslation('zalo');
+  const [pairOpen, setPairOpen] = useState(false);
   const [approvers, setApprovers] = useState<ZaloApprover[]>([]);
   const [bots, setBots] = useState<Bot[]>([]);
   const [zaloUserId, setZaloUserId] = useState('');
@@ -237,61 +231,93 @@ function ApproversCard() {
           )}
         </div>
 
-        <div className="space-y-2 rounded-md border p-3">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <Label htmlFor="zalo-user-id">{t('zaloUserIdLabel')}</Label>
-              <Input
-                id="zalo-user-id"
-                value={zaloUserId}
-                onChange={(e) => setZaloUserId(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="zalo-display-name">{t('displayNameLabel')}</Label>
-              <Input
-                id="zalo-display-name"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <Label>{t('botLabel')}</Label>
-            <Select value={botId} onValueChange={setBotId}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('botPlaceholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {bots.map((bot) => (
-                  <SelectItem key={bot.id} value={bot.id}>
-                    {bot.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 text-sm">
-              <Checkbox checked={canApprove} onCheckedChange={(v) => setCanApprove(v === true)} />
-              {t('canApproveBadge')}
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <Checkbox checked={canCommand} onCheckedChange={(v) => setCanCommand(v === true)} />
-              {t('canCommandBadge')}
-            </label>
-          </div>
-
-          <Button
-            size="sm"
-            disabled={!zaloUserId.trim() || !displayName.trim() || adding}
-            onClick={() => void handleAdd()}
-          >
-            {adding ? t('adding') : t('addApprover')}
+        <div className="flex items-center gap-3">
+          <Button size="sm" disabled={!status?.connected} onClick={() => setPairOpen(true)}>
+            {t('pair.add')}
           </Button>
+          {!status?.connected && (
+            <span className="text-xs text-muted-foreground">{t('pair.needsConnection')}</span>
+          )}
         </div>
+
+        <Collapsible>
+          <CollapsibleTrigger asChild>
+            <Button variant="link" size="sm" className="h-auto p-0 text-xs">
+              {t('pair.advanced')}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-2">
+            <div className="space-y-2 rounded-md border p-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label htmlFor="zalo-user-id">{t('zaloUserIdLabel')}</Label>
+                  <Input
+                    id="zalo-user-id"
+                    value={zaloUserId}
+                    onChange={(e) => setZaloUserId(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="zalo-display-name">{t('displayNameLabel')}</Label>
+                  <Input
+                    id="zalo-display-name"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label>{t('botLabel')}</Label>
+                <Select value={botId} onValueChange={setBotId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('botPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bots.map((bot) => (
+                      <SelectItem key={bot.id} value={bot.id}>
+                        {bot.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={canApprove}
+                    onCheckedChange={(v) => setCanApprove(v === true)}
+                  />
+                  {t('canApproveBadge')}
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={canCommand}
+                    onCheckedChange={(v) => setCanCommand(v === true)}
+                  />
+                  {t('canCommandBadge')}
+                </label>
+              </div>
+
+              <Button
+                size="sm"
+                disabled={!zaloUserId.trim() || !displayName.trim() || adding}
+                onClick={() => void handleAdd()}
+              >
+                {adding ? t('adding') : t('addApprover')}
+              </Button>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        <ZaloPairDialog
+          open={pairOpen}
+          onOpenChange={setPairOpen}
+          botName={status?.account?.displayName ?? null}
+          knownIds={approvers.map((a) => a.zaloUserId)}
+          onPaired={() => void refresh()}
+        />
       </CardContent>
     </Card>
   );
@@ -299,11 +325,31 @@ function ApproversCard() {
 
 export function ZaloSettings() {
   const { t } = useTranslation('zalo');
+  const [status, setStatus] = useState<ZaloStatus | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const refresh = async () => {
+      try {
+        const next = await zaloStatus();
+        if (!cancelled) setStatus(next);
+      } catch {
+        // The sidecar hasn't been started yet in this session — not an error to show.
+      }
+    };
+    void refresh();
+    const interval = setInterval(() => void refresh(), 3000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
   return (
     <section className="space-y-3">
       <h3 className="px-1 text-sm font-medium">{t('title')}</h3>
-      <ConnectionCard />
-      <ApproversCard />
+      <ConnectionCard status={status} onStatus={setStatus} />
+      <ApproversCard status={status} />
     </section>
   );
 }

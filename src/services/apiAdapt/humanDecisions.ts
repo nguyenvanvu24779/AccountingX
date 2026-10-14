@@ -1,6 +1,6 @@
 import type { ApprovalTicket } from './approvals';
 import { invokeTauri, isDesktopTauri } from './shared';
-import type { ZaloApprover } from './zalo';
+import type { ZaloApprover, ZaloPairing } from './zalo';
 
 /*
  * Decisions only a person may make. They go through Tauri commands, never the
@@ -34,4 +34,14 @@ export async function zaloAddApprover(params: {
 export async function zaloRemoveApprover(zaloUserId: string) {
   requireDesktop();
   await invokeTauri<null>('zalo_remove_approver', { zaloUserId });
+}
+
+export async function zaloCreatePairing(params: { canApprove?: boolean; canCommand?: boolean }) {
+  requireDesktop();
+  return await invokeTauri<ZaloPairing>('zalo_create_pairing', params);
+}
+
+export async function zaloCancelPairing(code: string) {
+  requireDesktop();
+  await invokeTauri<null>('zalo_cancel_pairing', { code });
 }

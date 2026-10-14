@@ -11,6 +11,7 @@ pub mod types;
 mod websocket;
 mod server_web;
 pub mod zalo_notify;
+pub mod zalo_pairing;
 pub mod zalo_routing;
 pub mod zalo_state;
 

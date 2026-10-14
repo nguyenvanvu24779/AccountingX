@@ -18,7 +18,7 @@
 //                  {"method": "qrScanned", "params": {"displayName"}}
 //                  {"method": "loginFailed", "params": {"message": "expired" | "declined" | "failed"}}
 //                  {"method": "loggedOut", "params": {}}
-//                  {"method": "message", "params": {"threadId", "threadType", "senderId", "text", "isSelf"}}
+//                  {"method": "message", "params": {"threadId", "threadType", "senderId", "senderName", "text", "isSelf"}}
 //                  {"method": "error", "params": {"message": "..."}}
 //
 // Session persistence: after a QR login we save the cookie plus the imei and
@@ -154,6 +154,7 @@ async function start() {
       threadId: message.threadId,
       threadType: message.type === ThreadType.Group ? 'Group' : 'User',
       senderId: message.data?.uidFrom,
+      senderName: message.data?.dName ?? '',
       text: content,
       isSelf: false,
     });

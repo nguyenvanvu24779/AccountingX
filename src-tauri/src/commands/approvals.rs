@@ -6,6 +6,7 @@
 
 use codexia_db::approvals::ApprovalTicket;
 use codexia_db::zalo_approvers::ZaloApprover;
+use codexia_db::zalo_pairings::ZaloPairing;
 
 /// Recorded as the approver when someone decides in the desktop app.
 const LOCAL_APPROVER: &str = "desktop";
@@ -35,4 +36,19 @@ pub async fn zalo_add_approver(
 #[tauri::command]
 pub async fn zalo_remove_approver(zalo_user_id: String) -> Result<(), String> {
     codexia_db::zalo_approvers::remove_approver(&zalo_user_id)
+}
+
+/// A code a person can message to the bot to be added to the approver list.
+/// Human-only like the other approver edits: a code is a way into the list.
+#[tauri::command]
+pub async fn zalo_create_pairing(
+    can_approve: Option<bool>,
+    can_command: Option<bool>,
+) -> Result<ZaloPairing, String> {
+    codexia_db::zalo_pairings::create_pairing(can_approve.unwrap_or(true), can_command.unwrap_or(false))
+}
+
+#[tauri::command]
+pub async fn zalo_cancel_pairing(code: String) -> Result<(), String> {
+    codexia_db::zalo_pairings::cancel_pairing(&code)
 }

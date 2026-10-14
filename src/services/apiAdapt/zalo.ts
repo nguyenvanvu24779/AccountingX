@@ -6,6 +6,13 @@ export type ZaloAccount = {
   avatar: string | null;
 };
 
+export type ZaloPairing = {
+  code: string;
+  canApprove: boolean;
+  canCommand: boolean;
+  expiresAt: string;
+};
+
 export type ZaloStatus = {
   connected: boolean;
   /** A login is under way (QR shown or waiting for the phone to approve). */
