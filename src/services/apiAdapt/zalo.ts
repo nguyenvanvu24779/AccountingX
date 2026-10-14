@@ -1,7 +1,14 @@
 import { postJson } from './shared';
 
+export type ZaloAccount = {
+  userId: string;
+  displayName: string;
+  avatar: string | null;
+};
+
 export type ZaloStatus = {
   connected: boolean;
+  account: ZaloAccount | null;
   qrPath: string | null;
   lastError: string | null;
 };

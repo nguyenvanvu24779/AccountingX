@@ -8,6 +8,7 @@ use codexia_shared::zalo::ZaloSidecar;
 
 use crate::types::{ErrorResponse, WebServerState};
 use crate::zalo_routing::handle_notification;
+use crate::zalo_state::ZaloAccount;
 
 fn err(e: String) -> ErrorResponse {
     ErrorResponse { error: e }
@@ -24,6 +25,7 @@ fn zalo_session_dir() -> Result<std::path::PathBuf, String> {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct ZaloStatus {
     connected: bool,
+    account: Option<ZaloAccount>,
     qr_path: Option<String>,
     last_error: Option<String>,
 }
@@ -71,6 +73,7 @@ pub(crate) async fn api_zalo_disconnect(
         .zalo_state
         .connected
         .store(false, std::sync::atomic::Ordering::Relaxed);
+    *state.zalo_state.account.lock().await = None;
     status(&state).await
 }
 
@@ -83,6 +86,7 @@ pub(crate) async fn api_zalo_status(
 async fn status(state: &WebServerState) -> Result<Json<ZaloStatus>, ErrorResponse> {
     Ok(Json(ZaloStatus {
         connected: state.zalo_state.is_connected(),
+        account: state.zalo_state.account.lock().await.clone(),
         qr_path: state.zalo_state.qr_path.lock().await.clone(),
         last_error: state.zalo_state.last_error.lock().await.clone(),
     }))

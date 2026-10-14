@@ -189,6 +189,7 @@ export const en = {
     connected: 'Connected',
     notConnected: 'Not connected',
     connectionDescription: 'A dedicated Zalo account the bot uses to send and receive messages.',
+    accountId: 'Zalo ID: {{id}}',
     connect: 'Connect',
     disconnect: 'Disconnect',
     scanQrHint: "Open Zalo on the bot's phone and scan this code.",

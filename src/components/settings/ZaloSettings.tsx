@@ -12,10 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 import {
   type Bot,
   listBots,
   readFile,
+  type ZaloAccount,
   type ZaloApprover,
   type ZaloStatus,
   zaloAddApprover,
@@ -43,6 +45,31 @@ function QrCode({ path }: { path: string }) {
 
   if (!dataUri) return null;
   return <img src={dataUri} alt="" className="size-48 rounded border" />;
+}
+
+// Zalo's blue tile with the account's own avatar once we know it.
+function AccountAvatar({ account }: { account: ZaloAccount | null }) {
+  const [failed, setFailed] = useState(false);
+
+  if (account?.avatar && !failed) {
+    return (
+      <img
+        src={account.avatar}
+        alt=""
+        className="size-10 shrink-0 rounded-full border object-cover"
+        referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return (
+    <div
+      aria-hidden
+      className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#0068ff] text-sm font-bold text-white"
+    >
+      {account?.displayName ? account.displayName.charAt(0).toUpperCase() : 'Z'}
+    </div>
+  );
 }
 
 function ConnectionCard() {
@@ -73,15 +100,34 @@ function ConnectionCard() {
     }
   };
 
+  const account = status?.account;
+
   return (
     <Card>
       <CardContent className="space-y-3 px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <div className="text-sm font-medium">
-              {status?.connected ? t('connected') : t('notConnected')}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <AccountAvatar account={account ?? null} />
+            <div className="min-w-0 space-y-0.5">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <span className="truncate">
+                  {status?.connected ? (account?.displayName ?? t('title')) : t('title')}
+                </span>
+                <span
+                  className={cn(
+                    'rounded-full px-2 py-0.5 text-xs font-normal',
+                    status?.connected
+                      ? 'bg-green-500/15 text-green-700 dark:text-green-400'
+                      : 'bg-muted text-muted-foreground'
+                  )}
+                >
+                  {status?.connected ? t('connected') : t('notConnected')}
+                </span>
+              </div>
+              <div className="truncate text-xs text-muted-foreground">
+                {account ? t('accountId', { id: account.userId }) : t('connectionDescription')}
+              </div>
             </div>
-            <div className="text-xs text-muted-foreground">{t('connectionDescription')}</div>
           </div>
           <Button size="sm" variant="outline" disabled={busy} onClick={() => void toggle()}>
             {status?.connected ? t('disconnect') : t('connect')}

@@ -12,7 +12,7 @@ use codexia_acp::AcpState;
 use regex::Regex;
 use serde_json::Value;
 
-use crate::zalo_state::ZaloState;
+use crate::zalo_state::{ZaloAccount, ZaloState};
 
 static APPROVAL_REPLY: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^\s*(\d{6})\s*(duy[eê]t|t[uừ]\s*ch[oố]i)\s*$").expect("valid regex")
@@ -35,12 +35,19 @@ pub fn handle_notification(
         }
         "loggedIn" => {
             zalo_state.connected.store(true, std::sync::atomic::Ordering::Relaxed);
+            let account = params
+                .get("account")
+                .and_then(|a| serde_json::from_value::<ZaloAccount>(a.clone()).ok());
             tokio::spawn(async move {
                 *zalo_state.qr_path.lock().await = None;
+                *zalo_state.account.lock().await = account;
             });
         }
         "loggedOut" => {
             zalo_state.connected.store(false, std::sync::atomic::Ordering::Relaxed);
+            tokio::spawn(async move {
+                *zalo_state.account.lock().await = None;
+            });
         }
         "error" => {
             if let Some(message) = params.get("message").and_then(Value::as_str) {

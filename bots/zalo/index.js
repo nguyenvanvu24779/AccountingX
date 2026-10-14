@@ -14,19 +14,15 @@
 // Out (stdout, one JSON object per line):
 //   Responses:     {"id": 1, "result": {...}} | {"id": 1, "error": "..."}
 //   Notifications: {"method": "qr", "params": {"path": "<png file>"}}
-//                  {"method": "loggedIn", "params": {}}
+//                  {"method": "loggedIn", "params": {"account": {"userId", "displayName", "avatar"}}}
 //                  {"method": "loggedOut", "params": {}}
 //                  {"method": "message", "params": {"threadId", "threadType", "senderId", "text", "isSelf"}}
 //                  {"method": "error", "params": {"message": "..."}}
 //
-// Session persistence is best-effort: zca-js's documented resume path is
-// `zalo.login({cookie, imei, userAgent})`, but its docs only show obtaining
-// `imei`/`userAgent` from a browser session, not from the QR-login result.
-// We save whatever we can read off the logged-in `api` object after a QR
-// login and try `login()` first on the next `start`; if the saved session
-// doesn't work (wrong shape, expired), we fall back to `loginQR()` and the
-// user scans again. This has not been run against a real account — the
-// first real run is what proves (or disproves) the resume path.
+// Session persistence: after a QR login we save the cookie plus the imei and
+// userAgent that zca-js reports through api.getContext(), and try
+// `zalo.login({cookie, imei, userAgent})` first on the next start. If the saved
+// session is rejected (expired, wrong shape) we fall back to the QR code.
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -58,12 +54,15 @@ function saveSession(api) {
   try {
     const cookie = typeof api.getCookie === 'function' ? api.getCookie().toJSON() : undefined;
     if (!cookie) return;
-    const session = {
-      cookie,
-      imei: api.imei ?? api.context?.imei ?? null,
-      userAgent: api.context?.userAgent ?? process.env.ACCOUNTINGX_ZALO_USER_AGENT ?? null,
-    };
-    writeFileSync(sessionFile, JSON.stringify(session, null, 2));
+    // zca-js exposes the login context (imei, userAgent) through getContext();
+    // login({cookie, imei, userAgent}) needs both back to resume this session.
+    const context = api.getContext();
+    if (!context?.imei || !context?.userAgent) {
+      notify('error', { message: 'could not save session: login context has no imei/userAgent' });
+      return;
+    }
+    const session = { cookie, imei: context.imei, userAgent: context.userAgent };
+    writeFileSync(sessionFile, JSON.stringify(session, null, 2), { mode: 0o600 });
   } catch (err) {
     notify('error', { message: `could not save session: ${err}` });
   }
@@ -105,7 +104,21 @@ async function start() {
     saveSession(api);
   }
 
-  notify('loggedIn', {});
+  // Who the bot is logged in as, so the app can show it. Best effort: the
+  // connection works without it. Phone number and other profile fields are
+  // deliberately not forwarded.
+  let account;
+  try {
+    const { profile } = await api.fetchAccountInfo();
+    account = {
+      userId: String(profile.userId),
+      displayName: profile.displayName || profile.zaloName || '',
+      avatar: profile.avatar || null,
+    };
+  } catch (err) {
+    notify('error', { message: `could not read account info: ${err}` });
+  }
+  notify('loggedIn', { account });
 
   api.listener.on('message', (message) => {
     if (message.isSelf) return;

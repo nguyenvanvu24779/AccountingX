@@ -189,6 +189,7 @@ export const vi = {
     connected: 'Đã kết nối',
     notConnected: 'Chưa kết nối',
     connectionDescription: 'Một tài khoản Zalo riêng để bot gửi/nhận tin nhắn.',
+    accountId: 'ID Zalo: {{id}}',
     connect: 'Kết nối',
     disconnect: 'Ngắt kết nối',
     scanQrHint: 'Mở Zalo trên điện thoại của bot và quét mã này.',
