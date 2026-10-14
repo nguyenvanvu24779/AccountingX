@@ -232,9 +232,9 @@ export function RemoteAccessSettings() {
             </div>
           ) : (
             <p className="text-xs text-muted-foreground">
-              Enter the hostname, port and token in the AccountingX mobile app to pair this machine. The
-              token grants full access to this computer — treat it like an SSH key. Requests from
-              this machine itself never need it.
+              Enter the hostname, port and token in the AccountingX mobile app to pair this machine.
+              The token grants full access to this computer — treat it like an SSH key. Requests
+              from this machine itself never need it.
             </p>
           )}
         </CardContent>

@@ -99,6 +99,27 @@ const CODE_MODE_FEATURES: &str = "\n[features]\ncode_mode = true\ncode_mode_host
 
 /// Creates the private Codex home and a conservative default `config.toml`.
 /// An existing config is never overwritten.
+/// Skills AccountingX ships, written into `<CODEX_HOME>/skills/<name>/` on
+/// every start so an app update also updates them. The `accountingx-` prefix
+/// keeps them apart from skills the user installs; those are never touched.
+const BUNDLED_SKILLS: &[(&str, &str)] = &[(
+    "accountingx-misa-ton-kho",
+    include_str!("../skills/accountingx-misa-ton-kho/SKILL.md"),
+)];
+
+fn install_bundled_skills(home: &Path) -> std::io::Result<()> {
+    for (name, content) in BUNDLED_SKILLS {
+        let dir = home.join("skills").join(name);
+        let path = dir.join("SKILL.md");
+        if fs::read_to_string(&path).ok().as_deref() == Some(*content) {
+            continue;
+        }
+        fs::create_dir_all(&dir)?;
+        fs::write(&path, content)?;
+    }
+    Ok(())
+}
+
 pub fn ensure_codex_home(home: &Path) -> std::io::Result<()> {
     fs::create_dir_all(home)?;
     let config = home.join("config.toml");
@@ -112,5 +133,34 @@ pub fn ensure_codex_home(home: &Path) -> std::io::Result<()> {
             fs::write(&config, format!("{existing}{CODE_MODE_FEATURES}"))?;
         }
     }
-    Ok(())
+    install_bundled_skills(home)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn bundled_skills_are_installed_and_kept_current() {
+        let home = std::env::temp_dir().join(format!("accountingx-skills-{}", std::process::id()));
+        install_bundled_skills(&home).unwrap();
+
+        for (name, content) in BUNDLED_SKILLS {
+            let path = home.join("skills").join(name).join("SKILL.md");
+            assert_eq!(fs::read_to_string(&path).unwrap(), *content);
+            assert!(content.starts_with("---
+name: ") || content.starts_with("---
+name: "));
+
+            // A stale copy from an older app version is replaced.
+            fs::write(&path, "old").unwrap();
+        }
+        install_bundled_skills(&home).unwrap();
+        for (name, content) in BUNDLED_SKILLS {
+            let path = home.join("skills").join(name).join("SKILL.md");
+            assert_eq!(fs::read_to_string(&path).unwrap(), *content);
+        }
+
+        fs::remove_dir_all(&home).unwrap();
+    }
 }

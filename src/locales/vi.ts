@@ -152,8 +152,38 @@ export const vi = {
       unarchive: 'Bỏ lưu trữ',
       loading: 'Đang tải...',
     },
+    browser: 'Trình duyệt & MISA',
     approvals: 'Chờ duyệt',
     zalo: 'Zalo',
+  },
+  browser: {
+    title: 'Trình duyệt & MISA',
+    description:
+      'AI dùng Chrome của bạn để xem MISA. Bạn tự đăng nhập MISA; AI không nhập mật khẩu.',
+    recheck: 'Kiểm tra lại',
+    checking: 'Đang kiểm tra…',
+    checkFailed: 'Không kiểm tra được: {{error}}',
+    chrome: 'Google Chrome',
+    chromeMissing: 'Chưa cài Google Chrome.',
+    installChrome: 'Tải Chrome',
+    extension: 'Tiện ích ChatGPT for Chrome',
+    extensionIn: 'Đã cài trong profile: {{profiles}}',
+    extensionMissing: 'Chưa cài. Hãy cài vào đúng profile Chrome bạn dùng để đăng nhập MISA.',
+    installExtension: 'Cài ChatGPT for Chrome',
+    nativeHost: 'Cầu nối Chrome ↔ máy tính',
+    nativeHostProblem: {
+      notRegistered:
+        'Chưa có. Cài ứng dụng ChatGPT (Codex) cho Windows một lần trên máy này, rồi kiểm tra lại.',
+      manifestMissing:
+        'Đã đăng ký nhưng thiếu tệp cấu hình. Cài lại ứng dụng ChatGPT (Codex) cho Windows.',
+      wrongExtension: 'Cầu nối không dành cho tiện ích ChatGPT chính thức.',
+      hostMissing: 'Thiếu chương trình cầu nối. Cài lại ứng dụng ChatGPT (Codex) cho Windows.',
+    },
+    runtime: 'Thành phần điều khiển trình duyệt',
+    runtimeMissing: 'Chưa cấu hình. Liên hệ người cài đặt AccountingX.',
+    ok: 'Sẵn sàng',
+    readyHint:
+      'Mở MISA AMIS trong Chrome, tự đăng nhập đúng công ty, rồi hỏi AI, ví dụ: “Xem tồn kho tháng này”. Lần đầu Chrome có thể hỏi quyền cho tiện ích.',
   },
   zalo: {
     title: 'Zalo',

@@ -152,8 +152,38 @@ export const en = {
       unarchive: 'Unarchive',
       loading: 'Loading...',
     },
+    browser: 'Browser & MISA',
     approvals: 'Approvals',
     zalo: 'Zalo',
+  },
+  browser: {
+    title: 'Browser & MISA',
+    description:
+      'The AI uses your own Chrome to read MISA. You sign in to MISA yourself; the AI never types passwords.',
+    recheck: 'Check again',
+    checking: 'Checking…',
+    checkFailed: 'Could not check: {{error}}',
+    chrome: 'Google Chrome',
+    chromeMissing: 'Google Chrome is not installed.',
+    installChrome: 'Get Chrome',
+    extension: 'ChatGPT for Chrome extension',
+    extensionIn: 'Installed in profile: {{profiles}}',
+    extensionMissing: 'Not installed. Install it in the Chrome profile you use for MISA.',
+    installExtension: 'Install ChatGPT for Chrome',
+    nativeHost: 'Chrome ↔ desktop bridge',
+    nativeHostProblem: {
+      notRegistered:
+        'Missing. Install the ChatGPT (Codex) app for Windows once on this machine, then check again.',
+      manifestMissing:
+        'Registered but its config file is missing. Reinstall the ChatGPT (Codex) app for Windows.',
+      wrongExtension: 'The bridge is not set up for the official ChatGPT extension.',
+      hostMissing: 'The bridge program is missing. Reinstall the ChatGPT (Codex) app for Windows.',
+    },
+    runtime: 'Browser control component',
+    runtimeMissing: 'Not configured. Contact whoever installed AccountingX.',
+    ok: 'Ready',
+    readyHint:
+      'Open MISA AMIS in Chrome, sign in to the right company yourself, then ask the AI, e.g. “Show this month’s inventory”. Chrome may ask to grant the extension permission the first time.',
   },
   zalo: {
     title: 'Zalo',

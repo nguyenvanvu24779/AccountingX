@@ -8,6 +8,7 @@ use super::types::{ErrorResponse, WebServerState};
 
 mod acp;
 mod approvals;
+mod browser;
 mod cc;
 mod claude_usage;
 mod codex;
@@ -30,6 +31,7 @@ mod zalo;
 
 pub(super) use acp::*;
 pub(super) use approvals::*;
+pub(super) use browser::*;
 pub(super) use bots::*;
 pub(super) use bots_mcp::*;
 pub(super) use keke_mcp::*;

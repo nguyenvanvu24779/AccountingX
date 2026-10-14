@@ -16,7 +16,7 @@ use super::{
         api_acp_set_mode, api_acp_set_model, api_acp_set_config_option,
         api_acp_load_session, api_acp_list_sessions, api_acp_get_session, api_acp_delete_session,
         api_telemetry_status, api_telemetry_set_consent, api_telemetry_active, api_list_bots, api_create_bot, api_update_bot, api_delete_bot, api_bot_sessions, api_bots_mcp,
-        api_create_approval, api_list_pending_approvals, api_consume_approval,
+        api_create_approval, api_list_pending_approvals, api_consume_approval, api_browser_health,
         api_zalo_connect, api_zalo_disconnect, api_zalo_status,
         api_zalo_list_approvers,
         api_cc_list_projects, api_cc_mcp_add, api_cc_mcp_disable, api_cc_mcp_enable,
@@ -401,6 +401,7 @@ pub fn create_router(state: WebServerState) -> Router {
         .route("/api/approvals/create", post(api_create_approval))
         .route("/api/approvals/pending", post(api_list_pending_approvals))
         .route("/api/approvals/consume", post(api_consume_approval))
+        .route("/api/browser/health", post(api_browser_health))
         .route("/api/zalo/connect", post(api_zalo_connect))
         .route("/api/zalo/disconnect", post(api_zalo_disconnect))
         .route("/api/zalo/status", post(api_zalo_status))

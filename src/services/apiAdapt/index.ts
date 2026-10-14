@@ -5,6 +5,7 @@ export * from './acp';
 export * from './approvals';
 export * from './automation';
 export * from './bots';
+export * from './browser';
 
 export * from './cc';
 export * from './codex';

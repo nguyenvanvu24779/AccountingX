@@ -23,6 +23,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { EDITION } from '@/lib/edition';
 import { useLayoutStore } from '@/stores';
 import { ApprovalsSettings } from './ApprovalsSettings';
+import { BrowserSettings } from './BrowserSettings';
 import { ClaudeSettings } from './ClaudeSettings';
 import {
   ArchivedThreadSettings,
@@ -50,6 +51,7 @@ type SettingsSection =
   | 'agents'
   | 'claude'
   | 'remote'
+  | 'browser'
   | 'approvals'
   | 'zalo';
 
@@ -62,6 +64,7 @@ const topLevelSections = (
     'projects',
     EDITION.claudeAgent ? 'claude' : null,
     'explorer',
+    'browser',
     'approvals',
     'zalo',
   ] as const
@@ -87,6 +90,7 @@ export default function SettingsView() {
       {activeSection === 'agents' && <SettingsAgentsSection />}
       {activeSection === 'claude' && <ClaudeSettings />}
       {activeSection === 'remote' && <RemoteAccessSettings />}
+      {activeSection === 'browser' && <BrowserSettings />}
       {activeSection === 'approvals' && <ApprovalsSettings />}
       {activeSection === 'zalo' && <ZaloSettings />}
     </>

@@ -1,6 +1,7 @@
 pub mod accounts;
 pub mod app_server;
 pub mod automation_runner;
+pub mod browser_health;
 pub mod config;
 pub mod env;
 pub mod protocol;
