@@ -3,6 +3,7 @@ import type { ServerNotification } from '@/bindings/ServerNotification';
 import type { AccountLoginCompletedNotification } from '@/bindings/v2';
 import { useCodexStore } from '@/components/codex/stores';
 import { allowSleep, preventSleep } from '@/services/apiAdapt';
+import { useAgentCenterStore } from '@/stores/useAgentCenterStore';
 import { playBeep } from '@/utils/beep';
 import { shouldPlayCompletionBeep } from './beepOnCompletion';
 
@@ -51,6 +52,22 @@ export function useServerNotificationHandler(
             'mcpServer/startupStatus/updated',
           ].includes(method)
         ) {
+          return;
+        }
+
+        if (method === 'thread/deleted' || method === 'thread/archived') {
+          // The sidebar list merges in live threads from this store, so a thread
+          // that is gone on the server must leave the store too — otherwise a
+          // ghost row stays and opening it fails with "no rollout found".
+          useCodexStore.setState((state) => ({
+            threads: state.threads.filter((thread) => thread.id !== threadId),
+            currentThreadId: state.currentThreadId === threadId ? null : state.currentThreadId,
+          }));
+          const agentCenter = useAgentCenterStore.getState();
+          agentCenter.removeCard({ kind: 'codex', id: threadId });
+          if (agentCenter.currentAgentCardId === threadId) {
+            agentCenter.setCurrentAgentCardId(null);
+          }
           return;
         }
 
