@@ -1,6 +1,6 @@
-import { EDITION } from '@/lib/edition';
 import { lazy, Suspense } from 'react';
 import { useCodexStore } from '@/components/codex/stores';
+import { EDITION } from '@/lib/edition';
 import { useCCStore } from '@/stores/cc';
 import { useAcpStore } from '@/stores/useAcpStore';
 import { useAgentCenterStore } from '@/stores/useAgentCenterStore';

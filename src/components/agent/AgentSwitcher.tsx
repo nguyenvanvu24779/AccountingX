@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
+import { enabledEngines } from '@/lib/edition';
 import { useLayoutStore } from '@/stores';
 import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
-import { enabledEngines } from '@/lib/edition';
 import { AgentIcon } from '../common/AgentIcon';
 
 const AGENT_TYPES = enabledEngines();

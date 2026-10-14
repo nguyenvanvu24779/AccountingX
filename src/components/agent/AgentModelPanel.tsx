@@ -1,4 +1,3 @@
-import { EDITION } from '@/lib/edition';
 import { Bot } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
@@ -11,6 +10,7 @@ import { AgentIcon } from '@/components/common/AgentIcon';
 import { ClaudeCode, Codex } from '@/components/icons';
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { EDITION } from '@/lib/edition';
 import { acpStop } from '@/services/apiAdapt/acp';
 import { useLayoutStore } from '@/stores';
 import { useAcpStore } from '@/stores/useAcpStore';

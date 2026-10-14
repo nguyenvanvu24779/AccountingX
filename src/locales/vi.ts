@@ -151,6 +151,7 @@ export const vi = {
       unarchive: 'Bỏ lưu trữ',
       loading: 'Đang tải...',
     },
+    health: 'Kiểm tra hệ thống',
     usage: 'Mức sử dụng AI',
     browser: 'Trình duyệt & MISA',
     approvals: 'Chờ duyệt',
@@ -229,6 +230,101 @@ export const vi = {
       days: 'Mỗi {{count}} ngày',
       weeks_one: 'Mỗi tuần',
       weeks_other: 'Mỗi {{count}} tuần',
+    },
+  },
+  systemCheck: {
+    startup: {
+      title: 'AccountingX cần được xử lý',
+      description:
+        'Có {{count}} mục chưa chạy được. Mở Cài đặt → Kiểm tra hệ thống để xem cách khắc phục.',
+    },
+    title: 'Kiểm tra hệ thống',
+    description: 'Kiểm tra mọi thứ AccountingX cần để chạy, và hướng dẫn khắc phục từng mục.',
+    recheck: 'Kiểm tra lại',
+    checking: 'Đang kiểm tra…',
+    checkFailed: 'Không kiểm tra được: {{error}}',
+    overall: {
+      ok: 'Mọi thứ đều sẵn sàng',
+      warn: 'Dùng được, nhưng có mục cần xem lại',
+      fail: 'Có mục cần xử lý để AccountingX chạy được',
+    },
+    repair: 'Sửa tự động',
+    copyReport: 'Sao chép báo cáo',
+    copied: 'Đã sao chép',
+    open: 'Mở màn hình xử lý',
+    ok: 'Bình thường.',
+    detail: '{{detail}}',
+    group: {
+      codex: 'AI (Codex)',
+      zalo: 'Zalo',
+      browser: 'Trình duyệt & MISA',
+      machine: 'Máy tính',
+    },
+    check: {
+      'codex.binary': {
+        title: 'Thành phần AI đi kèm',
+        fix: 'Không thấy thành phần AI (Codex) đi kèm. Cài lại AccountingX, hoặc liên hệ người cài đặt.',
+      },
+      'codex.version': {
+        title: 'Phiên bản AI',
+        fix: 'Phiên bản AI khác bản đã được kiểm thử ({{detail}}). Vẫn chạy được, nhưng nên dùng đúng bản đi kèm.',
+      },
+      'codex.running': {
+        title: 'AI đang chạy',
+        fix: 'Thành phần AI không khởi động được. Đóng hẳn AccountingX rồi mở lại. Nếu vẫn lỗi, cài lại ứng dụng.',
+      },
+      'codex.login': {
+        title: 'Đăng nhập tài khoản ChatGPT',
+        fix: 'Chưa đăng nhập ChatGPT (hoặc chưa kiểm tra được). Mở phần đăng nhập ở góc trái và đăng nhập tài khoản ChatGPT của bạn.',
+      },
+      'zalo.node': {
+        title: 'Node.js (cho Zalo và email)',
+        fix: 'Máy chưa có Node.js nên Zalo và gửi email chưa chạy được. Cài Node.js bản LTS từ nodejs.org rồi bấm Kiểm tra lại.',
+      },
+      'zalo.packages': {
+        title: 'Gói của Zalo',
+        fix: 'Thiếu gói của bộ kết nối Zalo. Cài lại AccountingX, hoặc liên hệ người cài đặt.',
+      },
+      'zalo.tools': {
+        title: 'Công cụ Zalo cho AI',
+        fix: 'AI chưa được cấp công cụ Zalo. Bấm Sửa tự động.',
+      },
+      'zalo.connection': {
+        title: 'Kết nối Zalo',
+        fix: 'Zalo chưa kết nối. Vào màn Zalo, bấm Kết nối và quét mã QR bằng số Zalo riêng của bot.',
+      },
+      skills: {
+        title: 'Kỹ năng kế toán cho AI',
+        fix: 'Kỹ năng MISA của AI chưa được cài hoặc đã cũ ({{detail}}). Bấm Sửa tự động.',
+      },
+      'browser.chrome': {
+        title: 'Google Chrome',
+        fix: 'Chưa thấy Google Chrome. Cài Chrome, xem hướng dẫn ở màn Trình duyệt & MISA.',
+      },
+      'browser.extension': {
+        title: 'Tiện ích ChatGPT cho Chrome',
+        fix: 'Chưa cài tiện ích ChatGPT trong Chrome. Cài vào đúng profile dùng cho MISA, xem hướng dẫn ở màn Trình duyệt & MISA.',
+      },
+      'browser.bridge': {
+        title: 'Cầu nối Chrome ↔ máy tính',
+        fix: 'Chưa có cầu nối. Cài ứng dụng ChatGPT (Codex) cho Windows một lần và đăng nhập, rồi kiểm tra lại.',
+      },
+      'browser.runtime': {
+        title: 'Thành phần điều khiển trình duyệt',
+        fix: 'Thiếu thành phần điều khiển trình duyệt. Liên hệ người cài đặt AccountingX.',
+      },
+      'browser.desktopApp': {
+        title: 'Ứng dụng ChatGPT trên máy tính',
+        fix: 'Ứng dụng ChatGPT (Codex) đang mở và có thể làm AI điều khiển nhầm Chrome. Đóng hẳn nó, kể cả biểu tượng ở khay hệ thống.',
+      },
+      company: {
+        title: 'Công ty',
+        fix: 'Chưa có công ty nào. Thêm công ty (tên và mã số thuế) ở màn "Công ty & Sổ sách".',
+      },
+      disk: {
+        title: 'Dung lượng ổ đĩa',
+        fix: 'Ổ đĩa sắp đầy (còn {{detail}} GB). Giải phóng dung lượng, nếu không AccountingX có thể lỗi khi lưu dữ liệu.',
+      },
     },
   },
   zalo: {

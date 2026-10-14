@@ -79,6 +79,7 @@ use super::{
     websocket::{sse_handler, ws_handler},
 };
 use crate::auth::require_device_token;
+use crate::system_check::{api_system_check, api_system_repair};
 
 fn resolve_dist_dir() -> PathBuf {
     let mut candidates: Vec<PathBuf> = Vec::new();
@@ -402,6 +403,8 @@ pub fn create_router(state: WebServerState) -> Router {
         .route("/api/approvals/pending", post(api_list_pending_approvals))
         .route("/api/approvals/consume", post(api_consume_approval))
         .route("/api/browser/health", post(api_browser_health))
+        .route("/api/system/check", post(api_system_check))
+        .route("/api/system/repair", post(api_system_repair))
         .route("/api/zalo/connect", post(api_zalo_connect))
         .route("/api/zalo/disconnect", post(api_zalo_disconnect))
         .route("/api/zalo/status", post(api_zalo_status))

@@ -1,4 +1,3 @@
-import { enabledEngines } from '@/lib/edition';
 import { Bot, Check } from 'lucide-react';
 import { useState } from 'react';
 import KekeIcon from '@/assets/keke-agent.svg';
@@ -7,6 +6,7 @@ import { AgentIcon } from '@/components/common/AgentIcon';
 import { Button } from '@/components/ui/button';
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { enabledEngines } from '@/lib/edition';
 import { acpStop } from '@/services/apiAdapt/acp';
 import { useLayoutStore } from '@/stores';
 import { useAcpStore } from '@/stores/useAcpStore';

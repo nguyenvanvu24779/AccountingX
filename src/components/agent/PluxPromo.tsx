@@ -23,7 +23,8 @@ export function PluxPromo() {
         <Lightbulb className="h-4 w-4 shrink-0 text-amber-500" />
         <p className="truncate text-foreground/90">
           Capture now with a shortcut. Turn it into a todo, send it to{' '}
-          <span className="font-medium text-foreground">(ChatGPT / Claude / AccountingX)</span> anytime.
+          <span className="font-medium text-foreground">(ChatGPT / Claude / AccountingX)</span>{' '}
+          anytime.
         </p>
       </div>
 

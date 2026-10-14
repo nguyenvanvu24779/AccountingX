@@ -3,6 +3,7 @@ import { listen } from '@tauri-apps/api/event';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { AppErrorBoundary } from '@/components/common/AppErrorBoundary';
+import { StartupHealthCheck } from '@/components/common/StartupHealthCheck';
 import { EDITION } from '@/lib/edition';
 
 import './App.css';
@@ -123,6 +124,7 @@ function AppShell() {
     <>
       <AppErrorBoundary>
         <AppLayout />
+        <StartupHealthCheck />
       </AppErrorBoundary>
       <TodoCaptureHint />
       <CompanyOnboardingDialog />

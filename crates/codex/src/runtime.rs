@@ -190,6 +190,39 @@ fn with_zalo_mcp(config: &str, node: &str, script: &Path) -> Option<String> {
     Some(doc.to_string())
 }
 
+/// For each bundled skill: its name and whether the copy in `home` is present
+/// and current.
+pub fn bundled_skills_status(home: &Path) -> Vec<(&'static str, bool)> {
+    BUNDLED_SKILLS
+        .iter()
+        .map(|(name, content)| {
+            let installed = fs::read_to_string(home.join("skills").join(name).join("SKILL.md")).ok();
+            (*name, installed.as_deref() == Some(*content))
+        })
+        .collect()
+}
+
+/// Whether Codex's config in `home` has the Zalo MCP server registered.
+pub fn zalo_mcp_registered(home: &Path) -> bool {
+    fs::read_to_string(home.join("config.toml"))
+        .ok()
+        .and_then(|raw| raw.parse::<toml::Table>().ok())
+        .and_then(|config| config.get("mcp_servers")?.get(ZALO_MCP_NAME).cloned())
+        .is_some()
+}
+
+/// The version note shipped next to the bundled Codex (`VERSION.txt`).
+pub fn bundled_version() -> Option<String> {
+    let version_file = bundled_codex()?.parent()?.join("VERSION.txt");
+    fs::read_to_string(version_file).ok().map(|v| v.trim().to_string()).filter(|v| !v.is_empty())
+}
+
+/// Put back everything the app maintains in Codex's home: default config,
+/// bundled skills and the Zalo tools. Safe to run repeatedly.
+pub fn repair_codex_home(home: &Path) -> std::io::Result<()> {
+    ensure_codex_home(home)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -151,6 +151,7 @@ export const en = {
       unarchive: 'Unarchive',
       loading: 'Loading...',
     },
+    health: 'System check',
     usage: 'AI usage',
     browser: 'Browser & MISA',
     approvals: 'Approvals',
@@ -232,6 +233,101 @@ export const en = {
       days: 'Every {{count}} days',
       weeks_one: 'Weekly',
       weeks_other: 'Every {{count}} weeks',
+    },
+  },
+  systemCheck: {
+    startup: {
+      title: 'AccountingX needs attention',
+      description:
+        '{{count}} items are not working. Open Settings → System check to see how to fix them.',
+    },
+    title: 'System check',
+    description: 'Checks everything AccountingX needs to run, with a fix for each item.',
+    recheck: 'Check again',
+    checking: 'Checking…',
+    checkFailed: 'Could not check: {{error}}',
+    overall: {
+      ok: 'Everything is ready',
+      warn: 'Works, but some items need a look',
+      fail: 'Something must be fixed for AccountingX to run',
+    },
+    repair: 'Fix automatically',
+    copyReport: 'Copy report',
+    copied: 'Copied',
+    open: 'Open the screen',
+    ok: 'OK.',
+    detail: '{{detail}}',
+    group: {
+      codex: 'AI (Codex)',
+      zalo: 'Zalo',
+      browser: 'Browser & MISA',
+      machine: 'This computer',
+    },
+    check: {
+      'codex.binary': {
+        title: 'Bundled AI component',
+        fix: 'The bundled AI component (Codex) is missing. Reinstall AccountingX or contact whoever installed it.',
+      },
+      'codex.version': {
+        title: 'AI version',
+        fix: 'The AI version differs from the tested one ({{detail}}). It still runs, but the bundled version is recommended.',
+      },
+      'codex.running': {
+        title: 'AI is running',
+        fix: 'The AI component did not start. Quit AccountingX completely and open it again. If it persists, reinstall.',
+      },
+      'codex.login': {
+        title: 'ChatGPT sign-in',
+        fix: 'Not signed in to ChatGPT (or could not be checked). Use the sign-in at the left and sign in with your ChatGPT account.',
+      },
+      'zalo.node': {
+        title: 'Node.js (for Zalo and email)',
+        fix: 'Node.js is missing, so Zalo and email do not work yet. Install the LTS version from nodejs.org, then check again.',
+      },
+      'zalo.packages': {
+        title: 'Zalo packages',
+        fix: 'Packages for the Zalo connector are missing. Reinstall AccountingX or contact whoever installed it.',
+      },
+      'zalo.tools': {
+        title: 'Zalo tools for the AI',
+        fix: 'The AI has not been given the Zalo tools. Press Fix automatically.',
+      },
+      'zalo.connection': {
+        title: 'Zalo connection',
+        fix: "Zalo is not connected. Open the Zalo screen, press Connect and scan the QR with the bot's own Zalo number.",
+      },
+      skills: {
+        title: 'Accounting skills for the AI',
+        fix: "The AI's MISA skills are missing or outdated ({{detail}}). Press Fix automatically.",
+      },
+      'browser.chrome': {
+        title: 'Google Chrome',
+        fix: 'Google Chrome was not found. Install it; see the Browser & MISA screen.',
+      },
+      'browser.extension': {
+        title: 'ChatGPT extension for Chrome',
+        fix: 'The ChatGPT extension is not installed in Chrome. Install it in the profile you use for MISA; see the Browser & MISA screen.',
+      },
+      'browser.bridge': {
+        title: 'Chrome ↔ computer bridge',
+        fix: 'The bridge is missing. Install the ChatGPT (Codex) app for Windows once and sign in, then check again.',
+      },
+      'browser.runtime': {
+        title: 'Browser control component',
+        fix: 'The browser control component is missing. Contact whoever installed AccountingX.',
+      },
+      'browser.desktopApp': {
+        title: 'ChatGPT desktop app',
+        fix: 'The ChatGPT (Codex) desktop app is open and can make the AI control the wrong Chrome. Close it completely, including its tray icon.',
+      },
+      company: {
+        title: 'Company',
+        fix: 'No company yet. Add one (name and tax code) in "Companies & Books".',
+      },
+      disk: {
+        title: 'Disk space',
+        fix: 'The disk is almost full ({{detail}} GB left). Free some space or AccountingX may fail when saving data.',
+      },
     },
   },
   zalo: {

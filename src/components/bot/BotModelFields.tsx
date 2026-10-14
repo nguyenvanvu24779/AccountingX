@@ -1,7 +1,7 @@
+import { useEffect, useRef, useState } from 'react';
 import { AcpChoiceMenu } from '@/components/acp/AcpChoiceMenu';
 import { Label } from '@/components/ui/label';
 import { useBotOptionsStore } from '@/stores/useBotOptionsStore';
-import { useEffect, useRef, useState } from 'react';
 import { ProviderNotSignedInError, probeProviderModels } from './probeProviderModels';
 
 interface BotModelFieldsProps {

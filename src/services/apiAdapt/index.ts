@@ -49,3 +49,4 @@ export async function writeSessionMetaFile(content: string): Promise<void> {
 export * from './kekeMcp';
 export * from './publish';
 export * from './remote';
+export * from './systemCheck';
