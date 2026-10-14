@@ -312,3 +312,13 @@ Trước đây phiếu duyệt chỉ là bản ghi; `send_email` chỉ "dặn" A
 - **Settings → Trình duyệt & MISA** (`BrowserSettings.tsx`, `/api/browser/health`, `crates/codex/src/browser_health.rs`): kiểm tra Chrome, extension theo từng profile, native host (`reg query` + manifest), `cua_repl` trong config. Chỉ đọc file/registry, không chạy AI. Trên máy dev: sẵn sàng, extension ở profile **Nguyen**. Máy có thêm profile "Profile MISA" **không** có extension.
 - Native host trên máy dev trỏ vào `~/.codex/plugins/...` của Codex Desktop → máy sạch hiện phải cài ứng dụng ChatGPT (Codex) một lần. UI nói rõ điều này.
 - Phiên Claude Code **không chạy được `codex exec`** (bộ phân loại auto mode chặn việc khởi chạy agent, kể cả sandbox read-only) → phép thử thật phải chạy trong app AccountingX.
+
+### 13.6 Cập nhật 2026-10-14 (chiều)
+
+- **Chạy tồn kho trong app thành công** (Trí Nhân, tháng 10/2026, 32 mặt hàng, 131.863.009 đ). Bằng chứng ở `~/.accountingx/companies/3603823640/evidence/misa/2026-10-14/`. MISA không hiện MST ở màn chọn công ty → skill giờ yêu cầu xác minh trước khi đọc: (a) thấy MST trên màn MISA, (b) `misa-binding.json` khớp tên + tệp dữ liệu, (c) người dùng xác nhận rõ trong chat. Chưa biết màn nào của MISA hiện MST; lần chạy tới AI sẽ tìm và ghi vào `misa-binding.json`.
+- Link tệp trong chat (`C:\…`, `file:///…`) từng bị bộ render markdown cắt thành chữ thường. Nay `src/utils/localFileLinks.ts` viết lại thành route nội bộ, `MarkdownLink.tsx` mở tệp trong khung Tệp (CSV hiện bảng: `CsvView.tsx`) + nút mở thư mục. Link web mở bằng trình duyệt hệ thống.
+- Xoá hội thoại "không được": thực ra xoá thành công nhưng store giữ dòng ma. Nay `thread/deleted|archived` gỡ khỏi store/thẻ tác nhân (`useServerNotificationHandler.ts`).
+- Zalo: sidecar chết vì thiếu `zca-js` (đã `bun install` trong `bots/zalo/`, thư mục `node_modules` bị Git bỏ qua → máy khác phải cài lại / cần đóng gói). Lỗi thoát nay kèm stderr.
+- Gỡ khối "Kết nối và cộng đồng" khỏi Cài đặt → Chung.
+- Ổ C từng đầy 100% do `target/` (14 GB). Máy dev nên giữ ≥ 10 GB trống khi build.
+- Workspace: `cargo clippy --workspace --all-targets --locked -- -D warnings` và `cargo test --workspace --locked` đều sạch (đã sửa lỗi `QuietSink` chỉ có trên Windows).
