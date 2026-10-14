@@ -47,7 +47,6 @@ export const en = {
     backgroundImageDescription: 'Use a custom image as the app background (URL or upload).',
     uploadImage: 'Upload',
     clearBackgroundImage: 'Clear background image',
-    keepInTouch: 'Keep in touch and community',
     telemetrySection: 'Privacy',
     telemetryToggle: 'Anonymous usage statistics',
     telemetryToggleDescription:
@@ -554,6 +553,8 @@ export const en = {
     noIdleAgents: 'No idle agents',
   },
   explorer: {
+    csvRows: 'Rows: {{count}}',
+    csvRowsTruncated: 'Showing {{shown}} of {{total}} rows',
     selectFileToView: 'Select a file to view',
     hideFileTree: 'Hide file tree',
     showFileTree: 'Show file tree',
@@ -729,6 +730,9 @@ export const en = {
     loadingConnectors: 'Loading connectors…',
   },
   thread: {
+    item: {
+      showInFolder: 'Show in folder',
+    },
     list: {
       rename: 'Rename',
       pin: 'Pin',

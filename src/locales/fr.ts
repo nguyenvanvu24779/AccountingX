@@ -49,7 +49,6 @@ export const fr = {
       "Utiliser une image personnalisée comme arrière-plan de l'application (URL ou téléversement).",
     uploadImage: 'Téléverser',
     clearBackgroundImage: "Effacer l'image d'arrière-plan",
-    keepInTouch: 'Restez en contact et rejoignez la communauté',
     telemetrySection: 'Confidentialité',
     telemetryToggle: "Statistiques d'usage anonymes",
     telemetryToggleDescription:

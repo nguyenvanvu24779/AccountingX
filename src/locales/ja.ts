@@ -48,7 +48,6 @@ export const ja = {
       'カスタム画像をアプリの背景として使用します(URL またはアップロード)。',
     uploadImage: 'アップロード',
     clearBackgroundImage: '背景画像をクリア',
-    keepInTouch: 'コミュニケーションとコミュニティ',
     telemetrySection: 'プライバシー',
     telemetryToggle: '匿名の利用統計',
     telemetryToggleDescription:

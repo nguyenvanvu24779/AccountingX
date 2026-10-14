@@ -1,8 +1,6 @@
 import { Monitor, Moon, Sun, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import githubIcon from '@/assets/github.svg';
-import xIcon from '@/assets/x.svg';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -23,12 +21,6 @@ const ACCENT_OPTIONS: Array<{ value: Accent; labelKey: string; colorClass: strin
   { value: 'purple', labelKey: 'purple', colorClass: 'bg-purple-500' },
   { value: 'orange', labelKey: 'orange', colorClass: 'bg-orange-500' },
 ];
-
-const LINKS = {
-  GITHUB: 'https://github.com/milisp/codexia',
-  DISCORD: 'https://discord.gg/zAjtD4kf5K',
-  TWITTER: 'https://x.com/lisp_mi',
-} as const;
 
 export function GeneralSettings() {
   const {
@@ -67,10 +59,6 @@ export function GeneralSettings() {
     };
     reader.readAsDataURL(file);
   };
-
-  // Shared Tailwind classes from shadcn/ui Button (variant: default, size: sm)
-  const buttonClassName =
-    'inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-3';
 
   return (
     <div className="space-y-6">
@@ -215,38 +203,6 @@ export function GeneralSettings() {
           </Card>
         </section>
       )}
-      <section className="space-y-3">
-        <h3 className="text-sm font-medium px-1">{t('keepInTouch')}</h3>
-        <div className="flex flex-wrap gap-2 text-balance">
-          <a
-            href={LINKS.GITHUB}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(buttonClassName, 'flex-1 min-w-[100px]')}
-          >
-            <img src={githubIcon} alt="" className="h-4 w-4" />
-            <span>Github</span>
-          </a>
-          <a
-            href={LINKS.DISCORD}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(buttonClassName, 'flex-shrink-0')}
-          >
-            <img src="/discord.svg" height={16} width={16} alt="Discord" />
-            <span>Discord</span>
-          </a>
-          <a
-            href={LINKS.TWITTER}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(buttonClassName, 'flex-1 min-w-[100px]')}
-          >
-            <img src={xIcon} alt="" className="h-4 w-4" />
-            <span>lisp_mi</span>
-          </a>
-        </div>
-      </section>
     </div>
   );
 }

@@ -18,6 +18,22 @@ use std::sync::atomic::{AtomicI64, Ordering};
 use serde_json::Value;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{Child, Command};
+
+const STDERR_TAIL_LINES: usize = 20;
+
+/// Message for requests still waiting when the sidecar dies: the most telling
+/// stderr line (a Node error such as a missing package), if there is one.
+fn exit_reason(stderr_tail: &[String]) -> String {
+    let cause = stderr_tail
+        .iter()
+        .rev()
+        .find(|line| line.contains("Error") || line.contains("Cannot find"))
+        .or_else(|| stderr_tail.last());
+    match cause {
+        Some(line) => format!("Zalo sidecar process exited: {}", line.trim()),
+        None => "Zalo sidecar process exited".to_string(),
+    }
+}
 use tokio::sync::{Mutex, oneshot};
 
 /// A notification line (no `id`): `{"method": "...", "params": {...}}`.
@@ -91,8 +107,12 @@ impl ZaloSidecar {
         let stderr = child.stderr.take().ok_or("Zalo sidecar has no stderr")?;
 
         let pending: PendingRequests = Arc::new(Mutex::new(HashMap::new()));
+        // The last few stderr lines, so a crash can say why instead of only
+        // "process exited" (e.g. a missing npm package).
+        let stderr_tail: Arc<std::sync::Mutex<Vec<String>>> = Arc::default();
 
         let pending_for_reader = Arc::clone(&pending);
+        let stderr_tail_for_reader = Arc::clone(&stderr_tail);
         tokio::spawn(async move {
             let mut lines = BufReader::new(stdout).lines();
             loop {
@@ -129,9 +149,12 @@ impl ZaloSidecar {
             }
             // The process is gone — anyone still awaiting a response would
             // otherwise hang forever, since nothing will ever answer them.
+            // stderr is drained by its own task; give it a moment to catch up.
+            tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+            let reason = exit_reason(&stderr_tail_for_reader.lock().unwrap_or_else(|e| e.into_inner()));
             let mut pending = pending_for_reader.lock().await;
             for (_, tx) in pending.drain() {
-                let _ = tx.send(Err("Zalo sidecar process exited".to_string()));
+                let _ = tx.send(Err(reason.clone()));
             }
         });
 
@@ -139,6 +162,11 @@ impl ZaloSidecar {
             let mut lines = BufReader::new(stderr).lines();
             while let Ok(Some(line)) = lines.next_line().await {
                 log::warn!("zalo sidecar stderr: {line}");
+                let mut tail = stderr_tail.lock().unwrap_or_else(|e| e.into_inner());
+                tail.push(line);
+                if tail.len() > STDERR_TAIL_LINES {
+                    tail.remove(0);
+                }
             }
         });
 
@@ -192,5 +220,28 @@ impl ZaloSidecar {
 
     pub async fn stop(&self) {
         let _ = self.child.lock().await.kill().await;
+    }
+}
+
+#[cfg(test)]
+mod exit_reason_tests {
+    use super::exit_reason;
+
+    #[test]
+    fn prefers_the_error_line_over_trailing_noise() {
+        let tail = vec![
+            "node:internal/modules/package_json_reader:301".to_string(),
+            "Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'zca-js'".to_string(),
+            "Node.js v24.17.0".to_string(),
+        ];
+        assert_eq!(
+            exit_reason(&tail),
+            "Zalo sidecar process exited: Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'zca-js'"
+        );
+    }
+
+    #[test]
+    fn falls_back_to_a_plain_message_without_stderr() {
+        assert_eq!(exit_reason(&[]), "Zalo sidecar process exited");
     }
 }

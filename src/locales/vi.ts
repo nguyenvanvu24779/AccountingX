@@ -47,7 +47,6 @@ export const vi = {
     backgroundImageDescription: 'Dùng ảnh tuỳ chỉnh làm nền ứng dụng (đường dẫn URL hoặc tải lên).',
     uploadImage: 'Tải lên',
     clearBackgroundImage: 'Xoá ảnh nền',
-    keepInTouch: 'Kết nối và cộng đồng',
     telemetrySection: 'Quyền riêng tư',
     telemetryToggle: 'Thống kê sử dụng ẩn danh',
     telemetryToggleDescription:
@@ -553,6 +552,8 @@ export const vi = {
     noIdleAgents: 'Không có tác nhân rảnh',
   },
   explorer: {
+    csvRows: 'Dòng dữ liệu: {{count}}',
+    csvRowsTruncated: 'Hiển thị {{shown}} / {{total}} dòng',
     selectFileToView: 'Chọn một tệp để xem',
     hideFileTree: 'Ẩn cây tệp',
     showFileTree: 'Hiện cây tệp',
@@ -728,6 +729,9 @@ export const vi = {
     loadingConnectors: 'Đang tải kết nối…',
   },
   thread: {
+    item: {
+      showInFolder: 'Mở thư mục chứa tệp',
+    },
     list: {
       rename: 'Đổi tên',
       pin: 'Ghim',

@@ -18,6 +18,7 @@ import { useTodoStore } from '@/stores/useTodoStore';
 import { getErrorMessage } from '@/utils/errorUtils';
 import { getFilename } from '@/utils/getFilename';
 import { CodeEditor } from '../editor/CodeEditor';
+import { CsvView } from './CsvView';
 import { OfficeView } from './OfficeView';
 import { OFFICE_EXTENSIONS } from './officeFileTypes';
 
@@ -48,9 +49,10 @@ export function FileViewer({ filePath }: FileViewerProps) {
   const addTodo = useTodoStore((state) => state.addTodo);
 
   const isOfficeFile = OFFICE_EXTENSIONS.includes(getFileExtension(filePath));
+  const isCsvFile = getFileExtension(filePath) === 'csv';
 
   const loadFile = useCallback(async () => {
-    if (isOfficeFile) return;
+    if (isOfficeFile || isCsvFile) return;
     setLoading(true);
     setError(null);
 
@@ -65,7 +67,7 @@ export function FileViewer({ filePath }: FileViewerProps) {
     } finally {
       setLoading(false);
     }
-  }, [filePath, isOfficeFile]);
+  }, [filePath, isOfficeFile, isCsvFile]);
 
   // Reset content/error inline during render when filePath becomes falsy
   if (!filePath && (content !== '' || error !== null)) {
@@ -194,6 +196,10 @@ export function FileViewer({ filePath }: FileViewerProps) {
 
   if (isOfficeFile) {
     return <OfficeView filePath={filePath} />;
+  }
+
+  if (isCsvFile) {
+    return <CsvView filePath={filePath} />;
   }
 
   return (

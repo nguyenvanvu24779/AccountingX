@@ -47,7 +47,6 @@ export const zh = {
     backgroundImageDescription: '使用自定义图片作为应用背景(URL 或上传)。',
     uploadImage: '上传',
     clearBackgroundImage: '清除背景图片',
-    keepInTouch: '保持联系和社区',
     telemetrySection: '隐私',
     telemetryToggle: '匿名使用统计',
     telemetryToggleDescription:
