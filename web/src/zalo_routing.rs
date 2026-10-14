@@ -40,7 +40,33 @@ pub fn handle_notification(
                 .and_then(|a| serde_json::from_value::<ZaloAccount>(a.clone()).ok());
             tokio::spawn(async move {
                 *zalo_state.qr_path.lock().await = None;
+                *zalo_state.qr_scanned_by.lock().await = None;
+                *zalo_state.last_error.lock().await = None;
                 *zalo_state.account.lock().await = account;
+            });
+        }
+        "qrScanned" => {
+            let name = params
+                .get("displayName")
+                .and_then(Value::as_str)
+                .unwrap_or_default()
+                .to_string();
+            tokio::spawn(async move {
+                *zalo_state.qr_scanned_by.lock().await = Some(name);
+            });
+        }
+        "loginFailed" => {
+            // The login ended without success (QR expired or was declined):
+            // stop the sidecar so the next Connect starts from a clean slate
+            // and a fresh QR, instead of leaving a dead QR on screen.
+            let reason = params
+                .get("message")
+                .and_then(Value::as_str)
+                .unwrap_or("failed")
+                .to_string();
+            tokio::spawn(async move {
+                zalo_state.reset_login().await;
+                *zalo_state.last_error.lock().await = Some(reason);
             });
         }
         "loggedOut" => {
@@ -50,13 +76,10 @@ pub fn handle_notification(
             });
         }
         "error" => {
-            if let Some(message) = params.get("message").and_then(Value::as_str) {
-                let message = message.to_string();
-                log::warn!("zalo sidecar error: {message}");
-                tokio::spawn(async move {
-                    *zalo_state.last_error.lock().await = Some(message);
-                });
-            }
+            // Diagnostics only. What the user needs to know arrives as
+            // `loginFailed`; showing every internal hiccup (e.g. "saved session
+            // expired, falling back to QR") would just be noise.
+            log::warn!("zalo sidecar error: {params}");
         }
         "message" => handle_message(params, zalo_state, acp_state),
         other => log::warn!("zalo sidecar: unhandled notification `{other}`"),

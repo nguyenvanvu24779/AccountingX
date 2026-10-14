@@ -94,7 +94,9 @@ function ConnectionCard() {
   const toggle = async () => {
     setBusy(true);
     try {
-      setStatus(status?.connected ? await zaloDisconnect() : await zaloConnect());
+      setStatus(
+        status?.connected || status?.connecting ? await zaloDisconnect() : await zaloConnect()
+      );
     } finally {
       setBusy(false);
     }
@@ -130,18 +132,30 @@ function ConnectionCard() {
             </div>
           </div>
           <Button size="sm" variant="outline" disabled={busy} onClick={() => void toggle()}>
-            {status?.connected ? t('disconnect') : t('connect')}
+            {status?.connected ? t('disconnect') : status?.connecting ? t('cancel') : t('connect')}
           </Button>
         </div>
 
-        {status?.qrPath && !status.connected && (
+        {status?.connecting && (
           <div className="flex flex-col items-center gap-2 rounded border p-4">
-            <QrCode path={status.qrPath} />
-            <p className="text-center text-xs text-muted-foreground">{t('scanQrHint')}</p>
+            {status.qrScannedBy ? (
+              <p className="text-center text-sm">{t('qrScanned', { name: status.qrScannedBy })}</p>
+            ) : status.qrPath ? (
+              <>
+                <QrCode path={status.qrPath} />
+                <p className="text-center text-xs text-muted-foreground">{t('scanQrHint')}</p>
+              </>
+            ) : (
+              <p className="text-center text-xs text-muted-foreground">{t('preparingQr')}</p>
+            )}
           </div>
         )}
 
-        {status?.lastError && <p className="text-xs text-destructive">{status.lastError}</p>}
+        {!status?.connecting && status?.lastError && (
+          <p className="text-xs text-destructive">
+            {t(`loginError.${status.lastError}`, { defaultValue: status.lastError })}
+          </p>
+        )}
       </CardContent>
     </Card>
   );

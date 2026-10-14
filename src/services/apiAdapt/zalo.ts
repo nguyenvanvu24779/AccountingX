@@ -8,6 +8,10 @@ export type ZaloAccount = {
 
 export type ZaloStatus = {
   connected: boolean;
+  /** A login is under way (QR shown or waiting for the phone to approve). */
+  connecting: boolean;
+  /** Name on the phone that scanned the QR, while it waits for approval. */
+  qrScannedBy: string | null;
   account: ZaloAccount | null;
   qrPath: string | null;
   lastError: string | null;

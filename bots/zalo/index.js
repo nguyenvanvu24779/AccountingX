@@ -15,6 +15,8 @@
 //   Responses:     {"id": 1, "result": {...}} | {"id": 1, "error": "..."}
 //   Notifications: {"method": "qr", "params": {"path": "<png file>"}}
 //                  {"method": "loggedIn", "params": {"account": {"userId", "displayName", "avatar"}}}
+//                  {"method": "qrScanned", "params": {"displayName"}}
+//                  {"method": "loginFailed", "params": {"message": "expired" | "declined" | "failed"}}
 //                  {"method": "loggedOut", "params": {}}
 //                  {"method": "message", "params": {"threadId", "threadType", "senderId", "text", "isSelf"}}
 //                  {"method": "error", "params": {"message": "..."}}
@@ -26,7 +28,7 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { Zalo, ThreadType } from 'zca-js';
+import { LoginQRCallbackEventType, Zalo, ThreadType } from 'zca-js';
 
 const sessionDir = process.env.ACCOUNTINGX_ZALO_SESSION_DIR;
 if (!sessionDir) {
@@ -96,11 +98,35 @@ async function start() {
 
   if (!api) {
     mkdirSync(dirname(qrPath), { recursive: true });
-    // loginQR() writes the QR image to qrPath and resolves only once it has
-    // been scanned — there is no progress callback, so we tell the caller
-    // where to look as soon as the call starts, not when the file appears.
-    notify('qr', { path: qrPath });
-    api = await zalo.loginQR({ qrPath });
+    // The QR code is only valid for about a minute and a half. We tell the app
+    // about it once the image file is really written, and when it expires or is
+    // declined we stop and let the user press Connect again for a fresh one.
+    let ended = false;
+    const endLogin = (event, message) => {
+      ended = true;
+      event.actions.abort();
+      notify('loginFailed', { message });
+    };
+    api = await zalo.loginQR({ qrPath }, async (event) => {
+      switch (event.type) {
+        case LoginQRCallbackEventType.QRCodeGenerated:
+          await event.actions.saveToFile(qrPath);
+          notify('qr', { path: qrPath });
+          break;
+        case LoginQRCallbackEventType.QRCodeScanned:
+          notify('qrScanned', { displayName: event.data.display_name });
+          break;
+        case LoginQRCallbackEventType.QRCodeExpired:
+          endLogin(event, 'expired');
+          break;
+        case LoginQRCallbackEventType.QRCodeDeclined:
+          endLogin(event, 'declined');
+          break;
+        default:
+          break;
+      }
+    });
+    if (ended || !api) return;
     saveSession(api);
   }
 
@@ -171,7 +197,10 @@ process.stdin.on('data', (chunk) => {
           // needs to scan the QR code. Progress comes through as
           // notifications (`qr`, `loggedIn`, `error`), not this response.
           respond(id, { status: 'starting' });
-          start().catch((err) => notify('error', { message: `start failed: ${err}` }));
+          start().catch((err) => {
+            notify('error', { message: `start failed: ${err}` });
+            notify('loginFailed', { message: 'failed' });
+          });
         } else if (method === 'sendMessage') {
           const result = await handleSendMessage(params ?? {});
           respond(id, result ?? {});

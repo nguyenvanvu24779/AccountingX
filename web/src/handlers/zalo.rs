@@ -25,6 +25,10 @@ fn zalo_session_dir() -> Result<std::path::PathBuf, String> {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct ZaloStatus {
     connected: bool,
+    /// A login is under way: the sidecar is running and not yet logged in.
+    connecting: bool,
+    /// Name shown on the phone that scanned the QR, while it waits for approval.
+    qr_scanned_by: Option<String>,
     account: Option<ZaloAccount>,
     qr_path: Option<String>,
     last_error: Option<String>,
@@ -39,6 +43,9 @@ pub(crate) async fn api_zalo_connect(
             return status(&state).await;
         }
     }
+
+    // A fresh attempt: no QR, error or account left over from an earlier one.
+    state.zalo_state.reset_login().await;
 
     let script = codexia_shared::zalo::resolve_sidecar_script().ok_or_else(|| {
         err("Zalo sidecar script (bots/zalo/index.js) was not found.".to_string())
@@ -65,15 +72,7 @@ pub(crate) async fn api_zalo_connect(
 pub(crate) async fn api_zalo_disconnect(
     AxumState(state): AxumState<WebServerState>,
 ) -> Result<Json<ZaloStatus>, ErrorResponse> {
-    let sidecar = state.zalo_state.sidecar.lock().await.take();
-    if let Some(sidecar) = sidecar {
-        sidecar.stop().await;
-    }
-    state
-        .zalo_state
-        .connected
-        .store(false, std::sync::atomic::Ordering::Relaxed);
-    *state.zalo_state.account.lock().await = None;
+    state.zalo_state.reset_login().await;
     status(&state).await
 }
 
@@ -86,6 +85,9 @@ pub(crate) async fn api_zalo_status(
 async fn status(state: &WebServerState) -> Result<Json<ZaloStatus>, ErrorResponse> {
     Ok(Json(ZaloStatus {
         connected: state.zalo_state.is_connected(),
+        connecting: !state.zalo_state.is_connected()
+            && state.zalo_state.sidecar.lock().await.is_some(),
+        qr_scanned_by: state.zalo_state.qr_scanned_by.lock().await.clone(),
         account: state.zalo_state.account.lock().await.clone(),
         qr_path: state.zalo_state.qr_path.lock().await.clone(),
         last_error: state.zalo_state.last_error.lock().await.clone(),
