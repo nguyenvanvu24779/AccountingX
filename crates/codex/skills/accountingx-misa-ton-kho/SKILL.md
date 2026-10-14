@@ -34,20 +34,31 @@ must never change anything in MISA.
 ## Steps
 
 Use `cua_repl` (Chrome via the official ChatGPT extension). Be economical:
-one `cua.getState()` to find tabs, prefer reading page text over screenshots,
-and give up after 3 failed attempts at the same step, reporting where it
-stopped.
+MISA pages have very large accessibility trees, and a first read-only pass
+cost far more tokens than needed. Read the page state once per screen, do not
+re-read it after every click, prefer targeted reads of the table region over
+full-page dumps, and give up after 3 failed attempts at the same step,
+reporting where it stopped. The browser asks the user for permission the
+first time it visits a site; wait for that rather than retrying.
 
-1. **Find MISA.** From `cua.getState()`, look for a tab on a `misa.vn` host
-   (e.g. AMIS Kế toán). If none, open a new tab to `https://amis.misa.vn` and
-   stop at the login/app chooser if it appears (rule 2).
-2. **Verify company** (rule 3). The open data/company name is usually shown
-   in the app header or under the data/company switcher. Record exactly what
-   you saw.
-3. **Open the inventory summary report.** In AMIS Kế toán this is usually
-   `Kho` → `Báo cáo` → `Tổng hợp tồn kho` (names can differ by version; look
-   for the report whose title contains "tồn kho"). Use the period the user
-   asked for; if they did not say, use the current month to date and say so.
+1. **Find MISA.** From `cua.getState()`, look for a tab on a `misa.vn` host.
+   If none, open a new tab to `https://actapp.misa.vn/` (MISA Kế toán, shown
+   as "AVA Kế toán") and stop at the login/app chooser if it appears (rule 2).
+   Never open `chrome://` or browser settings pages — browser-use refuses them.
+2. **Verify company** (rule 3). The company and data-file names are shown in
+   the app header; opening the company selector there only reads them, close
+   it again without choosing anything. **MISA does not show the MST on that
+   screen**, so match on the company name from `AGENTS.md`/the user's request
+   and say plainly that the MST itself was not visible. Also report the
+   *data file* name (e.g. "Dữ liệu kế toán … ngày 17.4.2026") because one
+   company can have several data files and the user must see which one was read.
+3. **Open the inventory summary report.** Menu path verified on this app:
+   `Kho` → `Báo cáo`, which lists `Tổng hợp tồn kho` (also `Tổng hợp tồn kho
+   theo nhiều đơn vị tính` and `Tổng hợp tồn kho theo nhóm VTHH`). Default to
+   `Tổng hợp tồn kho`. Menu names can change with MISA updates; if the path
+   differs, look for a report whose title contains "tồn kho". Use the period
+   the user asked for; if they did not say, use the current month to date and
+   say so.
 4. **Read the table**: mã hàng, tên hàng, đơn vị tính, kho, số lượng tồn
    cuối kỳ and giá trị tồn cuối kỳ (plus đầu kỳ / nhập / xuất if shown).
    Note the report title, period and filters exactly as displayed.
