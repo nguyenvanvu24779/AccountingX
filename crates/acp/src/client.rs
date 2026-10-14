@@ -723,7 +723,10 @@ fn validate_mcp_policy(policy: &ConnectionPolicy, init: &Value) -> Result<(), St
 mod tests {
     use super::*;
 
+    // Only the Unix-only fixture below needs a sink.
+    #[cfg(unix)]
     struct QuietSink;
+    #[cfg(unix)]
     impl EventSink for QuietSink {
         fn emit(&self, _: &str, _: Value) {}
     }
