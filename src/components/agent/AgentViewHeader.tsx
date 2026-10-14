@@ -1,14 +1,10 @@
-import { LayoutGrid, List, PanelRight, Square, SquareTerminal } from 'lucide-react';
+import { LayoutGrid, List, PanelRight, Square } from 'lucide-react';
 import { useCodexStore } from '@/components/codex/stores';
 import { NewAgentButton } from '@/components/common/NewAgentButton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
-import { GitActions } from '@/features/git';
-import { ProjectRunMenu } from '@/features/project-run/ProjectRunMenu';
-import { PublishButton } from '@/features/publish/PublishButton';
 import { useTrafficLightConfig } from '@/hooks';
-import { EDITION } from '@/lib/edition';
 import { useLayoutStore, useWorkspaceStore } from '@/stores';
 import type { AgentCardsViewMode } from '@/stores/useAgentCenterStore';
 import { useAgentCenterStore } from '@/stores/useAgentCenterStore';
@@ -22,14 +18,7 @@ const CARDS_VIEW_MODES: { mode: AgentCardsViewMode; icon: typeof LayoutGrid; tit
 ];
 
 export function AgentViewHeader() {
-  const {
-    isRightPanelOpen,
-    toggleRightPanel,
-    activeRightPanelTab,
-    setActiveRightPanelTab,
-    setRightPanelOpen,
-  } = useLayoutStore();
-  const isTerminalOpen = isRightPanelOpen && activeRightPanelTab === 'terminal';
+  const { isRightPanelOpen, toggleRightPanel } = useLayoutStore();
   const { cardsViewMode, setCardsViewMode } = useAgentCenterStore();
   const { open: isSidebarOpen, openMobile, isMobile } = useSidebar();
   const { needsTrafficLightOffset } = useTrafficLightConfig(isSidebarOpen);
@@ -54,8 +43,6 @@ export function AgentViewHeader() {
         {!hasActiveSession && <Badge variant="secondary">{getFilename(cwd)}</Badge>}
       </div>
       <span className="flex items-center gap-1 pr-2">
-        {cwd && <ProjectRunMenu />}
-        {EDITION.promo && cwd && <PublishButton />}
         {cwd && <OpenAppMenu path={cwd} />}
         <span className="flex items-center gap-0.5 border rounded-md p-0.5">
           {CARDS_VIEW_MODES.map(({ mode, icon: Icon, title }) => (
@@ -73,18 +60,6 @@ export function AgentViewHeader() {
         </span>
         {!isRightPanelOpen && (
           <>
-            {EDITION.git && hasActiveSession && <GitActions />}
-            <Button
-              variant={isTerminalOpen ? 'secondary' : 'ghost'}
-              size="icon"
-              onClick={() => {
-                setActiveRightPanelTab('terminal');
-                setRightPanelOpen(true);
-              }}
-              title="Show terminal"
-            >
-              <SquareTerminal className="size-4" />
-            </Button>
             <Button variant="ghost" size="icon" onClick={toggleRightPanel} title="Hide right panel">
               <PanelRight className="size-4" />
             </Button>

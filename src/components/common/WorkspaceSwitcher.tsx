@@ -10,9 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { AddCompanyForm } from '@/features/CompanySelector';
-import { EDITION } from '@/lib/edition';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
-import { BranchSwitcher } from '../../features/branch';
 import { AgentWorkspaceSelect } from './AgentWorkspaceSelect';
 
 export function WorkspaceSwitcher() {
@@ -127,8 +125,6 @@ export function WorkspaceSwitcher() {
         value={threadCwdMode}
         onValueChange={(v: ThreadCwdMode) => setThreadCwdMode(v)}
       />
-
-      {EDITION.git && <BranchSwitcher cwd={cwd} />}
     </div>
   );
 }

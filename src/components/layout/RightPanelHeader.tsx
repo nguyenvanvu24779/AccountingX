@@ -1,14 +1,11 @@
 import {
-  Diff,
   Files,
-  Globe,
   Kanban,
   ListTodo,
   type LucideIcon,
   Maximize2,
   Minimize2,
   PanelRight,
-  SquareTerminal,
   X,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -23,7 +20,6 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useTrafficLightConfig } from '@/hooks';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { EDITION } from '@/lib/edition';
 import { useLayoutStore } from '@/stores';
 import type { RightPanelTab } from '@/stores/useLayoutStore';
 import { useTodoStore } from '@/stores/useTodoStore';
@@ -37,17 +33,11 @@ interface TabConfig {
 }
 
 // Order tabs the way users scan them: work-in-progress first, reference last.
-const ALL_TAB_BUTTONS: TabConfig[] = [
-  { tab: 'diff', icon: Diff, labelKey: 'tabReview' },
+const TAB_BUTTONS: TabConfig[] = [
   { tab: 'todo', icon: ListTodo, labelKey: 'tabTodos' },
-  { tab: 'terminal', icon: SquareTerminal, labelKey: 'tabTerminal' },
-  { tab: 'webpreview', icon: Globe, labelKey: 'tabBrowser' },
   { tab: 'files', icon: Files, labelKey: 'tabFiles' },
   { tab: 'tasks', icon: Kanban, labelKey: 'tabKanban' },
 ];
-const TAB_BUTTONS = ALL_TAB_BUTTONS.filter(
-  (t) => EDITION.devPanels[t.tab as keyof typeof EDITION.devPanels] !== false
-);
 
 export function RightPanelHeader() {
   const { t } = useTranslation('sidebar');

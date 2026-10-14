@@ -17,7 +17,6 @@ import { useSettingsStore } from '@/stores/settings';
 import { convertThreadHistoryToEvents } from '@/utils/threadHistoryConverter';
 import {
   threadStart as apiThreadStart,
-  gitCreateWorktree,
   listThreads,
   skillList,
   threadCompactStart,
@@ -56,13 +55,6 @@ const resolveThreadCwd = (threadId: string): string | null => {
   }
   const cwd = item.cwd?.trim();
   return cwd ? cwd : null;
-};
-
-const generateWorktreeKey = (): string => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return `thread-${crypto.randomUUID()}`;
-  }
-  return `thread-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 };
 
 /** Build the agents config fragment to inject into thread config params. */
@@ -229,28 +221,10 @@ export const codexService = {
   async threadStart() {
     const set = useCodexStore.setState;
     try {
-      const {
-        model,
-        modelProvider,
-        approvalPolicy,
-        sandbox,
-        reasoningEffort,
-        threadCwdMode,
-        collaborationMode,
-      } = useConfigStore.getState();
+      const { model, modelProvider, approvalPolicy, sandbox, reasoningEffort, collaborationMode } =
+        useConfigStore.getState();
       const { cwd } = useWorkspaceStore.getState();
-      let threadCwd = cwd;
-      if (threadCwdMode === 'worktree' && cwd) {
-        try {
-          const prepared = await gitCreateWorktree(cwd, generateWorktreeKey());
-          threadCwd = prepared.worktree_path;
-        } catch (error) {
-          console.warn(
-            '[CodexService] Failed to prepare thread worktree, fallback to workspace cwd',
-            error
-          );
-        }
-      }
+      const threadCwd = cwd;
       const params: ThreadStartParams = {
         model,
         modelProvider,

@@ -1,11 +1,9 @@
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCodexStore } from '@/components/codex/stores';
-import { gitRemoveWorktree } from '@/services/apiAdapt/git';
 import { codexService } from '@/services/codexService';
 import { useAgentCenterStore } from '@/stores';
 import type { AgentCenterCard } from '@/stores/useAgentCenterStore';
-import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { AgentCard } from './AgentCard';
 
 function ColumnLabel({
@@ -49,13 +47,6 @@ export default function TasksPanel() {
     }
     if (card.id === currentThreadId) {
       void codexService.setCurrentThread(null);
-    }
-    if (card.worktreePath) {
-      const { cwd } = useWorkspaceStore.getState();
-      const worktreeKey = card.worktreePath.split('/').pop() ?? '';
-      if (cwd && worktreeKey) {
-        void gitRemoveWorktree(cwd, worktreeKey);
-      }
     }
   };
 

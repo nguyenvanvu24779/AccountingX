@@ -1,21 +1,14 @@
-import { Check, RotateCcw, Square } from 'lucide-react';
+import { RotateCcw, Square } from 'lucide-react';
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import {
   useApprovalStore,
   useCodexStore,
   useRequestUserInputStore,
 } from '@/components/codex/stores';
 import { Button } from '@/components/ui/button';
-import {
-  gitApplyWorktreeChanges,
-  gitHasWorktreeChanges,
-  gitRemoveWorktree,
-} from '@/services/apiAdapt/git';
 import { codexService } from '@/services/codexService';
 import type { AgentCenterCard } from '@/stores/useAgentCenterStore';
 import { useAgentCenterStore } from '@/stores/useAgentCenterStore';
-import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { getFilename } from '@/utils/getFilename';
 import { CardResizeHandles } from './CardResizeHandles';
 import { useCardResize } from './useCardResize';
@@ -69,11 +62,8 @@ export function CodexAgentCard({
   const { events, threadStatusMap, turnTimingMap, activeThreadIds } = useCodexStore();
   const { pendingApprovals } = useApprovalStore();
   const { pendingRequests } = useRequestUserInputStore();
-  const { setCurrentAgentCardId, updateCard } = useAgentCenterStore();
-  const { cwd } = useWorkspaceStore();
+  const { setCurrentAgentCardId } = useAgentCenterStore();
   const [resuming, setResuming] = useState(false);
-  const [isApplyingWorktree, setIsApplyingWorktree] = useState(false);
-  const [worktreeHasChanges, setWorktreeHasChanges] = useState(false);
   const { size, startDrag, onDragMove, endDrag } = useCardResize(card.id);
 
   const threadEvents = events[card.id] ?? [];
@@ -87,8 +77,6 @@ export function CodexAgentCard({
 
   const tokens = getCodexTokens(threadEvents);
   const ctxWindow = getCodexContextWindow(threadEvents);
-  const canApplyWorktree =
-    !!card.worktreePath && !!cwd && !processing && !hasPending && worktreeHasChanges;
 
   // turnTimingMap is the single source of truth for turn timing (see TurnTiming
   // in useCodexStore) — driven directly by turn/started + turn/completed + error,
@@ -112,28 +100,6 @@ export function CodexAgentCard({
 
   const elapsed = turnInProgress && turnTiming ? Date.now() - turnTiming.startedAtMs : 0;
 
-  useEffect(() => {
-    const checkWorktreeChanges = async () => {
-      if (!card.worktreePath || !cwd) {
-        setWorktreeHasChanges(false);
-        return;
-      }
-      try {
-        const worktreeKey = card.worktreePath.split('/').pop();
-        if (!worktreeKey) {
-          setWorktreeHasChanges(false);
-          return;
-        }
-        const result = await gitHasWorktreeChanges(cwd, worktreeKey);
-        setWorktreeHasChanges(result.has_changes);
-      } catch {
-        setWorktreeHasChanges(false);
-      }
-    };
-
-    checkWorktreeChanges();
-  }, [card.worktreePath, cwd]);
-
   const handleStop = async () => {
     const turnId = getCodexActiveTurnId(turnTiming);
     if (turnId) await codexService.turnInterrupt(card.id, turnId);
@@ -146,25 +112,6 @@ export function CodexAgentCard({
       setCurrentAgentCardId(card.id);
     } finally {
       setResuming(false);
-    }
-  };
-
-  const handleApplyWorktree = async () => {
-    const worktreeKey = card.worktreePath?.split('/').pop();
-    if (!cwd || !worktreeKey) return;
-
-    setIsApplyingWorktree(true);
-    try {
-      const result = await gitApplyWorktreeChanges(cwd, worktreeKey);
-      await gitRemoveWorktree(cwd, worktreeKey);
-      updateCard({ ...card, worktreePath: undefined });
-      toast.success('Applied worktree changes', {
-        description: `${result.changed_files} file${result.changed_files === 1 ? '' : 's'} merged into the main checkout`,
-      });
-    } catch (error) {
-      toast.error('Failed to apply worktree changes', { description: String(error) });
-    } finally {
-      setIsApplyingWorktree(false);
     }
   };
 
@@ -215,27 +162,12 @@ export function CodexAgentCard({
             <Square className="h-3 w-3" />
           </Button>
         )}
-        {canApplyWorktree && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-6 px-2 text-[10px] gap-1"
-            disabled={isApplyingWorktree}
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              void handleApplyWorktree();
-            }}
-          >
-            <Check className={`h-3 w-3 ${isApplyingWorktree ? 'animate-pulse' : ''}`} />
-            {isApplyingWorktree ? 'Applying…' : 'Apply'}
-          </Button>
-        )}
         {needsResume && (
           <Button
             size="sm"
             variant="outline"
             className="h-6 px-2 text-[10px] gap-1"
-            disabled={resuming || isApplyingWorktree}
+            disabled={resuming}
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               void handleResume();

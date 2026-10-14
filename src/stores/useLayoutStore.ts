@@ -24,7 +24,7 @@ export type viewType =
 
 export type SidebarMode = 'agent' | 'bot';
 
-export type RightPanelTab = 'diff' | 'tasks' | 'todo' | 'terminal' | 'webpreview' | 'files';
+export type RightPanelTab = 'tasks' | 'todo' | 'files';
 
 interface LayoutStore {
   isSidebarOpen: boolean;
@@ -95,7 +95,7 @@ export const useLayoutStore = create<LayoutStore>()(
       setActiveSidebarTab: (tab) => set({ activeSidebarTab: tab }),
       sidebarMode: 'agent',
       setSidebarMode: (sidebarMode) => set({ sidebarMode }),
-      activeRightPanelTab: 'diff',
+      activeRightPanelTab: 'files',
       setActiveRightPanelTab: (tab) =>
         set((state) => ({
           activeRightPanelTab: tab,
@@ -103,7 +103,7 @@ export const useLayoutStore = create<LayoutStore>()(
             ? state.openRightPanelTabs
             : [...state.openRightPanelTabs, tab],
         })),
-      openRightPanelTabs: ['diff'],
+      openRightPanelTabs: ['files'],
       closeRightPanelTab: (tab) =>
         set((state) => {
           const index = state.openRightPanelTabs.indexOf(tab);
@@ -159,7 +159,7 @@ export const useLayoutStore = create<LayoutStore>()(
     }),
     {
       name: 'layout-storage',
-      version: 7,
+      version: 8,
       partialize: (state) => ({
         isSidebarOpen: state.isSidebarOpen,
         isRightPanelOpen: state.isRightPanelOpen,
@@ -191,6 +191,18 @@ export const useLayoutStore = create<LayoutStore>()(
             persistedState.openRightPanelTabs = persistedState.openRightPanelTabs.map(
               (tab: string) => (tab === 'note' ? 'todo' : tab)
             );
+          }
+        }
+        if (version < 8 && persistedState) {
+          // The review, terminal and browser panels were removed.
+          const kept = ['tasks', 'todo', 'files'];
+          if (Array.isArray(persistedState.openRightPanelTabs)) {
+            persistedState.openRightPanelTabs = persistedState.openRightPanelTabs.filter(
+              (tab: string) => kept.includes(tab)
+            );
+          }
+          if (!kept.includes(persistedState.activeRightPanelTab)) {
+            persistedState.activeRightPanelTab = persistedState.openRightPanelTabs?.[0] ?? 'files';
           }
         }
         if (version < 7 && persistedState) {

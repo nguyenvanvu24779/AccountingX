@@ -1,6 +1,6 @@
 import { listen } from '@tauri-apps/api/event';
 import type { LucideIcon } from 'lucide-react';
-import { Archive, FolderX, GitFork, Loader2, Pin, PinOff } from 'lucide-react';
+import { Archive, GitFork, Loader2, Pin, PinOff } from 'lucide-react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -24,7 +24,6 @@ import {
 import { toast } from '@/components/ui/use-toast';
 import { isDesktopTauri } from '@/hooks/runtime';
 import { archiveThread, deleteThread, listThreads, renameThread } from '@/services/apiAdapt';
-import { gitRemoveWorktree } from '@/services/apiAdapt/git';
 import { codexService } from '@/services/codexService';
 import { useAgentCenterStore, useLayoutStore } from '@/stores';
 import { usePinStore } from '@/stores/usePinStore';
@@ -198,21 +197,6 @@ export function ThreadList({ cwd }: ThreadListProps) {
     [cwd, threads, addAgentCard, setCurrentAgentCardId, setView, refresh, t]
   );
 
-  const handleDeleteWorktree = useCallback(
-    async (thread: Thread) => {
-      const { cwd: mainCwd } = useWorkspaceStore.getState();
-      if (!mainCwd || !thread.cwd.includes('/.accountingx/worktrees/')) return;
-      const key = thread.cwd.split('/').pop() ?? '';
-      try {
-        await gitRemoveWorktree(mainCwd, key);
-        toast.success(t('list.worktreeDeleted'));
-      } catch (err) {
-        toast.error(t('list.worktreeDeleteFailed'), { description: String(err) });
-      }
-    },
-    [t]
-  );
-
   const handleDelete = useCallback(
     async (threadId: string) => {
       try {
@@ -332,15 +316,6 @@ export function ThreadList({ cwd }: ThreadListProps) {
           icon: Archive,
           onSelect: () => void handleArchive(thread.id),
         },
-        ...(thread.cwd.includes('/.accountingx/worktrees/')
-          ? [
-              {
-                label: t('list.deleteWorktree'),
-                icon: FolderX,
-                onSelect: () => void handleDeleteWorktree(thread),
-              },
-            ]
-          : []),
         {
           label: t('list.delete'),
           destructive: true,
@@ -353,17 +328,7 @@ export function ThreadList({ cwd }: ThreadListProps) {
         },
       ];
     },
-    [
-      t,
-      cwd,
-      pinnedIds,
-      togglePin,
-      openRenameDialog,
-      handleFork,
-      handleArchive,
-      handleDeleteWorktree,
-      handleDelete,
-    ]
+    [t, cwd, pinnedIds, togglePin, openRenameDialog, handleFork, handleArchive, handleDelete]
   );
 
   return (
