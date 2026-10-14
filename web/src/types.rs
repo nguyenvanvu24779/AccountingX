@@ -16,7 +16,6 @@ use codexia_shared::sleep::SleepState;
 use crate::auth::DeviceToken;
 use crate::events::EventHub;
 use crate::watcher::WebWatchState;
-use crate::terminal::WebTerminalState;
 use crate::zalo_state::ZaloState;
 
 #[derive(Clone)]
@@ -25,7 +24,6 @@ pub struct WebServerState {
     /// Absent when the automation scheduler failed to start.
     pub automation: Option<AutomationHandle>,
     pub(crate) sleep_state: Arc<SleepState>,
-    pub(crate) terminal_state: Arc<WebTerminalState>,
     pub(crate) fs_watch_state: Arc<WebWatchState>,
     pub(crate) zalo_state: Arc<ZaloState>,
     pub event_tx: broadcast::Sender<(String, Value)>,
@@ -44,7 +42,6 @@ impl WebServerState {
         codex_state: Option<Arc<AppState>>,
         automation: Option<AutomationHandle>,
         sleep_state: Arc<SleepState>,
-        terminal_state: Arc<WebTerminalState>,
         fs_watch_state: Arc<WebWatchState>,
         event_tx: broadcast::Sender<(String, Value)>,
         device_token: DeviceToken,
@@ -55,7 +52,6 @@ impl WebServerState {
             codex_state,
             automation,
             sleep_state,
-            terminal_state,
             fs_watch_state,
             zalo_state: Arc::new(ZaloState::default()),
             event_tx,

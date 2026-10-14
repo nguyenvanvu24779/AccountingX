@@ -685,7 +685,7 @@ pub async fn clone_skills_repo(url: String) -> Result<String, String> {
 
     let target_for_clone = target.clone();
     let clone_result = tokio::task::spawn_blocking(move || {
-        codexia_git::clone(&clone_url, &target_for_clone)
+        crate::gitcli::clone(&clone_url, &target_for_clone)
     })
     .await
     .map_err(|err| format!("Clone task failed: {}", err))?;
@@ -698,24 +698,6 @@ pub async fn clone_skills_repo(url: String) -> Result<String, String> {
             return Err(message);
         }
     };
-
-    let open_path = actual_path.clone();
-    let verify_result = tokio::task::spawn_blocking(move || {
-        gix::open(&open_path)
-            .map(drop)
-            .map_err(|err| err.to_string())
-    })
-    .await
-    .map_err(|err| format!("Repository verification task failed: {}", err))?;
-    if let Err(err) = verify_result {
-        let message = format!(
-            "Clone finished but gix could not open repository at {}: {}",
-            actual_path.display(),
-            err
-        );
-        eprintln!("[git-command] verify failed: {}", err);
-        return Err(message);
-    }
 
     Ok(actual_path.to_string_lossy().to_string())
 }

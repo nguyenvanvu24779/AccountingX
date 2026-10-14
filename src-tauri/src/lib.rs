@@ -33,7 +33,6 @@ pub fn run() {
     #[cfg(desktop)]
     let builder = {
         use dictation::DictationState;
-        use codexia_shared::terminal::TerminalState;
         use codexia_shared::sleep::SleepState;
         use codexia_shared::state::WatchState;
         use codexia_codex as codex;
@@ -74,7 +73,6 @@ pub fn run() {
 
         builder
             .manage(WatchState::new())
-            .manage(TerminalState::default())
             .manage(SleepState::default())
             .manage(DictationState::new())
             .invoke_handler(tauri::generate_handler![
@@ -177,12 +175,6 @@ pub fn run() {
                 // handlers instead of one `#[tauri::command]` per endpoint, and
                 // the local helpers (Zalo tools, approvals) use the same server.
                 commands::local_server::start_local_server(app.handle(), event_tx);
-
-                tauri::async_runtime::spawn(async {
-                    tokio::task::spawn_blocking(codexia_git::scan_all_orphan_worktrees)
-                        .await
-                        .ok();
-                });
 
                 if let Some(main_window) = app.get_webview_window("main") {
                     let app_handle = app.handle().clone();

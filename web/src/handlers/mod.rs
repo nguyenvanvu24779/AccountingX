@@ -10,16 +10,13 @@ mod approvals;
 mod browser;
 mod codex;
 mod file;
-mod git;
 mod openapp;
 mod permissions;
-mod publish;
 mod automation;
 mod insights;
 mod skills;
 mod settings;
 mod skillssh;
-mod terminal;
 mod types;
 mod zalo;
 
@@ -27,16 +24,13 @@ pub(super) use approvals::*;
 pub(super) use browser::*;
 pub(super) use codex::*;
 pub(super) use file::*;
-pub(super) use git::*;
 pub(super) use openapp::*;
 pub(super) use permissions::*;
-pub(super) use publish::*;
 pub(super) use automation::*;
 pub(super) use insights::*;
 pub(super) use skills::*;
 pub(super) use settings::*;
 pub(super) use skillssh::*;
-pub(super) use terminal::*;
 pub(super) use types::*;
 pub(super) use zalo::*;
 
@@ -161,19 +155,4 @@ pub(super) async fn api_set_env(
     set_env(payload.key, payload.value)
         .map_err(|e| ErrorResponse { error: e })?;
     Ok(StatusCode::OK)
-}
-
-/// Everything a mobile client needs to pair with this desktop: the device
-/// token plus how to reach the machine over the tailnet.
-///
-/// Sits behind the auth layer, so it is readable from the local settings UI
-/// (loopback is exempt) but not by an unauthenticated remote caller.
-pub(super) async fn api_pairing_info(
-    AxumState(state): AxumState<WebServerState>,
-) -> Json<Value> {
-    Json(json!({
-        "token": state.device_token.value(),
-        "port": state.port,
-        "tailscale": crate::tailscale::detect(),
-    }))
 }

@@ -73,17 +73,14 @@ codex-finder = { workspace = true }
 codexia-automation = { workspace = true }
 codexia-codex = { workspace = true }
 codexia-db = { workspace = true }
-codexia-git = { workspace = true }
 codexia-shared = { workspace = true }
 codexia-web = { path = "../web" }
 which = { version = "6.0" }
 
-gix = { workspace = true }
 walkdir = { workspace = true }
 agent-insights = { workspace = true }
 notify = { workspace = true }
 notify-debouncer-full = { workspace = true }
-portable-pty = { workspace = true }
 ignore = { workspace = true }
 nucleo = { workspace = true }
 cpal = { version = "0.15", optional = true }

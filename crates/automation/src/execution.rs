@@ -8,9 +8,8 @@ use std::time::Duration;
 use codexia_shared::agent_runner::{AgentRunOutcome, AgentRunSpec, AgentRunner};
 use codexia_shared::event_sink::EventSink;
 
-use super::model::{AutomationTask, CwdMode, default_model, default_model_provider};
+use super::model::{AutomationTask, default_model, default_model_provider};
 use super::recorder::RunRecorder;
-use super::worktree::prepare_worktree;
 
 /// Upper bound for a single agent run, so a stalled agent cannot block a task forever.
 const RUN_TIMEOUT: Duration = Duration::from_secs(60 * 60);
@@ -134,31 +133,13 @@ pub(super) async fn execute_task(task: AutomationTask, ctx: ExecutionContext) {
     }
 }
 
-/// Resolves the directory the agent will run in, creating the task's worktree when
-/// the task asks for one.
-///
-/// A worktree failure fails the target rather than falling back to the project
-/// directory: the task explicitly asked not to touch the checkout, and an
-/// unattended run has nobody to notice a silent downgrade.
+/// The directory the agent runs in. A task saved with the old "worktree" mode
+/// runs in the project directory: company folders are not git repositories.
 async fn resolve_run_cwd(
-    task: &AutomationTask,
+    _task: &AutomationTask,
     target_cwd: Option<&str>,
 ) -> Result<Option<String>, String> {
-    if task.cwd_mode != CwdMode::Worktree {
-        return Ok(target_cwd.map(str::to_string));
-    }
-    let Some(project) = target_cwd else {
-        // Without a project there is no repository to branch a worktree from.
-        log::warn!(
-            "automation '{}' asks for a worktree but has no project; running in the default directory",
-            task.id
-        );
-        return Ok(None);
-    };
-    prepare_worktree(&task.id, project)
-        .await
-        .map(Some)
-        .map_err(|err| format!("failed to prepare worktree: {err}"))
+    Ok(target_cwd.map(str::to_string))
 }
 
 async fn run_one_target(
@@ -239,6 +220,7 @@ async fn run_one_target(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::model::CwdMode;
     use crate::model::{AutomationSchedule, AutomationScheduleMode};
     use async_trait::async_trait;
     use serde_json::Value;

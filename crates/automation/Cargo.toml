@@ -18,4 +18,3 @@ chrono = { workspace = true }
 tokio-cron-scheduler = { workspace = true }
 codexia-shared = { workspace = true }
 codexia-db = { workspace = true }
-codexia-git = { workspace = true }

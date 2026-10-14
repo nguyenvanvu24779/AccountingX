@@ -12,12 +12,9 @@ use super::{
     handlers::{
         api_account_rate_limits, api_allow_sleep, api_archive_thread, api_unarchive_thread, api_canonicalize_path,
         
-        
         api_create_approval, api_list_pending_approvals, api_consume_approval, api_browser_health, api_permission_mode,
         api_zalo_connect, api_zalo_disconnect, api_zalo_status,
         api_zalo_list_approvers, api_zalo_send,
-        
-        
         
         
         api_create_automation, api_delete_automation, api_list_automation_runs, api_list_automations, api_run_automation_now, api_set_automation_paused,
@@ -25,13 +22,10 @@ use super::{
         api_asset, api_codex_home, api_delete_file,
         api_get_account, api_get_agent_heatmaps, api_save_account_snapshot,
         api_list_account_snapshots, api_remove_account_snapshot, api_switch_account_snapshot, api_get_home_directory, api_get_insight_filter_options,
-        api_get_insight_rankings, api_git_branch_info, api_git_checkout_branch, api_git_create_branch,
-        api_git_apply_worktree_changes,
-        api_git_remove_worktree,
-        api_git_diff_stats, api_git_file_diff, api_git_file_diff_meta, api_git_list_branches,
-        api_git_create_worktree, api_git_reverse_files, api_git_stage_files,
-        api_git_status, api_git_unstage_files, api_git_commit, api_git_push,
-        api_git_has_worktree_changes,
+        api_get_insight_rankings, 
+        
+        
+        
         api_list_threads, api_delete_thread, api_rename_thread, api_turn_steer,
         api_thread_goal_set, api_thread_goal_get, api_thread_goal_clear,
         api_thread_compact_start, api_thread_memory_mode_set, api_memory_reset,
@@ -43,8 +37,7 @@ use super::{
         api_prevent_sleep,
         api_login_account, api_model_list, api_model_list_post, api_read_directory, api_read_file,
         api_check_app_installed, api_open_workspace_in,
-        api_publish_connect_poll, api_publish_connect_start, api_publish_disconnect, api_publish_game,
-        api_publish_whoami,
+        
         api_read_text_file, api_read_text_file_lines,
         api_respond_command_execution_approval,
         api_respond_file_change_approval, api_respond_mcp_elicitation,
@@ -59,12 +52,11 @@ use super::{
         api_skills_link_to_agent, api_skills_list_central, api_skills_list_installed,
         api_skills_list_marketplace, api_skills_uninstall_installed,
         api_skillssh_install, api_skillssh_leaderboard, api_skillssh_search,
-        api_terminal_resize, api_terminal_start, api_terminal_stop,
-        api_terminal_write, api_turn_interrupt, api_turn_start,
+        api_turn_interrupt, api_turn_start,
         api_unified_add_mcp_server, api_unified_disable_mcp_server,
         api_unified_enable_mcp_server, api_unified_read_mcp_config,
         api_unified_remove_mcp_server, api_write_file,
-        api_get_settings_file, api_save_settings_file, api_pairing_info, health_check, api_model_list_other, api_load_env_keys, api_set_env,
+        api_get_settings_file, api_save_settings_file, health_check, api_model_list_other, api_load_env_keys, api_set_env,
         api_list_provider_presets, api_add_model_provider, api_list_config_providers,
         api_remove_model_provider,
     },
@@ -110,7 +102,7 @@ fn resolve_dist_dir() -> PathBuf {
 static EXTRA_ALLOWED_ORIGINS: std::sync::OnceLock<Vec<String>> = std::sync::OnceLock::new();
 
 /// Adds operator-configured origins (e.g. `--allow-origin https://my.host`) to
-/// the CORS allowlist, on top of the loopback/Tailscale defaults below. Call
+/// the CORS allowlist, on top of the loopback defaults below. Call
 /// once at startup, before the server starts accepting connections.
 ///
 /// This only widens which origins the browser lets make the request — every
@@ -124,7 +116,7 @@ pub fn set_extra_allowed_origins(origins: Vec<String>) {
 
 /// Whether a browser origin may call this API cross-origin.
 ///
-/// Only the locally served UI and Tailscale hostnames qualify by default.
+/// Only the locally served UI qualifies by default.
 /// Anything else — an arbitrary site the user happens to visit — must not be
 /// able to drive the desktop, which matters especially because the auth
 /// layer exempts loopback requests from presenting a token. Operators can
@@ -157,7 +149,6 @@ fn origin_is_allowed(origin: &str) -> bool {
     };
 
     matches!(host, "localhost" | "127.0.0.1" | "::1" | "tauri.localhost")
-        || host.ends_with(".ts.net")
 }
 
 fn cors_layer() -> CorsLayer {
@@ -288,11 +279,6 @@ pub fn create_router(state: WebServerState) -> Router {
         .route("/api/filesystem/read-directory", post(api_read_directory))
         .route("/api/openapp/check-app-installed", post(api_check_app_installed))
         .route("/api/openapp/open-workspace-in", post(api_open_workspace_in))
-        .route("/api/publish/connect/start", post(api_publish_connect_start))
-        .route("/api/publish/connect/poll", post(api_publish_connect_poll))
-        .route("/api/publish/disconnect", post(api_publish_disconnect))
-        .route("/api/publish/whoami", get(api_publish_whoami))
-        .route("/api/publish/game", post(api_publish_game))
         .route("/api/filesystem/home-directory", get(api_get_home_directory))
         .route("/api/filesystem/canonicalize-path", post(api_canonicalize_path))
         .route("/api/filesystem/search-files", post(api_search_files))
@@ -306,10 +292,6 @@ pub fn create_router(state: WebServerState) -> Router {
         .route("/api/filesystem/delete-file", post(api_delete_file))
         .route("/api/filesystem/watch", post(api_watch_directory))
         .route("/api/filesystem/unwatch", post(api_unwatch_directory))
-        .route("/api/terminal/start", post(api_terminal_start))
-        .route("/api/terminal/write", post(api_terminal_write))
-        .route("/api/terminal/resize", post(api_terminal_resize))
-        .route("/api/terminal/stop", post(api_terminal_stop))
         .route("/api/automation/list", post(api_list_automations))
         .route("/api/automation/runs/list", post(api_list_automation_runs))
         .route("/api/automation/create", post(api_create_automation))
@@ -341,35 +323,6 @@ pub fn create_router(state: WebServerState) -> Router {
         .route("/api/codex/mcp/remove", post(api_unified_remove_mcp_server))
         .route("/api/codex/mcp/enable", post(api_unified_enable_mcp_server))
         .route("/api/codex/mcp/disable", post(api_unified_disable_mcp_server))
-        .route(
-            "/api/git/create-worktree",
-            post(api_git_create_worktree),
-        )
-        .route(
-            "/api/git/remove-worktree",
-            post(api_git_remove_worktree),
-        )
-        .route(
-            "/api/git/apply-worktree-changes",
-            post(api_git_apply_worktree_changes),
-        )
-        .route("/api/git/branch-info", post(api_git_branch_info))
-        .route("/api/git/list-branches", post(api_git_list_branches))
-        .route("/api/git/create-branch", post(api_git_create_branch))
-        .route("/api/git/checkout-branch", post(api_git_checkout_branch))
-        .route("/api/git/status", post(api_git_status))
-        .route("/api/git/file-diff", post(api_git_file_diff))
-        .route("/api/git/file-diff-meta", post(api_git_file_diff_meta))
-        .route("/api/git/diff-stats", post(api_git_diff_stats))
-        .route("/api/git/stage-files", post(api_git_stage_files))
-        .route("/api/git/unstage-files", post(api_git_unstage_files))
-        .route("/api/git/reverse-files", post(api_git_reverse_files))
-        .route("/api/git/commit", post(api_git_commit))
-        .route("/api/git/push", post(api_git_push))
-        .route(
-            "/api/git/has-worktree-changes",
-            post(api_git_has_worktree_changes),
-        )
         .route("/api/approvals/create", post(api_create_approval))
         .route("/api/approvals/pending", post(api_list_pending_approvals))
         .route("/api/approvals/consume", post(api_consume_approval))
@@ -389,7 +342,6 @@ pub fn create_router(state: WebServerState) -> Router {
         .route("/api/sleep/prevent", post(api_prevent_sleep))
         .route("/api/sleep/allow", post(api_allow_sleep))
         .route("/api/settings", get(api_get_settings_file).post(api_save_settings_file))
-        .route("/api/pairing", get(api_pairing_info))
         .route_layer(middleware::from_fn_with_state(
             state.device_token.clone(),
             require_device_token,
@@ -454,9 +406,9 @@ mod tests {
     }
 
     #[test]
-    fn tailscale_origins_are_allowed() {
-        assert!(origin_is_allowed("https://codexia-mac.tail1234.ts.net"));
-        assert!(origin_is_allowed("http://codexia-mac.tail1234.ts.net:7420"));
+    fn remote_origins_are_rejected_because_the_server_is_local_only() {
+        assert!(!origin_is_allowed("https://codexia-mac.tail1234.ts.net"));
+        assert!(!origin_is_allowed("http://codexia-mac.tail1234.ts.net:7420"));
     }
 
     #[test]

@@ -137,7 +137,7 @@ pub fn install_from_skillssh(
     let clone_path = temp_dir.path().join("repo");
     let repo_url = format!("https://github.com/{}.git", source);
 
-    codexia_git::clone(&repo_url, &clone_path)
+    crate::gitcli::clone(&repo_url, &clone_path)
         .context("Failed to clone repository")?;
 
     let skill_dir = find_skill_dir(&clone_path, skill_id)?;

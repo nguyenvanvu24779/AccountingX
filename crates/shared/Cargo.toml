@@ -34,13 +34,10 @@ indexmap = { workspace = true }
 zip = { workspace = true }
 notify = { workspace = true }
 notify-debouncer-full = { workspace = true }
-portable-pty = { workspace = true }
 ignore = "0.4.25"
 reqwest = { workspace = true }
-gix = { workspace = true }
 walkdir = { workspace = true }
 nucleo = { workspace = true }
 tokio-cron-scheduler = { workspace = true }
 agent-insights = { workspace = true }
 nosleep = { version = "0.2.1" }
-codexia-git = { workspace = true }

@@ -5,7 +5,6 @@ members = [
   "crates/codex",
   "crates/db",
   "crates/shared",
-  "crates/git",
   "src-tauri",
   "web",
 ]
@@ -60,14 +59,11 @@ notify = { version = "8", features = ["serde", "serialization-compat-6"] }
 notify-debouncer-full = "0.6"
 
 # terminal
-portable-pty = "0.9"
 
 # codex / claude deps
 claude-agent-sdk-rs = { git = "https://github.com/milisp/claude-agent-sdk-rs", tag = "v0.8.0" }
 codex-finder = { git = "https://github.com/milisp/codex-finder.git" }
-codexia-git = { path = "crates/git" }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls-native-roots"] }
-gix = { version = "0.88.0", features = ["blocking-network-client", "blocking-http-transport-curl"] }
 walkdir = "2.3"
 nucleo = "0.5.0"
 ignore = "0.4.25"

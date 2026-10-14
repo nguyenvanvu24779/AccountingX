@@ -1,11 +1,10 @@
 pub mod fs;
+pub mod gitcli;
 pub mod insights;
 pub mod openapp;
-pub mod publish;
 pub mod skills;
 pub mod skillssh;
 pub mod sleep;
-pub mod terminal;
 pub mod state;
 pub mod zalo;
 

@@ -5,10 +5,6 @@ edition.workspace = true
 
 workspace = ".."
 
-[[bin]]
-name = "codexia-web"
-path = "src/main.rs"
-
 [lib]
 name = "codexia_web"
 path = "src/lib.rs"
@@ -49,14 +45,12 @@ glob = { workspace = true }
 async-trait = { workspace = true }
 notify = { workspace = true }
 notify-debouncer-full = { workspace = true }
-portable-pty = { workspace = true }
 zip = { workspace = true }
 
 # --- codex / claude related deps ---
 claude-agent-sdk-rs = { workspace = true }
 codex-finder = { workspace = true }
 
-codexia-git = { workspace = true }
 codexia-shared = { path = "../crates/shared" }
 codexia-automation = { path = "../crates/automation" }
 codexia-db = { path = "../crates/db" }

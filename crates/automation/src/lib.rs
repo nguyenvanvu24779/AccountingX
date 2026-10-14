@@ -4,7 +4,6 @@ mod recorder;
 mod runtime;
 mod schedule;
 mod service;
-mod worktree;
 
 pub use codexia_db::automation_runs::AutomationRunRecord;
 pub use model::{AutomationSchedule, AutomationTask, CwdMode};
