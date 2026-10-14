@@ -37,6 +37,7 @@ import { ExplorerSettings } from './ExplorerSettings';
 import { GeneralSettings } from './GeneralSettings';
 import { ProjectsSettings } from './ProjectsSettings';
 import { RemoteAccessSettings } from './RemoteAccessSettings';
+import { UsageSettings } from './UsageSettings';
 import { ZaloSettings } from './ZaloSettings';
 
 type SettingsSection =
@@ -51,6 +52,7 @@ type SettingsSection =
   | 'agents'
   | 'claude'
   | 'remote'
+  | 'usage'
   | 'browser'
   | 'approvals'
   | 'zalo';
@@ -64,6 +66,7 @@ const topLevelSections = (
     'projects',
     EDITION.claudeAgent ? 'claude' : null,
     'explorer',
+    'usage',
     'browser',
     'approvals',
     'zalo',
@@ -90,6 +93,7 @@ export default function SettingsView() {
       {activeSection === 'agents' && <SettingsAgentsSection />}
       {activeSection === 'claude' && <ClaudeSettings />}
       {activeSection === 'remote' && <RemoteAccessSettings />}
+      {activeSection === 'usage' && <UsageSettings />}
       {activeSection === 'browser' && <BrowserSettings />}
       {activeSection === 'approvals' && <ApprovalsSettings />}
       {activeSection === 'zalo' && <ZaloSettings />}

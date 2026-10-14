@@ -332,3 +332,13 @@ Quyết định của người dùng: AI phải dùng được Zalo để tươn
 - **Tự kết nối lại khi mở app** nếu có phiên lưu hợp lệ (`resume_zalo_if_saved`); không bao giờ tự hiện QR.
 - Rủi ro còn lại: nội dung trang web (prompt injection) có thể khiến AI nhắn người trong danh sách; đã giới hạn bằng whitelist + tần suất, nhưng chưa có phiếu duyệt cho từng tin. Lệnh tự do **gửi vào** từ Zalo (`can_command`) vẫn chạy qua keke, chưa qua phiếu — chưa sửa.
 - Máy khác cần Node trong PATH (hoặc `ACCOUNTINGX_NODE_BIN`) cho `mcp.js` và `index.js`.
+
+### 13.8 Zalo ⇄ AI (2026-10-14, tối)
+
+Quyết định của người dùng: người được thêm vào danh sách là **người tin cậy**; Zalo → AI tự nhiên, không phiếu duyệt rườm rà.
+- **Zalo → AI** (`web/src/zalo_agent.rs`, `zalo_text.rs`, bảng `zalo_threads`): tin của người trong danh sách (trừ trả lời phiếu có mã) đi thẳng vào **Codex** trong thư mục công ty của họ, mỗi người một cuộc trò chuyện / công ty (resume qua khởi động lại). Công ty: tự dùng nếu chỉ có 1; nhiều thì bot hỏi menu, trả lời "công ty 1/MST". Câu trả lời của AI gửi về Zalo (bỏ Markdown, cắt 1500 ký tự, tối đa 4 tin). `dừng` = ngắt việc đang chạy. Tin đến khi AI đang bận được xếp hàng.
+- **AI hỏi xin quyền** (lệnh, sửa tệp, quyền mạng, xác nhận công cụ như truy cập trang MISA, `request_user_input`) → hỏi trên Zalo, trả lời `ok` / `ok luôn` / `không`. Câu hỏi bí mật (isSecret) KHÔNG nhận qua Zalo, bắt trả lời trong app. Một `ok`/`không` đơn lẻ khi chỉ có 1 phiếu chờ sẽ duyệt/từ chối phiếu đó (không cần mã).
+- Đã gỡ đường cũ Zalo → keke (`run_bot_unattended`). Ghép mã nay cấp cả quyền duyệt và giao việc; hộp thoại ghép tạo mã ngay khi mở.
+- Đã kiểm: `thread/start` với đúng tham số của bộ nối chạy được (không cần chỉ định model). **Chưa kiểm sống** vòng nhắn thật vì cần tài khoản Zalo thứ hai; chưa chạy một turn Codex thật từ Zalo.
+- Cuộc trò chuyện chạy trong thư mục công ty nên cũng hiện trong app, và mọi yêu cầu quyền vẫn áp dụng.
+- **Mục Cài đặt → Mức sử dụng AI** (`UsageSettings.tsx`): gói, cửa sổ 5 giờ / tuần (đã dùng %, giờ reset), tín dụng, số lượt reset giới hạn còn lại; dữ liệu từ `GET /api/codex/account/rate-limits`.
