@@ -151,6 +151,7 @@ export const vi = {
       unarchive: 'Bỏ lưu trữ',
       loading: 'Đang tải...',
     },
+    permissions: 'Quyền của AI',
     health: 'Kiểm tra hệ thống',
     usage: 'Mức sử dụng AI',
     browser: 'Trình duyệt & MISA',
@@ -326,6 +327,17 @@ export const vi = {
         fix: 'Ổ đĩa sắp đầy (còn {{detail}} GB). Giải phóng dung lượng, nếu không AccountingX có thể lỗi khi lưu dữ liệu.',
       },
     },
+  },
+  permissions: {
+    title: 'Quyền của AI',
+    description: 'Chọn AI có phải hỏi bạn "Cho phép" mỗi lần làm việc hay không.',
+    auto: {
+      title: 'Tự động cho phép thao tác thông thường',
+      description:
+        'Khi bật, AI không hỏi trước khi chạy lệnh, sửa tệp trong thư mục công ty hoặc dùng công cụ, trang web, nên bạn không phải bấm "Cho phép" nữa. Khi tắt, AI hỏi mỗi lần (khuyến nghị lúc mới dùng).',
+    },
+    note: 'Vẫn hỏi khi AI xin quyền mở rộng (mạng, tệp ngoài thư mục công ty) hoặc cần bạn nhập thông tin. Gửi email và ghi vào MISA vẫn phải qua phiếu duyệt; cài đặt này không thay đổi điều đó.',
+    failed: 'Không lưu được cài đặt: {{error}}',
   },
   zalo: {
     title: 'Zalo',

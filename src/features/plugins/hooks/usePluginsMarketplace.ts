@@ -7,7 +7,7 @@ import type {
 } from '@/bindings/v2';
 import { toast } from '@/components/ui/use-toast';
 import { pluginInstall, pluginList, pluginRead } from '@/services';
-import { useAgentSettingsStore, useLayoutStore } from '@/stores';
+import { useLayoutStore } from '@/stores';
 import { useInputStore } from '@/stores/useInputStore';
 import { usePluginsViewContext } from '../hooks';
 import {
@@ -59,7 +59,6 @@ export function usePluginsMarketplace(refreshTrigger = 0) {
   const [installingPluginId, setInstallingPluginId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
 
-  const { setSelectedAgent } = useAgentSettingsStore();
   const { setView } = useLayoutStore();
   const { appendInputValue } = useInputStore();
   const { handlePluginDetail } = usePluginsViewContext();
@@ -159,11 +158,10 @@ export function usePluginsMarketplace(refreshTrigger = 0) {
   const handleUsePlugin = useCallback(
     (plugin: PluginSummary) => {
       const pluginName = plugin.interface?.displayName ?? plugin.name;
-      setSelectedAgent('codex');
       setView('agent');
       appendInputValue(`@${pluginName}`);
     },
-    [appendInputValue, setSelectedAgent, setView]
+    [appendInputValue, setView]
   );
 
   const handleShowDetail = useCallback(

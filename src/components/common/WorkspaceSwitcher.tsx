@@ -11,8 +11,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { AddCompanyForm } from '@/features/CompanySelector';
 import { EDITION } from '@/lib/edition';
-import { useCCStore } from '@/stores';
-import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { BranchSwitcher } from '../../features/branch';
 import { AgentWorkspaceSelect } from './AgentWorkspaceSelect';
@@ -22,8 +20,6 @@ export function WorkspaceSwitcher() {
   const [projectOpen, setProjectOpen] = useState(false);
   const [addMode, setAddMode] = useState(false);
   const { cwd, companies, setCwd } = useWorkspaceStore();
-  const { selectedAgent } = useAgentSettingsStore();
-  const { options, updateOptions } = useCCStore();
   const { threadCwdMode, setThreadCwdMode } = useConfigStore();
 
   const handleSelectCompany = useCallback(
@@ -127,17 +123,10 @@ export function WorkspaceSwitcher() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {selectedAgent === 'cc' ? (
-        <AgentWorkspaceSelect
-          value={options.worktreeMode ?? 'local'}
-          onValueChange={(v: ThreadCwdMode) => updateOptions({ worktreeMode: v })}
-        />
-      ) : (
-        <AgentWorkspaceSelect
-          value={threadCwdMode}
-          onValueChange={(v: ThreadCwdMode) => setThreadCwdMode(v)}
-        />
-      )}
+      <AgentWorkspaceSelect
+        value={threadCwdMode}
+        onValueChange={(v: ThreadCwdMode) => setThreadCwdMode(v)}
+      />
 
       {EDITION.git && <BranchSwitcher cwd={cwd} />}
     </div>

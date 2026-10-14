@@ -1,15 +1,11 @@
-import { McpConfigScopeSelector } from '@/components/cc/mcp/McpConfigScopeSelector';
 import { Button } from '@/components/ui/button';
 import { ProjectSelector } from '@/features/ProjectSelector';
 import { cn } from '@/lib/utils';
-import { useAgentSettingsStore } from '@/stores';
 import { usePluginsViewContext } from '../hooks';
 
 /** Bottom bar: skill scope switcher or MCP config scope selector, depending on tab. */
 export function PluginsViewBottomBar() {
-  const { selectedAgent } = useAgentSettingsStore();
-  const { mainTab, overlay, manageTab, scope, setScope, setManageRefreshKey, connectorTarget } =
-    usePluginsViewContext();
+  const { mainTab, overlay, manageTab, scope, setScope } = usePluginsViewContext();
 
   return (
     <>
@@ -35,15 +31,6 @@ export function PluginsViewBottomBar() {
           {scope === 'project' && <ProjectSelector />}
         </div>
       )}
-
-      {overlay === 'manage' &&
-        manageTab === 'Connectors' &&
-        connectorTarget === 'agent' &&
-        selectedAgent === 'cc' && (
-          <div className="px-3 py-2 border-t">
-            <McpConfigScopeSelector onProjectChange={() => setManageRefreshKey((k) => k + 1)} />
-          </div>
-        )}
     </>
   );
 }

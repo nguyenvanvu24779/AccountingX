@@ -1,17 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import CCMcpView from '@/components/cc/mcp/CCMcpView';
 import { CodexMcpView } from '@/features/mcp/CodexMcpView';
 import { DefaultMcpServers } from '@/features/mcp/DefaultMcpServers';
-import { KekeMcpView } from '@/features/mcp/KekeMcpView';
 import { McpAddPanel } from '@/features/mcp/McpAddPanel';
 import { Clone } from '@/features/skills/Clone';
 import { InstalledTab } from '@/features/skills/InstalledTab';
 import SkillsViewContent from '@/features/skills/SkillsView';
 import { RecommendToolsView } from '@/features/tools/RecommendToolsView';
 import { unifiedReadMcpConfig } from '@/services';
-import { readKekeMcpServers } from '@/services/apiAdapt/kekeMcp';
-import { useAgentSettingsStore, useWorkspaceStore } from '@/stores';
+import { useWorkspaceStore } from '@/stores';
 import { usePluginsViewContext } from '../hooks';
 import { PluginDetailView } from './PluginDetailView';
 import { PluginsMarketplaceView } from './PluginsMarketplaceView';
@@ -20,32 +17,25 @@ import { TabSwitcher } from './TabSwitcher';
 /** Main content area: switches between Tools / Connectors / Skills, or a manage / add overlay. */
 export function PluginsViewContent() {
   const { t } = useTranslation('mcp');
-  const { selectedAgent } = useAgentSettingsStore();
   const { cwd } = useWorkspaceStore();
-  const { connectorTarget } = usePluginsViewContext();
   const quickAddRequest = useRef(0);
   const [quickAddState, setQuickAddState] = useState<{
     key: string;
     servers: Record<string, unknown>;
     error: string;
   }>({ key: '', servers: {}, error: '' });
-  const targetKey = connectorTarget === 'bots' ? 'bots' : `${selectedAgent}:${cwd ?? ''}`;
+  const targetKey = `codex:${cwd ?? ''}`;
   const loadQuickAddServers = useCallback(async () => {
     const request = ++quickAddRequest.current;
     try {
-      const servers =
-        connectorTarget === 'bots'
-          ? await readKekeMcpServers()
-          : selectedAgent === 'cc' && !cwd
-            ? {}
-            : ((await unifiedReadMcpConfig(selectedAgent, cwd || undefined)).mcpServers ?? {});
+      const servers = (await unifiedReadMcpConfig('codex', cwd || undefined)).mcpServers ?? {};
       if (request === quickAddRequest.current)
         setQuickAddState({ key: targetKey, servers, error: '' });
     } catch (error) {
       if (request === quickAddRequest.current)
         setQuickAddState({ key: targetKey, servers: {}, error: String(error) });
     }
-  }, [selectedAgent, cwd, connectorTarget, targetKey]);
+  }, [cwd, targetKey]);
   const {
     mainTab,
     overlay,
@@ -93,7 +83,6 @@ export function PluginsViewContent() {
             </p>
           ) : (
             <DefaultMcpServers
-              agent={connectorTarget === 'bots' ? 'keke' : selectedAgent}
               cwd={cwd || undefined}
               servers={quickAddState.servers}
               onServerAdded={() => {
@@ -115,13 +104,7 @@ export function PluginsViewContent() {
           </div>
           <div className="flex-1 min-h-0 overflow-y-auto py-3">
             {manageTab === 'Connectors' ? (
-              connectorTarget === 'bots' ? (
-                <KekeMcpView refreshKey={manageRefreshKey + refreshTrigger} />
-              ) : selectedAgent === 'codex' ? (
-                <CodexMcpView refreshKey={manageRefreshKey} />
-              ) : (
-                <CCMcpView refreshKey={manageRefreshKey} />
-              )
+              <CodexMcpView refreshKey={manageRefreshKey} />
             ) : (
               <div className="px-4">
                 <InstalledTab
@@ -140,15 +123,7 @@ export function PluginsViewContent() {
 
       {overlay === 'add' && (
         <div className="h-full overflow-y-auto p-4">
-          {addTab === 'Connector' ? (
-            <McpAddPanel
-              key={connectorTarget}
-              target={connectorTarget === 'bots' ? 'keke' : undefined}
-              onAdded={handleMcpAdded}
-            />
-          ) : (
-            <Clone />
-          )}
+          {addTab === 'Connector' ? <McpAddPanel onAdded={handleMcpAdded} /> : <Clone />}
         </div>
       )}
 

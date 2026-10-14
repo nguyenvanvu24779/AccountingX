@@ -12,15 +12,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useSidebar } from '@/components/ui/sidebar';
-import { useCCSessionManager } from '@/hooks/useCCSessionManager';
 import { useLayoutStore } from '@/stores';
-import { useAcpStore } from '@/stores/useAcpStore';
-import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { SideBarAddProjectButton } from './SideBarAddProjectButton';
-import { SideBarAcpTab, SideBarClaudeTab, SideBarCodexTab } from './SideBarTab';
-
-const focusCCInput = () => window.dispatchEvent(new Event('cc-input-focus-request'));
+import { SideBarCodexTab } from './SideBarTab';
 
 // Shared class for nav buttons (Automations / Marketplace)
 const navBtnBase = 'justify-start gap-2 rounded-md border px-2.5';
@@ -62,11 +57,8 @@ export function SideBarAgentHeader() {
 /** Project-specific sorting and creation actions. */
 export function SideBarProjectActions() {
   const { t } = useTranslation('sidebar');
-  const { selectedAgent } = useAgentSettingsStore();
   const { open: isSidebarOpen } = useSidebar();
-  const { sortKey, setSortKey } = useThreadList({
-    enabled: isSidebarOpen && selectedAgent === 'codex',
-  });
+  const { sortKey, setSortKey } = useThreadList({ enabled: isSidebarOpen });
   const currentThreadSortLabel = sortKey === 'created_at' ? t('sortCreated') : t('sortUpdated');
 
   return (
@@ -97,14 +89,10 @@ export function SideBarProjectActions() {
   );
 }
 
-/** The Agent tab's list — `selectedAgent` is the single source of truth. */
+/** The list of conversations for each company folder. */
 export function SideBarAgentList() {
   const { cwd, setCwd } = useWorkspaceStore();
-  const { setSelectedAgent, selectedAgent } = useAgentSettingsStore();
-  const acpActive = useAcpStore((s) => s.active);
-  const { setView, setActiveSidebarTab } = useLayoutStore();
   const { handleNewThread } = useNewThread();
-  const { handleNewSession } = useCCSessionManager();
 
   const handleCreateNewThreadForProject = useCallback(
     (project: string) => {
@@ -114,34 +102,5 @@ export function SideBarAgentList() {
     [cwd, handleNewThread, setCwd]
   );
 
-  const handleStartNewAcpSessionForProject = useCallback(
-    (directory: string) => {
-      setView('agent');
-      setCwd(directory);
-      // `restart` tears down the connection and asks the composer to reconnect
-      // in the new workspace.
-      useAcpStore.getState().restart();
-    },
-    [setCwd, setView]
-  );
-
-  const handleStartNewCcSessionForProject = useCallback(
-    async (directory: string) => {
-      setSelectedAgent('cc');
-      setActiveSidebarTab('cc');
-      setView('agent');
-      setCwd(directory);
-      await handleNewSession();
-      focusCCInput();
-    },
-    [handleNewSession, setActiveSidebarTab, setCwd, setSelectedAgent, setView]
-  );
-
-  if (acpActive) {
-    return <SideBarAcpTab onStartNewSession={handleStartNewAcpSessionForProject} />;
-  }
-  if (selectedAgent === 'codex') {
-    return <SideBarCodexTab onCreateNewThread={handleCreateNewThreadForProject} />;
-  }
-  return <SideBarClaudeTab onStartNewSession={handleStartNewCcSessionForProject} />;
+  return <SideBarCodexTab onCreateNewThread={handleCreateNewThreadForProject} />;
 }

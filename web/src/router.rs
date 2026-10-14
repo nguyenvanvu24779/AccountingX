@@ -13,7 +13,7 @@ use super::{
         api_account_rate_limits, api_allow_sleep, api_archive_thread, api_unarchive_thread, api_canonicalize_path,
         
         
-        api_create_approval, api_list_pending_approvals, api_consume_approval, api_browser_health,
+        api_create_approval, api_list_pending_approvals, api_consume_approval, api_browser_health, api_permission_mode,
         api_zalo_connect, api_zalo_disconnect, api_zalo_status,
         api_zalo_list_approvers, api_zalo_send,
         
@@ -374,6 +374,7 @@ pub fn create_router(state: WebServerState) -> Router {
         .route("/api/approvals/pending", post(api_list_pending_approvals))
         .route("/api/approvals/consume", post(api_consume_approval))
         .route("/api/browser/health", post(api_browser_health))
+        .route("/api/permissions/mode", post(api_permission_mode))
         .route("/api/system/check", post(api_system_check))
         .route("/api/system/repair", post(api_system_repair))
         .route("/api/zalo/connect", post(api_zalo_connect))

@@ -5,41 +5,25 @@ import { toast } from 'sonner';
 import type { McpServerConfig } from '@/components/codex/types';
 import { Button } from '@/components/ui/button';
 import { McpServerForm } from '@/features/mcp/McpServerForm';
-import { ccMcpAdd, unifiedAddMcpServer } from '@/services';
-import type { KekeMcpServer } from '@/services/apiAdapt/kekeMcp';
-import { addKekeMcpServer } from '@/services/apiAdapt/kekeMcp';
-import { useAgentSettingsStore, useWorkspaceStore } from '@/stores';
-import { KekeGitHubAuthDialog } from './KekeGitHubAuthDialog';
-import { KekeMcpAuthControl } from './KekeMcpAuthControl';
-import { needsPresetAuthorization } from './mcpAuthentication';
-import { useKekeMcpAuth } from './useKekeMcpAuth';
+import { unifiedAddMcpServer } from '@/services';
 
 interface McpAddPanelProps {
   onAdded: () => void;
-  target?: 'keke';
 }
 
-export function McpAddPanel({ onAdded, target }: McpAddPanelProps) {
+export function McpAddPanel({ onAdded }: McpAddPanelProps) {
   const { t } = useTranslation('mcp');
-  const auth = useKekeMcpAuth(target === 'keke');
-  const [configured, setConfigured] = useState<{ name: string; config: KekeMcpServer } | null>(
-    null
-  );
-  const { selectedAgent } = useAgentSettingsStore();
-  const { cwd } = useWorkspaceStore();
   const [serverName, setServerName] = useState('');
-  const [protocol, setProtocol] = useState<'stdio' | 'http' | 'sse'>(
-    target === 'keke' ? 'http' : 'stdio'
-  );
+  const [protocol, setProtocol] = useState<'stdio' | 'http' | 'sse'>('stdio');
   const [commandConfig, setCommandConfig] = useState({ command: '', args: '', env: '' });
-  const [httpConfig, setHttpConfig] = useState({ url: '', headers: '' });
+  const [httpConfig, setHttpConfig] = useState({ url: '' });
   const [adding, setAdding] = useState(false);
 
   const resetForm = () => {
     setServerName('');
-    setProtocol(target === 'keke' ? 'http' : 'stdio');
+    setProtocol('stdio');
     setCommandConfig({ command: '', args: '', env: '' });
-    setHttpConfig({ url: '', headers: '' });
+    setHttpConfig({ url: '' });
   };
 
   const parseEnv = (raw: string): Record<string, string> | null => {
@@ -64,71 +48,24 @@ export function McpAddPanel({ onAdded, target }: McpAddPanelProps) {
   const handleAdd = async () => {
     if (!serverName.trim() || adding) return;
     setAdding(true);
-    let botConfig: KekeMcpServer | null = null;
     try {
-      if (target === 'keke' || selectedAgent === 'codex') {
-        let config: McpServerConfig & { headers?: Record<string, string> };
-        if (protocol === 'stdio') {
-          config = {
-            type: 'stdio',
-            command: commandConfig.command,
-            args: splitArgs(commandConfig.args),
-          };
-          if (commandConfig.env.trim()) {
-            const env = parseEnv(commandConfig.env);
-            if (!env) return;
-            config.env = env;
-          }
-        } else {
-          config = { type: protocol, url: httpConfig.url.trim() };
-          if (httpConfig.headers.trim()) {
-            const headers = parseEnv(httpConfig.headers);
-            if (!headers) return;
-            config.headers = headers;
-          }
+      let config: McpServerConfig;
+      if (protocol === 'stdio') {
+        config = {
+          type: 'stdio',
+          command: commandConfig.command,
+          args: splitArgs(commandConfig.args),
+        };
+        if (commandConfig.env.trim()) {
+          const env = parseEnv(commandConfig.env);
+          if (!env) return;
+          config.env = env;
         }
-        if (target === 'keke') {
-          await addKekeMcpServer(serverName.trim(), config);
-          botConfig = config;
-        } else await unifiedAddMcpServer({ clientName: 'codex', serverName, serverConfig: config });
       } else {
-        const request: any = { name: serverName, type: protocol, scope: 'local', enabled: true };
-        if (protocol === 'stdio') {
-          if (!commandConfig.command.trim()) {
-            toast.error(t('commandRequired'));
-            return;
-          }
-          request.command = commandConfig.command;
-          if (commandConfig.args) request.args = splitArgs(commandConfig.args);
-          if (commandConfig.env.trim()) {
-            const env = parseEnv(commandConfig.env);
-            if (!env) return;
-            request.env = env;
-          }
-        } else {
-          if (!httpConfig.url.trim()) {
-            toast.error(t('urlRequired'));
-            return;
-          }
-          request.url = httpConfig.url;
-          if (httpConfig.headers.trim()) {
-            const headers = parseEnv(httpConfig.headers);
-            if (!headers) return;
-            request.headers = headers;
-          }
-        }
-        await ccMcpAdd(request, cwd || '');
+        config = { type: protocol, url: httpConfig.url.trim() };
       }
+      await unifiedAddMcpServer({ clientName: 'codex', serverName, serverConfig: config });
       toast.success(t('serverAdded', { name: serverName }));
-      if (botConfig && needsPresetAuthorization(botConfig)) {
-        const name = serverName.trim();
-        setConfigured({ name, config: botConfig });
-        if (await auth.authorize(name, botConfig)) {
-          resetForm();
-          onAdded();
-        }
-        return;
-      }
       resetForm();
       onAdded();
     } catch (error) {
@@ -144,40 +81,20 @@ export function McpAddPanel({ onAdded, target }: McpAddPanelProps) {
 
   return (
     <div className="space-y-4">
-      <KekeGitHubAuthDialog
-        auth={auth}
-        onAuthorized={() => {
-          resetForm();
-          onAdded();
-        }}
+      <McpServerForm
+        serverName={serverName}
+        onServerNameChange={setServerName}
+        protocol={protocol}
+        onProtocolChange={setProtocol}
+        commandConfig={commandConfig}
+        onCommandConfigChange={setCommandConfig}
+        httpConfig={httpConfig}
+        onHttpConfigChange={(config) => setHttpConfig({ url: config.url })}
       />
-      {configured ? (
-        <div className="flex flex-col gap-3">
-          <KekeMcpAuthControl name={configured.name} config={configured.config} auth={auth} />
-          <Button variant="outline" onClick={onAdded}>
-            {t('done')}
-          </Button>
-        </div>
-      ) : (
-        <>
-          <McpServerForm
-            serverName={serverName}
-            onServerNameChange={setServerName}
-            protocol={protocol}
-            onProtocolChange={setProtocol}
-            commandConfig={commandConfig}
-            onCommandConfigChange={setCommandConfig}
-            httpConfig={target === 'keke' ? httpConfig : { url: httpConfig.url }}
-            onHttpConfigChange={(config) =>
-              setHttpConfig({ url: config.url, headers: config.headers ?? '' })
-            }
-          />
-          <Button onClick={handleAdd} disabled={isDisabled || adding} className="w-full">
-            <Plus className="h-4 w-4 mr-2" />
-            {adding ? t('adding') : t('addServer')}
-          </Button>
-        </>
-      )}
+      <Button onClick={handleAdd} disabled={isDisabled || adding} className="w-full">
+        <Plus className="h-4 w-4 mr-2" />
+        {adding ? t('adding') : t('addServer')}
+      </Button>
     </div>
   );
 }

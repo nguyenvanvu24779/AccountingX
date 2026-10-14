@@ -12,13 +12,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BrowserProjects } from '@/features/ProjectSelector/BrowserProjects';
 import { isDesktopTauri } from '@/hooks/runtime';
-import { EDITION } from '@/lib/edition';
 import { cn } from '@/lib/utils';
 import { codexService } from '@/services/codexService';
-import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
 import { useLayoutStore } from '@/stores/useLayoutStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { getFilename } from '@/utils/getFilename';
@@ -26,10 +23,8 @@ import { getFilename } from '@/utils/getFilename';
 export function HistoryProjectsDialog() {
   const { t } = useTranslation('project');
   const { projects, historyProjects, setCwd, addProject } = useWorkspaceStore();
-  const { selectedAgent, setSelectedAgent } = useAgentSettingsStore();
-  const { setView, setActiveSidebarTab } = useLayoutStore();
+  const { setView } = useLayoutStore();
   const [open, setOpen] = useState(false);
-  const [continueAgent, setContinueAgent] = useState<'codex' | 'cc'>(selectedAgent);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [isContinuing, setIsContinuing] = useState(false);
   const [browseMode, setBrowseMode] = useState(false);
@@ -59,10 +54,6 @@ export function HistoryProjectsDialog() {
     );
   }, [historyOnlyProjects]);
 
-  useEffect(() => {
-    setContinueAgent(selectedAgent);
-  }, [selectedAgent]);
-
   const toggleSelectedProject = (path: string) => {
     setSelectedProjects((previousProjects) =>
       previousProjects.includes(path)
@@ -90,12 +81,8 @@ export function HistoryProjectsDialog() {
       setIsContinuing(true);
       for (const path of selectedProjects) addProject(path);
       setCwd(selectedProjects[0]);
-      setSelectedAgent(continueAgent);
-      setActiveSidebarTab(continueAgent);
       setView('agent');
-      if (continueAgent === 'codex') {
-        await codexService.setCurrentThread(null);
-      }
+      await codexService.setCurrentThread(null);
       setOpen(false);
       setSelectedProjects([]);
     } catch (error) {
@@ -160,25 +147,6 @@ export function HistoryProjectsDialog() {
           />
         ) : (
           <div className="space-y-3">
-            <div className="flex justify-center">
-              <Tabs
-                value={continueAgent}
-                onValueChange={(value) => {
-                  const nextAgent = value as 'codex' | 'cc';
-                  setContinueAgent(nextAgent);
-                  setSelectedAgent(nextAgent);
-                }}
-                className="w-auto"
-              >
-                <TabsList>
-                  <TabsTrigger value="codex">{t('codexTab')}</TabsTrigger>
-                  {EDITION.claudeAgent && (
-                    <TabsTrigger value="cc">{t('claudeAgentTab')}</TabsTrigger>
-                  )}
-                </TabsList>
-              </Tabs>
-            </div>
-
             <div className="flex items-center justify-between rounded-md border px-3 py-2">
               <div className="flex items-center gap-2">
                 <Checkbox

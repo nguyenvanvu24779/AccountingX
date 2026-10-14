@@ -1,6 +1,5 @@
 import { ArrowLeft, ChevronRight, MoreHorizontal, Plus, RotateCcw, Settings } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { AgentSwitcher } from '@/components/agent';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,20 +7,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useTrafficLightConfig } from '@/hooks';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useLayoutStore } from '@/stores';
-import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
-import { useBotUiStore } from '@/stores/useBotUiStore';
 import { usePluginsViewContext } from '../hooks';
 import { TabSwitcher } from './TabSwitcher';
 
@@ -34,9 +23,6 @@ export function PluginsViewHeader() {
   const {
     mainTab,
     setMainTab,
-    connectorTarget,
-    setConnectorTarget,
-    manageTab,
     overlay,
     setOverlay,
     addTab,
@@ -45,13 +31,6 @@ export function PluginsViewHeader() {
     selectedPluginDetail,
     handlePluginDetail,
   } = usePluginsViewContext();
-
-  const selectedAgent = useAgentSettingsStore((state) => state.selectedAgent);
-  const selectedBotId = useBotUiStore((state) => state.selectedBotId);
-  const connectorsVisible =
-    (!overlay && mainTab === 'Connectors') ||
-    (overlay === 'manage' && manageTab === 'Connectors') ||
-    (overlay === 'add' && addTab === 'Connector');
 
   return (
     <div
@@ -117,41 +96,6 @@ export function PluginsViewHeader() {
           onClick={() => setOverlay('manage')}
         >
           <Settings className="h-3.5 w-3.5" />
-        </Button>
-      )}
-
-      {connectorsVisible ? (
-        <Select
-          value={connectorTarget === 'bots' ? 'bots' : selectedAgent}
-          onValueChange={(value) => {
-            setConnectorTarget(value === 'bots' ? 'bots' : 'agent');
-            if (value === 'codex' || value === 'cc')
-              useAgentSettingsStore.getState().setSelectedAgent(value);
-          }}
-        >
-          <SelectTrigger className="w-28" aria-label={t('targetAria')}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="codex">{t('targetCodex')}</SelectItem>
-              <SelectItem value="cc">{t('targetClaude')}</SelectItem>
-              <SelectItem value="bots">{t('targetBots')}</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      ) : (
-        <AgentSwitcher />
-      )}
-      {connectorsVisible && connectorTarget === 'bots' && selectedBotId && (
-        <Button
-          size="icon"
-          variant="ghost"
-          aria-label={t('backToBot')}
-          title={t('backToBot')}
-          onClick={() => useLayoutStore.getState().setView('bot')}
-        >
-          <ArrowLeft />
         </Button>
       )}
 

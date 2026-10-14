@@ -1,17 +1,10 @@
 import { SquarePen } from 'lucide-react';
 import { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { acpFreshSession } from '@/components/acp/newSession';
 import { useNewThread } from '@/components/codex/hooks';
 import { Button } from '@/components/ui/button';
-import { useCCSessionManager } from '@/hooks/useCCSessionManager';
-import { acpStop } from '@/services/apiAdapt/acp';
-import { useAgentCenterStore, useLayoutStore } from '@/stores';
-import { useAcpStore } from '@/stores/useAcpStore';
-import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
+import { useLayoutStore } from '@/stores';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
-
-const focusCCInput = () => window.dispatchEvent(new Event('cc-input-focus-request'));
 
 type Props = {
   showLabel?: boolean;
@@ -20,55 +13,16 @@ type Props = {
 export function NewAgentButton({ showLabel = false }: Props) {
   const { t } = useTranslation('sidebar');
   const { cwd, setCwd } = useWorkspaceStore();
-  const { selectedAgent } = useAgentSettingsStore();
-  const { setCurrentAgentCardId } = useAgentCenterStore();
-  const { view, setView, setActiveSidebarTab } = useLayoutStore();
-  const { handleNewSession } = useCCSessionManager();
+  const { view } = useLayoutStore();
   const { handleNewThread } = useNewThread();
-  const { active: acpActive, connectionId: acpConnectionId, restart: acpRestart } = useAcpStore();
 
   const handleCreateNew = useCallback(
     async (project?: string) => {
       if (project && project !== cwd) setCwd(project);
 
-      if (acpActive) {
-        setView('agent');
-        // One agent process hosts many sessions, and `session/new` carries its
-        // own cwd, so a new chat — in this project or another — is a single
-        // JSON-RPC round trip. Respawning the CLI costs seconds.
-        const target = project ?? cwd;
-        if (acpConnectionId && target && (await acpFreshSession(acpConnectionId, target))) {
-          return;
-        }
-        // The old process may already be gone; a fresh session works regardless.
-        if (acpConnectionId) await acpStop(acpConnectionId).catch(() => {});
-        acpRestart();
-        return;
-      }
-
-      if (selectedAgent === 'cc') {
-        setActiveSidebarTab('cc');
-        setCurrentAgentCardId(null);
-        setView('agent');
-        await handleNewSession();
-        focusCCInput();
-        return;
-      }
       await handleNewThread();
     },
-    [
-      acpActive,
-      acpConnectionId,
-      acpRestart,
-      cwd,
-      handleNewSession,
-      handleNewThread,
-      selectedAgent,
-      setActiveSidebarTab,
-      setCwd,
-      setCurrentAgentCardId,
-      setView,
-    ]
+    [cwd, handleNewThread, setCwd]
   );
 
   // Keyboard shortcut: Cmd/Ctrl+N → new thread / session

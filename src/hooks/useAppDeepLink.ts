@@ -18,7 +18,6 @@ function handleDeepLinkUrl(url: string) {
     agent: params.get('agent'),
     cwd: params.get('cwd'),
     threadId: params.get('thread'),
-    sessionId: params.get('session'),
   });
 
   if (!navigated) {

@@ -4,9 +4,7 @@ import { useCodexStore } from '@/components/codex/stores';
 import { gitRemoveWorktree } from '@/services/apiAdapt/git';
 import { codexService } from '@/services/codexService';
 import { useAgentCenterStore } from '@/stores';
-import { useCCStore } from '@/stores/cc';
 import type { AgentCenterCard } from '@/stores/useAgentCenterStore';
-import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { AgentCard } from './AgentCard';
 
@@ -37,16 +35,11 @@ function ColumnLabel({
 export default function TasksPanel() {
   const { t } = useTranslation('agent');
   const { cards, removeCard, setCurrentAgentCardId, currentAgentCardId } = useAgentCenterStore();
-  const { switchToSession, sessionLoadingMap, activeSessionId, setActiveSessionId } = useCCStore();
   const { threadStatusMap, currentThreadId } = useCodexStore();
-  const { setSelectedAgent } = useAgentSettingsStore();
 
   const isRunning = useCallback(
-    (card: AgentCenterCard) =>
-      card.kind === 'codex'
-        ? threadStatusMap[card.id]?.type === 'active'
-        : !!sessionLoadingMap[card.id],
-    [threadStatusMap, sessionLoadingMap]
+    (card: AgentCenterCard) => threadStatusMap[card.id]?.type === 'active',
+    [threadStatusMap]
   );
 
   const handleRemove = (card: AgentCenterCard) => {
@@ -54,14 +47,8 @@ export default function TasksPanel() {
     if (card.id === currentAgentCardId) {
       setCurrentAgentCardId(null);
     }
-    if (card.kind === 'codex') {
-      if (card.id === currentThreadId) {
-        void codexService.setCurrentThread(null);
-      }
-    } else {
-      if (card.id === activeSessionId) {
-        setActiveSessionId(null);
-      }
+    if (card.id === currentThreadId) {
+      void codexService.setCurrentThread(null);
     }
     if (card.worktreePath) {
       const { cwd } = useWorkspaceStore.getState();
@@ -74,9 +61,7 @@ export default function TasksPanel() {
 
   const selectCard = (card: AgentCenterCard) => {
     setCurrentAgentCardId(card.id);
-    setSelectedAgent(card.kind);
-    if (card.kind === 'codex') void codexService.setCurrentThread(card.id);
-    else switchToSession(card.id);
+    void codexService.setCurrentThread(card.id);
   };
 
   const runningCards = useMemo(() => cards.filter((c) => isRunning(c)), [cards, isRunning]);

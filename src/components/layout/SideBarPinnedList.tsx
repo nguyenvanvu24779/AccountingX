@@ -4,10 +4,8 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { useCCSessionManager } from '@/hooks/useCCSessionManager';
 import { codexService } from '@/services/codexService';
 import { useAgentCenterStore, useLayoutStore } from '@/stores';
-import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
 import { type PinnedItem, usePinStore } from '@/stores/usePinStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { getFilename } from '@/utils/getFilename';
@@ -17,36 +15,20 @@ export function SideBarPinnedList() {
   const pinned = usePinStore((s) => s.pinned);
   const unpin = usePinStore((s) => s.unpin);
   const { setCwd } = useWorkspaceStore();
-  const { setView, setActiveSidebarTab } = useLayoutStore();
+  const { setView } = useLayoutStore();
   const open = useLayoutStore((s) => s.isPinnedListOpen);
   const setOpen = useLayoutStore((s) => s.setPinnedListOpen);
-  const { setSelectedAgent } = useAgentSettingsStore();
   const { addAgentCard, setCurrentAgentCardId } = useAgentCenterStore();
-  const { handleSessionSelect } = useCCSessionManager();
 
   const handleOpen = useCallback(
     async (item: PinnedItem) => {
       setCwd(item.cwd);
-      addAgentCard({ kind: item.kind, id: item.id, preview: item.title, cwd: item.cwd });
+      addAgentCard({ kind: 'codex', id: item.id, preview: item.title, cwd: item.cwd });
       setCurrentAgentCardId(item.id);
-      setSelectedAgent(item.kind);
-      setActiveSidebarTab(item.kind);
       setView('agent');
-      if (item.kind === 'codex') {
-        await codexService.setCurrentThread(item.id);
-      } else {
-        await handleSessionSelect(item.id, item.cwd);
-      }
+      await codexService.setCurrentThread(item.id);
     },
-    [
-      addAgentCard,
-      handleSessionSelect,
-      setActiveSidebarTab,
-      setCurrentAgentCardId,
-      setCwd,
-      setSelectedAgent,
-      setView,
-    ]
+    [addAgentCard, setCurrentAgentCardId, setCwd, setView]
   );
 
   if (pinned.length === 0) return null;

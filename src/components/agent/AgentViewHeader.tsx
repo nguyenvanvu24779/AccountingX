@@ -8,9 +8,8 @@ import { GitActions } from '@/features/git';
 import { ProjectRunMenu } from '@/features/project-run/ProjectRunMenu';
 import { PublishButton } from '@/features/publish/PublishButton';
 import { useTrafficLightConfig } from '@/hooks';
-import { isPhone } from '@/hooks/runtime';
 import { EDITION } from '@/lib/edition';
-import { useCCStore, useLayoutStore, useWorkspaceStore } from '@/stores';
+import { useLayoutStore, useWorkspaceStore } from '@/stores';
 import type { AgentCardsViewMode } from '@/stores/useAgentCenterStore';
 import { useAgentCenterStore } from '@/stores/useAgentCenterStore';
 import { getFilename } from '@/utils/getFilename';
@@ -35,15 +34,10 @@ export function AgentViewHeader() {
   const { open: isSidebarOpen, openMobile, isMobile } = useSidebar();
   const { needsTrafficLightOffset } = useTrafficLightConfig(isSidebarOpen);
   const { currentThreadId } = useCodexStore();
-  const { activeSessionId } = useCCStore();
   const { cwd } = useWorkspaceStore();
   // Show trigger when sidebar is closed; on mobile the Sheet is transient so always show
   const showTrigger = isMobile ? !openMobile : !isSidebarOpen;
-  const hasActiveSession = currentThreadId || activeSessionId;
-
-  // A phone gets its own header from MobileShell: no card layouts (one card
-  // fills the screen), no right panel, and Back instead of a sidebar trigger.
-  if (isPhone()) return null;
+  const hasActiveSession = currentThreadId;
 
   return (
     <div

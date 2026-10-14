@@ -37,8 +37,7 @@ function toDailyTime(hour?: number | null, minute?: number | null): string {
 export function formFromTask(task: AutomationTask): FormState {
   return {
     name: task.name,
-    agent: task.agent,
-    botId: task.bot_id ?? undefined,
+    agent: 'codex',
     modelProvider: task.model_provider ?? 'openai',
     model: task.model ?? '',
     selectedProjects: task.projects,

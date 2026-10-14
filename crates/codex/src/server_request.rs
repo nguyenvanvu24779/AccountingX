@@ -1,3 +1,5 @@
+use crate::app_server::CodexAppServer;
+use crate::permissions::{self, PermissionMode};
 use crate::protocol::RequestId;
 use codexia_shared::event_sink::EventSink;
 use serde_json::Value;
@@ -5,11 +7,25 @@ use std::sync::Arc;
 
 // Handle server requests (approval requests)
 pub async fn handle_server_request(
+    client: &Arc<CodexAppServer>,
     event_sink: &Arc<dyn EventSink>,
     request_id: RequestId,
     method: &str,
     params: Value,
 ) {
+    // In Auto mode ordinary requests are answered here and never reach a
+    // person; whatever `auto_response` declines still does.
+    if permissions::mode() == PermissionMode::Auto
+        && let Some(response) = permissions::auto_response(method, &params)
+    {
+        if let Err(err) = client.send_response(request_id.clone(), response).await {
+            log::warn!("could not auto-answer {method}: {err}");
+        } else {
+            log::info!("auto-allowed {method}");
+        }
+        return;
+    }
+
     let (event, kind) = match method {
         "item/commandExecution/requestApproval" => ("codex/approval-request", "commandExecution"),
         "item/fileChange/requestApproval" => ("codex/approval-request", "fileChange"),

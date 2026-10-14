@@ -52,3 +52,10 @@ pub async fn zalo_create_pairing(
 pub async fn zalo_cancel_pairing(code: String) -> Result<(), String> {
     codexia_db::zalo_pairings::cancel_pairing(&code)
 }
+
+/// Choose whether the AI's ordinary requests are answered automatically. Human
+/// only, like the other safety decisions in this file.
+#[tauri::command]
+pub async fn permission_mode_set(mode: codexia_codex::permissions::PermissionMode) -> Result<(), String> {
+    codexia_codex::permissions::set_mode(mode)
+}

@@ -151,6 +151,7 @@ export const en = {
       unarchive: 'Unarchive',
       loading: 'Loading...',
     },
+    permissions: 'AI permissions',
     health: 'System check',
     usage: 'AI usage',
     browser: 'Browser & MISA',
@@ -329,6 +330,17 @@ export const en = {
         fix: 'The disk is almost full ({{detail}} GB left). Free some space or AccountingX may fail when saving data.',
       },
     },
+  },
+  permissions: {
+    title: 'AI permissions',
+    description: 'Choose whether the AI has to ask you "Allow" every time it works.',
+    auto: {
+      title: 'Allow ordinary actions automatically',
+      description:
+        'When on, the AI does not ask before running commands, changing files in the company folder or using tools and websites, so you never press "Allow". When off, it asks every time (recommended while you get started).',
+    },
+    note: 'It still asks when the AI wants extra permissions (network, files outside the company folder) or needs you to type something. Sending email and changing MISA still need an approval ticket; this setting does not change that.',
+    failed: 'Could not save the setting: {{error}}',
   },
   zalo: {
     title: 'Zalo',

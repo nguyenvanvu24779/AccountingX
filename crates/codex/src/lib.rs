@@ -4,6 +4,7 @@ pub mod automation_runner;
 pub mod browser_health;
 pub mod config;
 pub mod env;
+pub mod permissions;
 pub mod protocol;
 pub mod runtime;
 pub mod providers;

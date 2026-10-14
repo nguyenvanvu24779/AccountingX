@@ -17,7 +17,6 @@ export function useUrlParamThread(enabled: boolean): void {
     const agent = params.get('agent');
     const cwd = params.get('cwd');
     const threadId = params.get('thread');
-    const sessionId = params.get('session');
     const projectsToAdd = params.getAll('addProject').filter(Boolean);
     const hasAgentNav = !!agent && !!cwd && (agent === 'codex' || agent === 'cc');
     if (!hasAgentNav && projectsToAdd.length === 0) return;
@@ -32,6 +31,6 @@ export function useUrlParamThread(enabled: boolean): void {
 
     if (!hasAgentNav) return;
 
-    navigateToAgentSession({ agent, cwd, threadId, sessionId });
+    navigateToAgentSession({ agent, cwd, threadId });
   }, [enabled]);
 }

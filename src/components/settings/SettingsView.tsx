@@ -24,7 +24,6 @@ import { EDITION } from '@/lib/edition';
 import { useLayoutStore } from '@/stores';
 import { ApprovalsSettings } from './ApprovalsSettings';
 import { BrowserSettings } from './BrowserSettings';
-import { ClaudeSettings } from './ClaudeSettings';
 import {
   ArchivedThreadSettings,
   ConfigSettings,
@@ -35,8 +34,8 @@ import {
 import { DictationSettings } from './DictationSettings';
 import { ExplorerSettings } from './ExplorerSettings';
 import { GeneralSettings } from './GeneralSettings';
+import { PermissionsSettings } from './PermissionsSettings';
 import { ProjectsSettings } from './ProjectsSettings';
-import { RemoteAccessSettings } from './RemoteAccessSettings';
 import { SystemCheckSettings } from './SystemCheckSettings';
 import { UsageSettings } from './UsageSettings';
 import { ZaloSettings } from './ZaloSettings';
@@ -51,8 +50,7 @@ type SettingsSection =
   | 'explorer'
   | 'task'
   | 'agents'
-  | 'claude'
-  | 'remote'
+  | 'permissions'
   | 'health'
   | 'usage'
   | 'browser'
@@ -63,11 +61,10 @@ const codexSections = ['task', 'agents', 'config', 'personalization', 'archived'
 const topLevelSections = (
   [
     'general',
-    EDITION.remoteAccess ? 'remote' : null,
     EDITION.dictation ? 'dictation' : null,
     'projects',
-    EDITION.claudeAgent ? 'claude' : null,
     'explorer',
+    'permissions',
     'health',
     'usage',
     'browser',
@@ -94,8 +91,7 @@ export default function SettingsView() {
       {activeSection === 'explorer' && <ExplorerSettings />}
       {activeSection === 'task' && <TaskSettings />}
       {activeSection === 'agents' && <SettingsAgentsSection />}
-      {activeSection === 'claude' && <ClaudeSettings />}
-      {activeSection === 'remote' && <RemoteAccessSettings />}
+      {activeSection === 'permissions' && <PermissionsSettings />}
       {activeSection === 'health' && (
         <SystemCheckSettings
           onNavigate={(section) => setActiveSection(section as SettingsSection)}

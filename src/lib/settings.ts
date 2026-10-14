@@ -8,7 +8,6 @@
  */
 
 import { getHomeDirectory, readTextFile, writeFile } from '@/services/apiAdapt';
-import { fetchRemoteSettings } from '@/services/apiAdapt/settings';
 import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
 import type { Company } from '@/stores/useWorkspaceStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
@@ -98,30 +97,6 @@ export async function loadSettings(): Promise<void> {
   }
   if (!data) return;
   applySettings(data);
-}
-
-/** Why the last remote load produced no projects, for the phone to show. */
-let lastRemoteError: string | null = null;
-export const remoteSettingsError = (): string | null => lastRemoteError;
-
-/**
- * Load settings from the connected desktop via its API. Used on iOS.
- *
- * Returns false when the desktop answered with nothing usable, so the caller
- * can fall back to reading the file over the remote filesystem API instead.
- */
-export async function loadRemoteSettings(): Promise<boolean> {
-  try {
-    const data = (await fetchRemoteSettings()) as SettingsFile;
-    lastRemoteError = data.workspace ? null : 'The desktop returned no workspace settings.';
-    if (!data.workspace) return false;
-    applySettings(data);
-    return true;
-  } catch (err) {
-    lastRemoteError = String(err);
-    console.error('[settings] loadRemoteSettings failed:', err);
-    return false;
-  }
 }
 
 // ── Snapshot ──────────────────────────────────────────────────────────────────

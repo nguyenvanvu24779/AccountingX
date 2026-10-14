@@ -19,12 +19,10 @@ import { readTextFile, writeFile } from '@/services';
 import { useAgentSettingsStore, useLayoutStore, useWorkspaceStore } from '@/stores';
 import { getErrorMessage } from '@/utils/errorUtils';
 
-const CODEX_INSTRUCTIONS_FILE_NAME = 'AGENTS.md';
-const CC_INSTRUCTIONS_FILE_NAME = 'CLAUDE.md';
+const INSTRUCTIONS_FILE_NAME = 'AGENTS.md';
 
 export default function AgentsMdView() {
-  const { selectedAgent, setSelectedAgent, instructionType, setInstructionType } =
-    useAgentSettingsStore();
+  const { instructionType, setInstructionType } = useAgentSettingsStore();
   const { cwd } = useWorkspaceStore();
   const { setView } = useLayoutStore();
 
@@ -39,36 +37,27 @@ export default function AgentsMdView() {
   const mdParser = useRef(new MarkdownIt());
 
   // Ensure we have default values
-  const currentAgent = selectedAgent || 'codex';
   const currentInstructionType = instructionType || 'project';
 
   // Set default values on mount if not set
   useEffect(() => {
-    if (!selectedAgent) {
-      setSelectedAgent('codex');
-    }
     if (!instructionType) {
       setInstructionType('project');
     }
-  }, [selectedAgent, instructionType, setSelectedAgent, setInstructionType]);
+  }, [instructionType, setInstructionType]);
 
   const filePath = useMemo(() => {
-    const fileName =
-      currentAgent === 'cc' ? CC_INSTRUCTIONS_FILE_NAME : CODEX_INSTRUCTIONS_FILE_NAME;
-
     if (currentInstructionType === 'system') {
-      // System instructions: ~/.codex/AGENTS.md or ~/.claude/CLAUDE.md
-      const configDir = currentAgent === 'cc' ? '.claude' : '.codex';
-      return `~/${configDir}/${fileName}`;
-    } else {
-      // Project instructions: $cwd/AGENTS.md or $cwd/CLAUDE.md
-      if (cwd) {
-        const trimmed = cwd.replace(/\/$/, '');
-        return `${trimmed}/${fileName}`;
-      }
-      return fileName;
+      // System instructions live in the AI's private home, not the user's ~/.codex.
+      return `~/.accountingx/codex/${INSTRUCTIONS_FILE_NAME}`;
     }
-  }, [cwd, currentAgent, currentInstructionType]);
+    // Project (company) instructions: $cwd/AGENTS.md
+    if (cwd) {
+      const trimmed = cwd.replace(/[/]$/, '');
+      return `${trimmed}/${INSTRUCTIONS_FILE_NAME}`;
+    }
+    return INSTRUCTIONS_FILE_NAME;
+  }, [cwd, currentInstructionType]);
 
   useEffect(() => {
     let active = true;
@@ -132,10 +121,6 @@ export default function AgentsMdView() {
     }
   };
 
-  const handleAgentChange = (agent: string) => {
-    setSelectedAgent(agent as 'codex' | 'cc');
-  };
-
   const handleInstructionTypeChange = (type: string) => {
     setInstructionType(type as 'system' | 'project');
   };
@@ -164,12 +149,6 @@ export default function AgentsMdView() {
               Back to chats
             </Button>
             <div className="flex items-center gap-4">
-              <Tabs value={currentAgent} onValueChange={handleAgentChange} className="w-auto">
-                <TabsList>
-                  <TabsTrigger value="codex">Codex</TabsTrigger>
-                  <TabsTrigger value="cc">Claude Agent</TabsTrigger>
-                </TabsList>
-              </Tabs>
               <Tabs
                 value={currentInstructionType}
                 onValueChange={handleInstructionTypeChange}

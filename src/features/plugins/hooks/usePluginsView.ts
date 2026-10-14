@@ -9,7 +9,7 @@ import {
   type SkillGroupsConfig,
   writeSkillGroups,
 } from '@/services';
-import { useAgentSettingsStore, useLayoutStore, usePluginStore } from '@/stores';
+import { useLayoutStore, usePluginStore } from '@/stores';
 import { useInputStore } from '@/stores/useInputStore';
 import { usePluginsNavigationStore } from '@/stores/usePluginsNavigationStore';
 import { pluginDetailRequestTarget, pluginUninstallId } from './pluginTargets';
@@ -29,7 +29,7 @@ export type SkillScope = 'user' | 'project';
  */
 export function usePluginsView() {
   const { openExternalUrl } = useExternalUrl();
-  const { mainTab, setMainTab, connectorTarget, setConnectorTarget } = usePluginsNavigationStore();
+  const { mainTab, setMainTab } = usePluginsNavigationStore();
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [manageTab, setManageTab] = useState<ManageTab>('Connectors');
   const [addTab, setAddTab] = useState<AddTab>('Connector');
@@ -40,7 +40,6 @@ export function usePluginsView() {
   const [installingPluginId, setInstallingPluginId] = useState<string | null>(null);
   const [uninstallingPluginId, setUninstallingPluginId] = useState<string | null>(null);
 
-  const { setSelectedAgent } = useAgentSettingsStore();
   const { setView } = useLayoutStore();
   const { appendInputValue } = useInputStore();
 
@@ -175,18 +174,15 @@ export function usePluginsView() {
   const handleUsePlugin = useCallback(
     (plugin: PluginDetail) => {
       const pluginName = plugin.summary.interface?.displayName ?? plugin.summary.name;
-      setSelectedAgent('codex');
       setView('agent');
       appendInputValue(`@${pluginName}`);
     },
-    [appendInputValue, setSelectedAgent, setView]
+    [appendInputValue, setView]
   );
 
   return {
     mainTab,
     setMainTab,
-    connectorTarget,
-    setConnectorTarget,
     overlay,
     setOverlay,
     manageTab,

@@ -18,20 +18,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from '@/components/ui/use-toast';
-import { useCCSessionManager } from '@/hooks/useCCSessionManager';
-import { listSessions } from '@/lib/sessions';
 import type { AutomationTask } from '@/services/apiAdapt';
-import { ccInterrupt, listModels, runAutomationNow, turnInterrupt } from '@/services/apiAdapt';
+import { listModels, runAutomationNow, turnInterrupt } from '@/services/apiAdapt';
 import { codexService } from '@/services/codexService';
 import { useLayoutStore } from '@/stores';
-import { useCCStore } from '@/stores/cc';
-import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
-import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { getErrorMessage } from '@/utils/errorUtils';
 import { getFilename } from '@/utils/getFilename';
 import type { RunMeta } from './useAutomationRuns';
 import { useRunEvents } from './useAutomationRuns';
-import { useBotNames } from './useBotNames';
 import { describeSchedule, formatStartsIn, getNextRunAt } from './utils';
 
 type TaskDetailPanelProps = {
@@ -54,11 +48,6 @@ async function listOllamaModels(): Promise<OllamaModel[]> {
   }
   const payload = (await response.json()) as { data?: Array<{ id?: string }> };
   return (payload.data ?? []).filter((item): item is OllamaModel => typeof item.id === 'string');
-}
-
-function agentLabel(agent: AutomationTask['agent']) {
-  if (agent === 'bot') return 'Bot';
-  return agent === 'cc' ? 'Claude Agent' : 'Codex';
 }
 
 function providerLabel(provider: AutomationTask['model_provider']) {
@@ -157,12 +146,8 @@ function RunRow({
       : storedStatus;
   const [isCancelling, setIsCancelling] = useState(false);
   const statusLabel = status === 'idle' ? 'queued' : status;
-  // A cc automation run is driven entirely in the backend, so it never shows up in the
-  // UI's active session list; the runner aliases its client under the real session id,
-  // which is enough for cc_interrupt to reach it.
-  const canInterrupt =
-    agent === 'codex' ? status === 'running' && Boolean(activeTurnId) : status === 'running';
-  const idLabel = agent === 'cc' ? 'Session ID' : 'Thread ID';
+  const canInterrupt = status === 'running' && Boolean(activeTurnId);
+  const idLabel = 'Thread ID';
 
   return (
     <div
@@ -208,7 +193,7 @@ function RunRow({
           <Copy className="mr-1 h-3 w-3" />
           Copy ID
         </Button>
-        {(agent === 'codex' || agent === 'cc') && canInterrupt && (
+        {agent === 'codex' && canInterrupt && (
           <Button
             type="button"
             variant="outline"
@@ -219,14 +204,10 @@ function RunRow({
               event.stopPropagation();
               setIsCancelling(true);
               try {
-                if (agent === 'codex') {
-                  if (!activeTurnId) {
-                    return;
-                  }
-                  await turnInterrupt({ threadId: run.threadId, turnId: activeTurnId });
-                } else {
-                  await ccInterrupt(run.threadId);
+                if (!activeTurnId) {
+                  return;
                 }
+                await turnInterrupt({ threadId: run.threadId, turnId: activeTurnId });
                 toast({ title: 'Run interrupted' });
               } catch (error) {
                 toast({
@@ -252,63 +233,13 @@ export function TaskDetailPanel({ task, now, runs, togglingPauseTaskId }: TaskDe
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [openAiModels, setOpenAiModels] = useState<Model[]>([]);
   const [ollamaModels, setOllamaModels] = useState<OllamaModel[]>([]);
-  const { setView, setActiveSidebarTab } = useLayoutStore();
-  const { setCwd } = useWorkspaceStore();
-  const { setSelectedAgent } = useAgentSettingsStore();
-  const { setActiveSessionId, activeSessionIds, switchToSession } = useCCStore();
-  const { handleSessionSelect } = useCCSessionManager();
-  const botNames = useBotNames();
+  const { setView } = useLayoutStore();
   const resolvedModelProvider = task ? resolveModelProvider(task) : 'openai';
 
   const handleOpenRun = async (run: RunMeta) => {
-    if (!task) return;
-    if (task.agent === 'bot') {
-      // Bot runs live in the bot's own conversation list, not in the Claude session store.
-      toast({ title: 'Bot run', description: "Open this run from the bot's conversations." });
-      return;
-    }
-    if (task.agent === 'codex') {
-      console.info('[TaskDetailPanel] Open codex run', { threadId: run.threadId, taskId: task.id });
-      setSelectedAgent('codex');
-      setActiveSidebarTab('codex');
-      setView('agent');
-      await codexService.setCurrentThread(run.threadId);
-      return;
-    }
-
-    console.info('[TaskDetailPanel] Open cc run', { sessionId: run.threadId, taskId: task.id });
-    setSelectedAgent('cc');
-    setActiveSidebarTab('cc');
+    if (!task || task.agent !== 'codex') return;
     setView('agent');
-    // If the session is already active, just switch to it without a full reconnect
-    if (activeSessionIds.includes(run.threadId)) {
-      console.info('[TaskDetailPanel] Switch to already-active cc session', {
-        sessionId: run.threadId,
-      });
-      switchToSession(run.threadId);
-      return;
-    }
-
-    try {
-      // Search all sessions — matching is done by session_id so directory filtering adds no value,
-      // and would miss sessions from projects[1..n] when the task has multiple projects.
-      const result = await listSessions(null, { limit: 100 });
-      const matched = result.sessions.find((session) => session.session_id === run.threadId);
-      console.info('[TaskDetailPanel] Match cc session before resume', {
-        sessionId: run.threadId,
-        matched: Boolean(matched),
-        matchedProject: matched?.cwd ?? null,
-      });
-      if (matched?.cwd) {
-        setCwd(matched.cwd);
-      }
-    } catch (error) {
-      console.warn('[TaskDetailPanel] Failed to load sessions before resume', error);
-    }
-
-    setActiveSessionId(run.threadId);
-    await handleSessionSelect(run.threadId);
-    console.info('[TaskDetailPanel] cc session resume requested', { sessionId: run.threadId });
+    await codexService.setCurrentThread(run.threadId);
   };
 
   useEffect(() => {
@@ -487,23 +418,19 @@ export function TaskDetailPanel({ task, now, runs, togglingPauseTaskId }: TaskDe
               <div className="flex flex-wrap items-center gap-1.5">
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <Cpu className="h-3 w-3" />
-                  {agentLabel(task.agent)}
+                  Codex
                 </Badge>
                 {task.agent === 'codex' && (
                   <Badge variant="secondary">{providerLabel(resolvedModelProvider)}</Badge>
                 )}
                 <Badge variant="secondary" className="max-w-[260px] truncate">
-                  {task.agent === 'bot'
-                    ? (task.bot_id && botNames[task.bot_id]) || 'Unknown bot'
-                    : displayModel}
+                  {displayModel}
                 </Badge>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                {task.agent === 'bot'
-                  ? 'Runs as the bot, with its own model, project and trust.'
-                  : task.projects.length === 0
-                    ? 'Runs in default workspace cwd.'
-                    : `Runs once per selected project (${task.projects.length}).`}
+                {task.projects.length === 0
+                  ? 'Runs in default workspace cwd.'
+                  : `Runs once per selected project (${task.projects.length}).`}
               </p>
             </div>
 

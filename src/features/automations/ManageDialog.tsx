@@ -22,13 +22,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
@@ -39,7 +32,6 @@ import {
   setAutomationPaused,
   updateAutomation,
 } from '@/services/apiAdapt';
-import { useCCStore } from '@/stores/cc';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { getErrorMessage } from '@/utils/errorUtils';
 import { getFilename } from '@/utils/getFilename';
@@ -69,20 +61,16 @@ export function ManageDialog({
   const isEdit = mode?.type === 'edit';
   const existingTask = isEdit ? mode.task : null;
 
-  // A bot task runs as its bot, so agent, model and projects are not editable here.
-  const isBotTask = existingTask?.agent === 'bot';
   const [isMutating, setIsMutating] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [projectSelectOpen, setProjectSelectOpen] = useState(false);
   const [form, setForm] = useState<FormState>({ ...DEFAULT_FORM });
 
-  const getDefaultModel = useCallback((agent: FormState['agent'], provider: string): string => {
-    if (agent === 'cc') {
-      return useCCStore.getState().options.model ?? 'sonnet';
-    }
-    return useConfigStore.getState().providerModels[provider] ?? '';
-  }, []);
+  const getDefaultModel = useCallback(
+    (provider: string): string => useConfigStore.getState().providerModels[provider] ?? '',
+    []
+  );
 
   // A single string, so the comparison below cannot drift the way separate
   // `open` / `mode.type` / `task.id` refs did: `existingTask?.id` is `undefined`
@@ -109,7 +97,7 @@ export function ManageDialog({
         setForm({
           ...initial,
           modelProvider,
-          model: initial.model || getDefaultModel(initial.agent, modelProvider),
+          model: initial.model || getDefaultModel(modelProvider),
         });
       } else if (existingTask) {
         setForm(formFromTask(existingTask));
@@ -135,8 +123,8 @@ export function ManageDialog({
       form.name.trim().length > 0 &&
       form.prompt.trim().length > 0 &&
       form.weekdays.length > 0 &&
-      (isBotTask || form.model.trim().length > 0),
-    [form.name, form.prompt, form.weekdays.length, form.model, isBotTask]
+      form.model.trim().length > 0,
+    [form.name, form.prompt, form.weekdays.length, form.model]
   );
 
   const buildSchedule = () => scheduleFromForm(form);
@@ -151,8 +139,7 @@ export function ManageDialog({
         projects: form.selectedProjects,
         prompt: form.prompt.trim(),
         schedule: buildSchedule(),
-        agent: form.agent,
-        bot_id: form.botId,
+        agent: 'codex',
         model_provider: form.modelProvider,
         model: form.model,
         cwd_mode: form.cwdMode,
@@ -179,8 +166,7 @@ export function ManageDialog({
         projects: form.selectedProjects,
         prompt: form.prompt.trim(),
         schedule: buildSchedule(),
-        agent: form.agent,
-        bot_id: form.botId,
+        agent: 'codex',
         model_provider: form.modelProvider,
         model: form.model,
         cwd_mode: form.cwdMode,
@@ -207,8 +193,7 @@ export function ManageDialog({
         projects: form.selectedProjects,
         prompt: form.prompt.trim(),
         schedule: buildSchedule(),
-        agent: form.agent,
-        bot_id: form.botId,
+        agent: 'codex',
         model_provider: form.modelProvider,
         model: form.model,
         cwd_mode: form.cwdMode,
@@ -306,149 +291,99 @@ export function ManageDialog({
             />
           </div>
 
-          {isBotTask && (
-            <p className="rounded-md border px-3 py-2 text-xs text-muted-foreground">
-              This automation runs as a bot, with the bot's own model, project and trust. Change
-              those in the bot's settings.
-            </p>
-          )}
+          <Label>Model</Label>
+          <div className="flex">
+            <CodexModelSelector
+              provider={form.modelProvider}
+              onProviderChange={(value) => {
+                setForm((prev) => ({
+                  ...prev,
+                  modelProvider: value,
+                  model: getDefaultModel(value),
+                }));
+              }}
+              value={form.model}
+              onValueChange={(value: string) => setField('model', value)}
+            />
+          </div>
 
-          {!isBotTask && <Label>Model</Label>}
-          {!isBotTask && (
-            <div className="flex">
-              <Select
-                value={form.agent}
-                onValueChange={(value) => {
-                  const nextAgent = value as 'codex' | 'cc';
-                  setForm((prev) => ({
-                    ...prev,
-                    agent: nextAgent,
-                    model: getDefaultModel(nextAgent, prev.modelProvider),
-                  }));
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select agent" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="codex">Codex</SelectItem>
-                  <SelectItem value="cc">Claude</SelectItem>
-                </SelectContent>
-              </Select>
-              {form.agent === 'codex' ? (
-                <span className="flex">
-                  <CodexModelSelector
-                    provider={form.modelProvider}
-                    onProviderChange={(value) => {
-                      setForm((prev) => ({
-                        ...prev,
-                        modelProvider: value,
-                        model: getDefaultModel(prev.agent, value),
-                      }));
-                    }}
-                    value={form.model}
-                    onValueChange={(value: string) => setField('model', value)}
-                  />
-                </span>
-              ) : (
-                <Select value={form.model} onValueChange={(value) => setField('model', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sonnet">sonnet</SelectItem>
-                    <SelectItem value="opus">opus</SelectItem>
-                    <SelectItem value="haiku">haiku</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-          )}
-
-          {!isBotTask && (
-            <div className="space-y-2">
-              <Label>Projects</Label>
-              <Popover
-                open={projectSelectOpen}
-                onOpenChange={(nextOpen) => {
-                  setProjectSelectOpen(nextOpen);
-                }}
-              >
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    role="combobox"
-                    aria-haspopup="listbox"
-                    aria-expanded={projectSelectOpen}
-                    aria-controls="project-select-list"
-                    className="w-full justify-between gap-2 font-normal"
-                  >
-                    <span className="min-w-0 flex-1 truncate text-left">
-                      {selectedProjectLine || 'Select projects'}
-                    </span>
-                    <ChevronDown className="h-4 w-4 shrink-0 opacity-60" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="start"
-                  className="w-[var(--radix-popover-trigger-width)] p-0"
+          <div className="space-y-2">
+            <Label>Projects</Label>
+            <Popover
+              open={projectSelectOpen}
+              onOpenChange={(nextOpen) => {
+                setProjectSelectOpen(nextOpen);
+              }}
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  role="combobox"
+                  aria-haspopup="listbox"
+                  aria-expanded={projectSelectOpen}
+                  aria-controls="project-select-list"
+                  className="w-full justify-between gap-2 font-normal"
                 >
-                  <Command>
-                    <CommandInput placeholder="Search projects..." />
-                    <CommandList id="project-select-list" className="max-h-56">
-                      <CommandEmpty>
-                        {isCreate
-                          ? 'No workspace projects found. Add projects from the sidebar first.'
-                          : 'No projects available.'}
-                      </CommandEmpty>
-                      {allProjectOptions.length > 0 && (
-                        <CommandGroup heading="Select projects">
-                          {allProjectOptions.map((project) => {
-                            const isSelected = form.selectedProjects.includes(project);
-                            return (
-                              <CommandItem
-                                key={project}
-                                onSelect={() => toggleProject(project)}
-                                className="flex items-center justify-between gap-2"
-                              >
-                                <span className="truncate">{getFilename(project) || project}</span>
-                                {isSelected && <Check className="h-4 w-4 text-primary" />}
-                              </CommandItem>
-                            );
-                          })}
-                        </CommandGroup>
-                      )}
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
-          )}
+                  <span className="min-w-0 flex-1 truncate text-left">
+                    {selectedProjectLine || 'Select projects'}
+                  </span>
+                  <ChevronDown className="h-4 w-4 shrink-0 opacity-60" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0">
+                <Command>
+                  <CommandInput placeholder="Search projects..." />
+                  <CommandList id="project-select-list" className="max-h-56">
+                    <CommandEmpty>
+                      {isCreate
+                        ? 'No workspace projects found. Add projects from the sidebar first.'
+                        : 'No projects available.'}
+                    </CommandEmpty>
+                    {allProjectOptions.length > 0 && (
+                      <CommandGroup heading="Select projects">
+                        {allProjectOptions.map((project) => {
+                          const isSelected = form.selectedProjects.includes(project);
+                          return (
+                            <CommandItem
+                              key={project}
+                              onSelect={() => toggleProject(project)}
+                              className="flex items-center justify-between gap-2"
+                            >
+                              <span className="truncate">{getFilename(project) || project}</span>
+                              {isSelected && <Check className="h-4 w-4 text-primary" />}
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    )}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
 
-          {!isBotTask && (
-            <div className="space-y-2">
-              <Label>Run in</Label>
-              <Tabs
-                value={form.cwdMode}
-                onValueChange={(value) => setField('cwdMode', value as AutomationCwdMode)}
-              >
-                <TabsList className="h-8 w-full">
-                  <TabsTrigger value="worktree" className="flex-1 text-xs">
-                    Git worktree
-                  </TabsTrigger>
-                  <TabsTrigger value="cwd" className="flex-1 text-xs">
-                    Project directory
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-              <p className="text-muted-foreground text-xs">
-                {form.cwdMode === 'worktree'
-                  ? 'Each project gets a reusable linked worktree, so runs never touch your checkout. Reset to the latest commit before every run unless it still holds changes you have not reviewed.'
-                  : 'Runs edit the project directory directly.'}
-              </p>
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label>Run in</Label>
+            <Tabs
+              value={form.cwdMode}
+              onValueChange={(value) => setField('cwdMode', value as AutomationCwdMode)}
+            >
+              <TabsList className="h-8 w-full">
+                <TabsTrigger value="worktree" className="flex-1 text-xs">
+                  Git worktree
+                </TabsTrigger>
+                <TabsTrigger value="cwd" className="flex-1 text-xs">
+                  Project directory
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <p className="text-muted-foreground text-xs">
+              {form.cwdMode === 'worktree'
+                ? 'Each project gets a reusable linked worktree, so runs never touch your checkout. Reset to the latest commit before every run unless it still holds changes you have not reviewed.'
+                : 'Runs edit the project directory directly.'}
+            </p>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="manage-prompt">Prompt</Label>

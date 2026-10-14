@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
-export type AgentType = 'codex' | 'cc';
-export const AGENT_TYPES: AgentType[] = ['cc', 'codex'];
+export type AgentType = 'codex';
+export const AGENT_TYPES: AgentType[] = ['codex'];
 
 interface AgentSettingsStore {
   selectedAgent: AgentType;

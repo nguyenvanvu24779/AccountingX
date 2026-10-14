@@ -1,9 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type AgentCenterCard =
-  | { kind: 'codex'; id: string; preview?: string; worktreePath?: string; cwd?: string | null }
-  | { kind: 'cc'; id: string; preview?: string; worktreePath?: string; cwd?: string | null };
+export type AgentCenterCard = {
+  kind: 'codex';
+  id: string;
+  preview?: string;
+  worktreePath?: string;
+  cwd?: string | null;
+};
 
 // Multi-agent view layout mode: grid of cards, compact list (header only), or solo active card.
 export type AgentCardsViewMode = 'grid' | 'list' | 'solo';
@@ -78,10 +82,16 @@ export const useAgentCenterStore = create<AgentCenterState>()(
     }),
     {
       name: 'agent-center-store',
-      version: 4,
+      version: 5,
       migrate: (persistedState: any, version: number) => {
         if (version === 3 && persistedState?.cardsViewMode === 'single') {
           persistedState.cardsViewMode = 'solo';
+        }
+        // Claude Code cards no longer exist; drop any saved ones.
+        if (version < 5 && Array.isArray(persistedState?.cards)) {
+          persistedState.cards = persistedState.cards.filter(
+            (card: { kind?: string }) => card?.kind === 'codex'
+          );
         }
         return persistedState;
       },

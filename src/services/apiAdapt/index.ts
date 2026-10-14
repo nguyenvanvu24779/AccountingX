@@ -1,13 +1,10 @@
 import { readTextFile, writeFile } from './filesystem';
 import { isDesktopTauri } from './shared';
 
-export * from './acp';
 export * from './approvals';
 export * from './automation';
-export * from './bots';
 export * from './browser';
 
-export * from './cc';
 export * from './codex';
 export * from './dictation';
 export * from './filesystem';
@@ -15,6 +12,7 @@ export * from './git';
 export * from './humanDecisions';
 export * from './lifecycle';
 export * from './openapp';
+export * from './permissions';
 export type {
   InstalledSkillItem,
   MarketplaceSkillItem,
@@ -25,7 +23,6 @@ export type {
   UnifiedMcpClientName,
   UnifiedMcpConfig,
 } from './shared';
-export * from './telemetry';
 export * from './terminal';
 export * from './threadOps';
 export * from './zalo';
@@ -46,7 +43,5 @@ export async function writeSessionMetaFile(content: string): Promise<void> {
   }
   window.localStorage.setItem(SESSION_META_STORAGE_KEY, content);
 }
-export * from './kekeMcp';
 export * from './publish';
-export * from './remote';
 export * from './systemCheck';

@@ -4,18 +4,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { AutomationTask } from '@/services/apiAdapt';
 import { getFilename } from '@/utils/getFilename';
 import { formatStartsIn, getNextRunAt } from './utils';
 
 type SortKey = 'name' | 'newest';
-type AgentFilter = 'codex' | 'cc' | 'bot';
 
 type AutomationTaskListProps = {
   tasks: AutomationTask[];
-  /** Bot names by id, for tasks that run as a bot. */
-  botNames: Record<string, string>;
   isLoading: boolean;
   now: Date;
   selectedTaskId: string | null;
@@ -28,7 +24,6 @@ type AutomationTaskListProps = {
 
 export function AutomationTaskList({
   tasks,
-  botNames,
   isLoading,
   now,
   selectedTaskId,
@@ -38,18 +33,12 @@ export function AutomationTaskList({
   onEditTask,
   onTogglePause,
 }: AutomationTaskListProps) {
-  const [agentFilter, setAgentFilter] = useState<AgentFilter>('codex');
   const [taskQuery, setTaskQuery] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('newest');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const tasksInAgent = useMemo(
-    () => tasks.filter((task) => task.agent === agentFilter),
-    [tasks, agentFilter]
-  );
-  const codexCount = useMemo(() => tasks.filter((task) => task.agent === 'codex').length, [tasks]);
-  const ccCount = useMemo(() => tasks.filter((task) => task.agent === 'cc').length, [tasks]);
-  const botCount = useMemo(() => tasks.filter((task) => task.agent === 'bot').length, [tasks]);
+  // Only Codex tasks run in this product; older ones for other engines stay hidden.
+  const tasksInAgent = useMemo(() => tasks.filter((task) => task.agent === 'codex'), [tasks]);
 
   const filteredTasks = useMemo(() => {
     const query = taskQuery.trim().toLowerCase();
@@ -71,17 +60,7 @@ export function AutomationTaskList({
     <div className="h-fit rounded-md border bg-card">
       <div className="px-2 pb-1.5 pt-2">
         <div className="flex items-center justify-between gap-2 pb-1">
-          <Tabs
-            value={agentFilter}
-            onValueChange={(value) => setAgentFilter(value as AgentFilter)}
-            className="w-auto"
-          >
-            <TabsList>
-              <TabsTrigger value="codex">Codex ({codexCount})</TabsTrigger>
-              <TabsTrigger value="cc">Claude ({ccCount})</TabsTrigger>
-              <TabsTrigger value="bot">Bots ({botCount})</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <h3 className="text-sm font-medium">Automations ({tasksInAgent.length})</h3>
           <div className="flex items-center gap-2">
             <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
               <PopoverTrigger asChild>
@@ -144,7 +123,7 @@ export function AutomationTaskList({
             {tasks.length === 0 ? (
               <p>No automations yet.</p>
             ) : tasksInAgent.length === 0 ? (
-              <p>No automations for this agent filter.</p>
+              <p>No automations yet.</p>
             ) : (
               <p>No tasks match the current search filter.</p>
             )}
@@ -172,17 +151,11 @@ export function AutomationTaskList({
                     <p className="truncate text-sm font-medium">{task.name}</p>
                   </div>
                   <div className="mt-1 flex min-w-0 items-center gap-1">
-                    {task.agent === 'bot' ? (
-                      <Badge variant="secondary" className="max-w-[160px] truncate">
-                        {(task.bot_id && botNames[task.bot_id]) || 'Bot'}
+                    {visibleProjects.map((project) => (
+                      <Badge key={project} variant="secondary" className="max-w-[120px] truncate">
+                        {getFilename(project) || project}
                       </Badge>
-                    ) : (
-                      visibleProjects.map((project) => (
-                        <Badge key={project} variant="secondary" className="max-w-[120px] truncate">
-                          {getFilename(project) || project}
-                        </Badge>
-                      ))
-                    )}
+                    ))}
                     {hiddenCount > 0 && <Badge variant="outline">+{hiddenCount}</Badge>}
                   </div>
                 </Button>

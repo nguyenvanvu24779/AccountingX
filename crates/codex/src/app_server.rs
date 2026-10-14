@@ -177,7 +177,7 @@ pub async fn connect_codex(event_sink: Arc<dyn EventSink>) -> Result<Arc<CodexAp
                     }
                 }
                 Some(ServerMessage::Request { id, method, params }) => {
-                    handle_server_request(&event_sink_clone, id, &method, params).await;
+                    handle_server_request(&client_clone, &event_sink_clone, id, &method, params).await;
                 }
                 Some(ServerMessage::Notification { method, raw }) => {
                     if is_reasoning_notification(&method, &raw) {

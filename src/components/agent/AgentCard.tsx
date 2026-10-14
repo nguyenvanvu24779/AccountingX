@@ -1,18 +1,8 @@
-import type { CCMessage, PermissionRequestMessage } from '@/components/cc/types/messages';
-import {
-  useApprovalStore,
-  useCodexStore,
-  useRequestUserInputStore,
-} from '@/components/codex/stores';
-import type { ApprovalRequest } from '@/components/codex/stores/useApprovalStore';
-import type { RequestUserInputRequest } from '@/components/codex/stores/useRequestUserInputStore';
+import { useCodexStore } from '@/components/codex/stores';
 import { codexService } from '@/services/codexService';
 import { useAgentCenterStore } from '@/stores';
-import { useCCStore } from '@/stores/cc';
 import type { AgentCenterCard } from '@/stores/useAgentCenterStore';
-import { useAgentSettingsStore } from '@/stores/useAgentSettingsStore';
 import { AgentCardHeader } from './AgentCardHeader';
-import { CCAgentCard } from './CcAgentCard';
 import { CodexAgentCard } from './CodexAgentCard';
 
 type AgentStatus = 'running' | 'pending' | 'idle';
@@ -27,27 +17,10 @@ export interface AgentCardProps {
 
 export function AgentCard({ card, onRemove, isSelected, hideBody = false }: AgentCardProps) {
   const { setCurrentAgentCardId } = useAgentCenterStore();
-  const { sessionLoadingMap, sessionMessagesMap, activeSessionIds, switchToSession } = useCCStore();
   const { threadStatusMap } = useCodexStore();
-  const { pendingApprovals } = useApprovalStore();
-  const { pendingRequests } = useRequestUserInputStore();
-  const { setSelectedAgent } = useAgentSettingsStore();
-  const codexStatus = card.kind === 'codex' ? threadStatusMap[card.id] : undefined;
-  const running =
-    card.kind === 'codex'
-      ? codexStatus?.type === 'active' && codexStatus.activeFlags.length === 0
-      : activeSessionIds.includes(card.id) && !!sessionLoadingMap[card.id];
-
-  const pending =
-    card.kind === 'codex'
-      ? codexStatus?.type === 'active' && codexStatus.activeFlags.length > 0
-      : (sessionMessagesMap[card.id] ?? []).some(
-          (m: CCMessage): m is PermissionRequestMessage =>
-            m.type === 'permission_request' && !m.resolved
-        ) ||
-        pendingApprovals.some((a: ApprovalRequest) => a.threadId === card.id) ||
-        pendingRequests.some((r: RequestUserInputRequest) => r.threadId === card.id);
-
+  const codexStatus = threadStatusMap[card.id];
+  const running = codexStatus?.type === 'active' && codexStatus.activeFlags.length === 0;
+  const pending = codexStatus?.type === 'active' && codexStatus.activeFlags.length > 0;
   const status: AgentStatus = running ? 'running' : pending ? 'pending' : 'idle';
 
   const header = (
@@ -56,13 +29,8 @@ export function AgentCard({ card, onRemove, isSelected, hideBody = false }: Agen
       onClose={onRemove}
       onSelect={() => {
         setCurrentAgentCardId(card.id);
-        // Switch the underlying agent/thread/session so single view renders this card's content.
-        setSelectedAgent(card.kind);
-        if (card.kind === 'codex') {
-          codexService.setCurrentThread(card.id);
-        } else {
-          switchToSession(card.id);
-        }
+        // Switch the underlying thread so single view renders this card's content.
+        codexService.setCurrentThread(card.id);
       }}
       status={status}
     />
@@ -76,23 +44,5 @@ export function AgentCard({ card, onRemove, isSelected, hideBody = false }: Agen
     );
   }
 
-  if (card.kind === 'codex') {
-    return (
-      <CodexAgentCard
-        card={card as AgentCenterCard & { kind: 'codex' }}
-        onRemove={onRemove}
-        header={header}
-        isSelected={isSelected}
-      />
-    );
-  }
-
-  return (
-    <CCAgentCard
-      card={card as AgentCenterCard & { kind: 'cc' }}
-      onRemove={onRemove}
-      header={header}
-      isSelected={isSelected}
-    />
-  );
+  return <CodexAgentCard card={card} onRemove={onRemove} header={header} isSelected={isSelected} />;
 }

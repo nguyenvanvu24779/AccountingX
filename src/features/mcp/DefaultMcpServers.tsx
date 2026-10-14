@@ -3,44 +3,35 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { type UnifiedMcpClientName, unifiedAddMcpServer } from '@/services';
-import { addKekeMcpServer, type KekeMcpServer } from '@/services/apiAdapt/kekeMcp';
+import { unifiedAddMcpServer } from '@/services';
 import { appPresets } from './appPresets';
 import { ConnectorIcon } from './ConnectorIcon';
-import { KekeGitHubAuthDialog } from './KekeGitHubAuthDialog';
-import { KekeMcpAuthControl } from './KekeMcpAuthControl';
-import { useKekeMcpAuth } from './useKekeMcpAuth';
 
 interface DefaultMcpServersProps {
-  agent: UnifiedMcpClientName | 'keke';
   cwd?: string;
   servers: Record<string, unknown>;
   onServerAdded: () => void;
 }
 
-export function DefaultMcpServers({ agent, cwd, servers, onServerAdded }: DefaultMcpServersProps) {
+export function DefaultMcpServers({ cwd, servers, onServerAdded }: DefaultMcpServersProps) {
   const { t } = useTranslation('mcp');
-  const auth = useKekeMcpAuth(agent === 'keke');
   const [category, setCategory] = useState('featured');
   const [adding, setAdding] = useState<string | null>(null);
-  const catalogKey = `${agent}:${cwd ?? ''}`;
+  const catalogKey = `codex:${cwd ?? ''}`;
   const [additions, setAdditions] = useState<{
     key: string;
-    servers: Record<string, KekeMcpServer>;
+    servers: Record<string, Record<string, unknown>>;
   }>({ key: '', servers: {} });
   const justAdded = additions.key === catalogKey ? additions.servers : {};
   const add = async (preset: (typeof appPresets)[number]) => {
     setAdding(preset.name);
     try {
-      if (agent === 'keke') await addKekeMcpServer(preset.name, preset.config);
-      else
-        await unifiedAddMcpServer({
-          clientName: agent,
-          path: cwd,
-          serverName: preset.name,
-          serverConfig: preset.config,
-          scope: agent === 'cc' ? 'global' : undefined,
-        });
+      await unifiedAddMcpServer({
+        clientName: 'codex',
+        path: cwd,
+        serverName: preset.name,
+        serverConfig: preset.config,
+      });
       toast.success(
         t('keke.addedToastSimple', {
           label: preset.label,
@@ -55,10 +46,6 @@ export function DefaultMcpServers({ agent, cwd, servers, onServerAdded }: Defaul
           [preset.name]: preset.config,
         },
       }));
-      if (agent === 'keke') {
-        if (preset.authorizationRequired) await auth.authorize(preset.name, preset.config);
-        else await auth.refresh();
-      }
     } catch (error) {
       toast.error(t('keke.addFailedToastSimple', { label: preset.label, error: String(error) }));
     } finally {
@@ -68,18 +55,10 @@ export function DefaultMcpServers({ agent, cwd, servers, onServerAdded }: Defaul
 
   return (
     <div className="flex flex-col gap-4">
-      <KekeGitHubAuthDialog auth={auth} />
       <div>
         <h3 className="text-lg font-semibold">{t('keke.connectorsTitle')}</h3>
         <p className="text-sm text-muted-foreground">
-          {t('keke.addToolsFor', {
-            target:
-              agent === 'keke'
-                ? t('keke.yourBots')
-                : agent === 'cc'
-                  ? t('targetClaude')
-                  : t('targetCodex'),
-          })}
+          {t('keke.addToolsFor', { target: t('targetCodex') })}
         </p>
       </div>
       <div className="flex flex-wrap gap-2" role="group" aria-label={t('keke.categoryAria')}>
@@ -110,9 +89,6 @@ export function DefaultMcpServers({ agent, cwd, servers, onServerAdded }: Defaul
           )
           .map((preset) => {
             const added = preset.name in servers || preset.name in justAdded;
-            const config = (servers[preset.name] ?? justAdded[preset.name]) as
-              | KekeMcpServer
-              | undefined;
             return (
               <div key={preset.name} className="flex items-start gap-3 rounded-lg border p-4">
                 <ConnectorIcon name={preset.name} />
@@ -124,14 +100,10 @@ export function DefaultMcpServers({ agent, cwd, servers, onServerAdded }: Defaul
                   ) : null}
                 </div>
                 {added ? (
-                  agent === 'keke' && preset.authorizationRequired ? (
-                    <KekeMcpAuthControl name={preset.name} auth={auth} config={config} />
-                  ) : (
-                    <Check
-                      aria-label={t('keke.configuredAria', { label: preset.label })}
-                      className="size-4 shrink-0 text-muted-foreground"
-                    />
-                  )
+                  <Check
+                    aria-label={t('keke.configuredAria', { label: preset.label })}
+                    className="size-4 shrink-0 text-muted-foreground"
+                  />
                 ) : (
                   <Button
                     size="sm"

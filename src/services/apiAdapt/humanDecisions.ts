@@ -1,4 +1,5 @@
 import type { ApprovalTicket } from './approvals';
+import type { PermissionMode } from './permissions';
 import { invokeTauri, isDesktopTauri } from './shared';
 import type { ZaloApprover, ZaloPairing } from './zalo';
 
@@ -44,4 +45,10 @@ export async function zaloCreatePairing(params: { canApprove?: boolean; canComma
 export async function zaloCancelPairing(code: string) {
   requireDesktop();
   await invokeTauri<null>('zalo_cancel_pairing', { code });
+}
+
+/** Changing how much the AI may do unasked is a human decision, so it is not on the HTTP API. */
+export async function setPermissionMode(mode: PermissionMode) {
+  requireDesktop();
+  await invokeTauri<null>('permission_mode_set', { mode });
 }

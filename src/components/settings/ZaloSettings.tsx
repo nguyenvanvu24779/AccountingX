@@ -6,17 +6,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import {
-  type Bot,
-  listBots,
   readFile,
   type ZaloAccount,
   type ZaloApprover,
@@ -158,10 +149,8 @@ function ApproversCard({ status }: { status: ZaloStatus | null }) {
   const { t } = useTranslation('zalo');
   const [pairOpen, setPairOpen] = useState(false);
   const [approvers, setApprovers] = useState<ZaloApprover[]>([]);
-  const [bots, setBots] = useState<Bot[]>([]);
   const [zaloUserId, setZaloUserId] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [botId, setBotId] = useState<string>('');
   const [canApprove, setCanApprove] = useState(true);
   const [canCommand, setCanCommand] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -172,7 +161,6 @@ function ApproversCard({ status }: { status: ZaloStatus | null }) {
 
   useEffect(() => {
     void refresh();
-    void listBots().then(setBots);
   }, [refresh]);
 
   const handleAdd = async () => {
@@ -182,13 +170,11 @@ function ApproversCard({ status }: { status: ZaloStatus | null }) {
       await zaloAddApprover({
         zaloUserId: zaloUserId.trim(),
         displayName: displayName.trim(),
-        botId: botId || undefined,
         canApprove,
         canCommand,
       });
       setZaloUserId('');
       setDisplayName('');
-      setBotId('');
       await refresh();
     } finally {
       setAdding(false);
@@ -265,22 +251,6 @@ function ApproversCard({ status }: { status: ZaloStatus | null }) {
                     onChange={(e) => setDisplayName(e.target.value)}
                   />
                 </div>
-              </div>
-
-              <div className="space-y-1">
-                <Label>{t('botLabel')}</Label>
-                <Select value={botId} onValueChange={setBotId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('botPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {bots.map((bot) => (
-                      <SelectItem key={bot.id} value={bot.id}>
-                        {bot.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
 
               <div className="flex items-center gap-4">
