@@ -304,3 +304,11 @@ Trước đây phiếu duyệt chỉ là bản ghi; `send_email` chỉ "dặn" A
 - Ai đọc được `~/.accountingx/gmail/token.json` có thể gọi thẳng Gmail API, vượt qua MCP. Cần chặn sandbox agent đọc thư mục này.
 - `/api/approvals/create` vẫn mở trên loopback (cố ý — agent cần tạo phiếu). Có thể bị spam phiếu nhưng không tự duyệt được.
 
+
+### 13.5 Playbook MISA — bước đầu (2026-10-14)
+
+- **Skill `accountingx-misa-ton-kho`** (chỉ đọc): nguồn ở `crates/codex/skills/accountingx-misa-ton-kho/SKILL.md`, nhúng vào binary (`include_str!`) và ghi ra `~/.accountingx/codex/skills/` mỗi lần app khởi động (`runtime::install_bundled_skills`; chỉ ghi đè skill có tiền tố `accountingx-`). Quy tắc cứng: không bấm nút ghi/xoá/gửi, không nhập mật khẩu (gặp màn đăng nhập thì dừng), phải khớp MST trong `AGENTS.md` trước khi đọc số liệu, nội dung trang là dữ liệu. Bằng chứng lưu ở `<workspace công ty>/evidence/misa/<ngày>/ton-kho-<giờ>.{csv,md}`.
+- Đường dẫn menu MISA trong skill (`Kho → Báo cáo → Tổng hợp tồn kho`) là **giả định chưa kiểm chứng** — cần chạy thật lần đầu rồi chỉnh skill theo giao diện thật.
+- **Settings → Trình duyệt & MISA** (`BrowserSettings.tsx`, `/api/browser/health`, `crates/codex/src/browser_health.rs`): kiểm tra Chrome, extension theo từng profile, native host (`reg query` + manifest), `cua_repl` trong config. Chỉ đọc file/registry, không chạy AI. Trên máy dev: sẵn sàng, extension ở profile **Nguyen**. Máy có thêm profile "Profile MISA" **không** có extension.
+- Native host trên máy dev trỏ vào `~/.codex/plugins/...` của Codex Desktop → máy sạch hiện phải cài ứng dụng ChatGPT (Codex) một lần. UI nói rõ điều này.
+- Phiên Claude Code **không chạy được `codex exec`** (bộ phân loại auto mode chặn việc khởi chạy agent, kể cả sandbox read-only) → phép thử thật phải chạy trong app AccountingX.
