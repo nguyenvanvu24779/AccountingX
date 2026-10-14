@@ -71,8 +71,13 @@ user says it is done, look again.
 ## 3. Company and book
 
 Expected company: `AGENTS.md`. Expected book: the one the user named ("sổ 2",
-a name), else `defaultBook` from the binding. With no binding and no book named,
-ask which book is the default and save it.
+a name), else `defaultBook` from the binding.
+
+The books are in MISA, so nobody has to type their names: when you create the
+binding, open the company/data selector (read only), list the data files that
+belong to this company, and save them as `books` with names like "Sổ 1", "Sổ 2"
+in the order MISA shows them. Say which one you will treat as the default (the
+first, unless the user says otherwise) and let them correct it.
 
 Read the company name and data-file name from the MISA header (opening the
 company selector only reads them; close it without choosing). The selector does
