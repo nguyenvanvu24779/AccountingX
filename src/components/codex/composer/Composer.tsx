@@ -10,7 +10,6 @@ import { ContextWindowWidget } from '@/components/codex/widget';
 import { FileMentionPopover } from '@/components/common';
 import { Button } from '@/components/ui/button';
 import { fileSrc } from '@/hooks/runtime';
-import { EDITION } from '@/lib/edition';
 import { codexService } from '@/services/codexService';
 import { useAgentCenterStore } from '@/stores';
 import { useInputStore } from '@/stores/useInputStore';
@@ -18,7 +17,6 @@ import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { AccessModePopover } from './AccessModePopover';
 import { ComposerMenu } from './ComposerMenu';
 import { ComposerToolbarProvider } from './ComposerToolbarContext';
-import { DictationButton } from './DictationButton';
 import { ComposerEditor, type ComposerEditorHandle } from './editor/ComposerEditor';
 import { SlashCommandDialogs } from './SlashCommandDialogs';
 import { SlashCommandPopover } from './SlashCommandsSelector';
@@ -307,13 +305,6 @@ export function Composer({ overrideSend, onAfterSend }: ComposerProps) {
               <div className="flex items-center gap-2">
                 <ContextWindowWidget />
                 <AgentModelPanel trigger={<AgentModelTrigger />} />
-                {EDITION.dictation && (
-                  <DictationButton
-                    onTranscript={(text) => {
-                      setInputValue(inputValue ? `${inputValue} ${text}` : text);
-                    }}
-                  />
-                )}
                 {threadStatus?.type === 'active' ? (
                   <Button
                     onClick={handleStop}

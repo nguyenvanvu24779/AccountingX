@@ -20,7 +20,6 @@ import {
 } from '@/components/ui/sidebar';
 import { isTauri } from '@/hooks/runtime';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { EDITION } from '@/lib/edition';
 import { useLayoutStore } from '@/stores';
 import { ApprovalsSettings } from './ApprovalsSettings';
 import { BrowserSettings } from './BrowserSettings';
@@ -31,7 +30,6 @@ import {
   SettingsAgentsSection,
   TaskSettings,
 } from './codex';
-import { DictationSettings } from './DictationSettings';
 import { ExplorerSettings } from './ExplorerSettings';
 import { GeneralSettings } from './GeneralSettings';
 import { PermissionsSettings } from './PermissionsSettings';
@@ -42,7 +40,6 @@ import { ZaloSettings } from './ZaloSettings';
 
 type SettingsSection =
   | 'general'
-  | 'dictation'
   | 'projects'
   | 'config'
   | 'personalization'
@@ -58,20 +55,17 @@ type SettingsSection =
   | 'zalo';
 
 const codexSections = ['task', 'agents', 'config', 'personalization', 'archived'] as const;
-const topLevelSections = (
-  [
-    'general',
-    EDITION.dictation ? 'dictation' : null,
-    'projects',
-    'explorer',
-    'permissions',
-    'health',
-    'usage',
-    'browser',
-    'approvals',
-    'zalo',
-  ] as const
-).filter((s): s is Exclude<typeof s, null> => s !== null);
+const topLevelSections = [
+  'general',
+  'projects',
+  'explorer',
+  'permissions',
+  'health',
+  'usage',
+  'browser',
+  'approvals',
+  'zalo',
+] as const;
 
 export default function SettingsView() {
   const { t } = useTranslation('settings');
@@ -83,7 +77,6 @@ export default function SettingsView() {
   const activeSectionContent = (
     <>
       {activeSection === 'general' && <GeneralSettings />}
-      {activeSection === 'dictation' && <DictationSettings />}
       {activeSection === 'projects' && <ProjectsSettings />}
       {activeSection === 'config' && <ConfigSettings />}
       {activeSection === 'personalization' && <PersonalizationSettings />}

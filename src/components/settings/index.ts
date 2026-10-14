@@ -1,5 +1,4 @@
 export * from './codex';
-export * from './DictationSettings';
 export * from './ExplorerSettings';
 export * from './GeneralSettings';
 export * from './LanguageSelector';

@@ -6,7 +6,6 @@ export * from './automation';
 export * from './browser';
 
 export * from './codex';
-export * from './dictation';
 export * from './filesystem';
 export * from './humanDecisions';
 export * from './lifecycle';

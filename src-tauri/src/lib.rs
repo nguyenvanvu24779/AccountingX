@@ -3,7 +3,6 @@
 #[cfg(desktop)]
 mod commands;
 #[cfg(desktop)]
-pub mod dictation;
 #[cfg(desktop)]
 mod event_sink;
 #[cfg(target_os = "macos")]
@@ -32,7 +31,6 @@ pub fn run() {
     // Desktop: full app with all plugins, commands, and setup.
     #[cfg(desktop)]
     let builder = {
-        use dictation::DictationState;
         use codexia_shared::sleep::SleepState;
         use codexia_shared::state::WatchState;
         use codexia_codex as codex;
@@ -54,8 +52,7 @@ pub fn run() {
             .plugin(tauri_plugin_shell::init())
             .plugin(tauri_plugin_dialog::init())
             .plugin(tauri_plugin_notification::init())
-            .plugin(tauri_plugin_screenshots::init())
-            .plugin(tauri_plugin_updater::Builder::new().build());
+            .plugin(tauri_plugin_screenshots::init());
 
         #[cfg(any(windows, target_os = "linux"))]
         let builder = builder.plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
@@ -74,7 +71,6 @@ pub fn run() {
         builder
             .manage(WatchState::new())
             .manage(SleepState::default())
-            .manage(DictationState::new())
             .invoke_handler(tauri::generate_handler![
                 commands::codex::initialize_codex_async,
                 commands::approvals::approval_respond,
@@ -83,16 +79,7 @@ pub fn run() {
                 commands::approvals::zalo_create_pairing,
                 commands::approvals::zalo_cancel_pairing,
                 commands::approvals::permission_mode_set,
-                commands::dictation::dictation_model_status,
-                commands::dictation::dictation_download_model,
-                commands::dictation::dictation_cancel_download,
-                commands::dictation::dictation_remove_model,
-                commands::dictation::dictation_start,
-                commands::dictation::dictation_request_permission,
-                commands::dictation::dictation_stop,
-                commands::dictation::dictation_cancel,
                 quit_app,
-                commands::updater::is_homebrew_install,
             ])
             .setup(|app| {
                 // fix_path_env::fix() ran in main() before the logger existed

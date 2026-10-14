@@ -1,4 +1,4 @@
-import { Bug, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -12,8 +12,6 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useTrafficLightConfig } from '@/hooks';
-import { EDITION } from '@/lib/edition';
-import { UpdateIndicator } from '../../features/UpdateIndicator';
 import { SideBarAgentHeader, SideBarAgentList, SideBarProjectActions } from './SideBarAgentPane';
 import { SideBarPinnedList } from './SideBarPinnedList';
 import { UserInfo } from './UserInfo';
@@ -62,21 +60,6 @@ export function AppSideBar() {
       <SidebarFooter className="flex-row items-center p-0 min-w-0 max-w-full overflow-x-hidden">
         <div className="flex-1 min-w-0 overflow-hidden">
           <UserInfo />
-        </div>
-        <div className="flex-shrink-0 pr-2 flex items-center gap-2">
-          <UpdateIndicator
-            fallback={
-              EDITION.upstreamLinks ? (
-                <a
-                  href="https://github.com/milisp/codexia/issues"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Bug className="h-4 w-4" />
-                </a>
-              ) : null
-            }
-          />
         </div>
       </SidebarFooter>
     </Sidebar>
