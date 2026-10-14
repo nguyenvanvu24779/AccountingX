@@ -133,7 +133,55 @@ pub fn ensure_codex_home(home: &Path) -> std::io::Result<()> {
             fs::write(&config, format!("{existing}{CODE_MODE_FEATURES}"))?;
         }
     }
-    install_bundled_skills(home)
+    install_bundled_skills(home)?;
+    register_zalo_mcp(home);
+    Ok(())
+}
+
+const ZALO_MCP_NAME: &str = "accountingx_zalo";
+
+/// Give the AI its Zalo tools by registering `bots/zalo/mcp.js` as an MCP
+/// server in Codex's config. Rewritten on every start so the script path stays
+/// right after the app moves or updates; the user's other settings are kept.
+/// Best effort: without the script or a readable config, Zalo tools are simply
+/// absent and nothing else is affected.
+fn register_zalo_mcp(home: &Path) {
+    let Some(script) = codexia_shared::zalo::resolve_mcp_script() else {
+        return;
+    };
+    let config = home.join("config.toml");
+    let Ok(existing) = fs::read_to_string(&config) else {
+        return;
+    };
+    let Some(updated) = with_zalo_mcp(&existing, &codexia_shared::zalo::node_command(), &script) else {
+        log::warn!("could not register the Zalo MCP server: config.toml is not valid TOML");
+        return;
+    };
+    if updated != existing
+        && let Err(err) = fs::write(&config, updated)
+    {
+        log::warn!("could not write the Zalo MCP server into config.toml: {err}");
+    }
+}
+
+fn with_zalo_mcp(config: &str, node: &str, script: &Path) -> Option<String> {
+    let mut doc = config.parse::<toml_edit::Document>().ok()?;
+    let servers = doc
+        .entry("mcp_servers")
+        .or_insert_with(|| {
+            let mut table = toml_edit::Table::new();
+            table.set_implicit(true);
+            toml_edit::Item::Table(table)
+        })
+        .as_table_mut()?;
+
+    let mut server = toml_edit::Table::new();
+    server["command"] = toml_edit::value(node);
+    let mut args = toml_edit::Array::new();
+    args.push(script.to_string_lossy().as_ref());
+    server["args"] = toml_edit::value(args);
+    servers.insert(ZALO_MCP_NAME, toml_edit::Item::Table(server));
+    Some(doc.to_string())
 }
 
 #[cfg(test)]
@@ -162,5 +210,35 @@ name: "));
         }
 
         fs::remove_dir_all(&home).unwrap();
+    }
+
+    #[test]
+    fn zalo_mcp_is_added_without_touching_other_settings_and_is_idempotent() {
+        let config = "approval_policy = \"on-request\"
+
+[mcp_servers.cua_repl]
+command = 'node.exe'
+";
+        let script = Path::new("C:/app/bots/zalo/mcp.js");
+
+        let once = with_zalo_mcp(config, "node", script).unwrap();
+        assert!(once.contains("approval_policy = \"on-request\""));
+        assert!(once.contains("[mcp_servers.cua_repl]"));
+        let parsed: toml::Table = once.parse().unwrap();
+        let zalo = &parsed["mcp_servers"][ZALO_MCP_NAME];
+        assert_eq!(zalo["command"].as_str(), Some("node"));
+        assert_eq!(zalo["args"][0].as_str(), Some("C:/app/bots/zalo/mcp.js"));
+
+        // Registering again (e.g. after the app moved) replaces, not duplicates.
+        let moved = with_zalo_mcp(&once, "node", Path::new("D:/x/mcp.js")).unwrap();
+        let parsed: toml::Table = moved.parse().unwrap();
+        assert_eq!(parsed["mcp_servers"][ZALO_MCP_NAME]["args"][0].as_str(), Some("D:/x/mcp.js"));
+        assert_eq!(moved.matches(ZALO_MCP_NAME).count(), 1);
+        assert_eq!(with_zalo_mcp(&moved, "node", Path::new("D:/x/mcp.js")).unwrap(), moved);
+    }
+
+    #[test]
+    fn invalid_config_is_left_alone() {
+        assert!(with_zalo_mcp("not = [valid", "node", Path::new("a.js")).is_none());
     }
 }

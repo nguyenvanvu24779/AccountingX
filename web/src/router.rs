@@ -18,7 +18,7 @@ use super::{
         api_telemetry_status, api_telemetry_set_consent, api_telemetry_active, api_list_bots, api_create_bot, api_update_bot, api_delete_bot, api_bot_sessions, api_bots_mcp,
         api_create_approval, api_list_pending_approvals, api_consume_approval, api_browser_health,
         api_zalo_connect, api_zalo_disconnect, api_zalo_status,
-        api_zalo_list_approvers,
+        api_zalo_list_approvers, api_zalo_send,
         api_cc_list_projects, api_cc_mcp_add, api_cc_mcp_disable, api_cc_mcp_enable,
         api_cc_mcp_get, api_cc_mcp_list, api_cc_mcp_remove,
         api_cc_connect, api_cc_disconnect, api_cc_get_installed_skills,
@@ -406,6 +406,7 @@ pub fn create_router(state: WebServerState) -> Router {
         .route("/api/zalo/disconnect", post(api_zalo_disconnect))
         .route("/api/zalo/status", post(api_zalo_status))
         .route("/api/zalo/approvers/list", post(api_zalo_list_approvers))
+        .route("/api/zalo/send", post(api_zalo_send))
         .route("/api/keke/mcp/read", post(crate::handlers::api_keke_read_mcp_servers))
         .route("/api/keke/mcp/add", post(crate::handlers::api_keke_add_mcp_server))
         .route("/api/keke/mcp/remove", post(crate::handlers::api_keke_remove_mcp_server))

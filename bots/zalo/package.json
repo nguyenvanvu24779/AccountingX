@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Spawned by codexia-zalo (Rust) as a child process. Talks newline-delimited JSON over stdio — not a standalone bot like bots/telegram.",
+  "description": "Spawned by codexia-zalo (Rust) as a child process. index.js talks newline-delimited JSON over stdio (the Zalo login and messaging sidecar); mcp.js is the MCP server that gives the AI its Zalo tools.",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "zca-js": "^2.0.0"
+    "zca-js": "^2.0.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "zod": "^3.23.0"
   }
 }

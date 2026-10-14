@@ -205,6 +205,12 @@ where
         port,
     );
 
+    // Bring Zalo back up in the background if it was connected before.
+    let zalo_resume_state = state.clone();
+    tokio::spawn(async move {
+        crate::zalo_routing::resume_zalo_if_saved(&zalo_resume_state).await;
+    });
+
     let app = create_router(state);
     // A just-exited previous process can hold this port for a moment after
     // its own process has already disappeared (the OS hasn't released the

@@ -51,16 +51,20 @@ pub struct ZaloSidecar {
 /// Locations that may hold `bots/zalo/index.js`, most specific first — the
 /// same convention `crates/codex/src/runtime.rs::bundled_candidates` uses.
 fn script_candidates() -> Vec<PathBuf> {
+    script_candidates_for("index.js")
+}
+
+fn script_candidates_for(file: &str) -> Vec<PathBuf> {
     let mut out = Vec::new();
     if let Some(path) = std::env::var_os("ACCOUNTINGX_ZALO_SCRIPT") {
-        out.push(PathBuf::from(path));
+        out.push(PathBuf::from(path).with_file_name(file));
     }
     if let Ok(exe) = std::env::current_exe() {
         if let Some(dir) = exe.parent() {
-            out.push(dir.join("resources").join("bots").join("zalo").join("index.js"));
+            out.push(dir.join("resources").join("bots").join("zalo").join(file));
         }
         for ancestor in exe.ancestors().skip(1).take(4) {
-            out.push(ancestor.join("bots").join("zalo").join("index.js"));
+            out.push(ancestor.join("bots").join("zalo").join(file));
         }
     }
     out
@@ -70,7 +74,13 @@ pub fn resolve_sidecar_script() -> Option<PathBuf> {
     script_candidates().into_iter().find(|p| p.is_file())
 }
 
-fn node_command() -> String {
+/// The MCP server script that gives the AI its Zalo tools (`bots/zalo/mcp.js`).
+pub fn resolve_mcp_script() -> Option<PathBuf> {
+    script_candidates_for("mcp.js").into_iter().find(|p| p.is_file())
+}
+
+/// The Node executable the sidecar and MCP server run with.
+pub fn node_command() -> String {
     std::env::var("ACCOUNTINGX_NODE_BIN").unwrap_or_else(|_| "node".to_string())
 }
 

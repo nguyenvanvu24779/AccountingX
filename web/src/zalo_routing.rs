@@ -9,14 +9,66 @@
 use std::sync::{Arc, LazyLock};
 
 use codexia_acp::AcpState;
+use codexia_shared::zalo::ZaloSidecar;
 use regex::Regex;
 use serde_json::Value;
 
+use crate::types::WebServerState;
 use crate::zalo_state::{ZaloAccount, ZaloState};
 
 static APPROVAL_REPLY: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^\s*(\d{6})\s*(duy[eê]t|t[uừ]\s*ch[oố]i)\s*$").expect("valid regex")
 });
+
+fn session_dir() -> Result<std::path::PathBuf, String> {
+    Ok(dirs::home_dir()
+        .ok_or_else(|| "Cannot find home directory".to_string())?
+        .join(".accountingx")
+        .join("zalo"))
+}
+
+/// Start the Zalo sidecar and begin logging in: with the saved session when it
+/// still works, otherwise by showing a QR code. Does nothing if it is already
+/// running.
+pub async fn start_zalo(state: &WebServerState) -> Result<(), String> {
+    if state.zalo_state.sidecar.lock().await.is_some() {
+        return Ok(());
+    }
+    // A fresh attempt: no QR, error or account left over from an earlier one.
+    state.zalo_state.reset_login().await;
+
+    let script = codexia_shared::zalo::resolve_sidecar_script()
+        .ok_or_else(|| "Zalo sidecar script (bots/zalo/index.js) was not found.".to_string())?;
+
+    let zalo_state = Arc::clone(&state.zalo_state);
+    let acp_state = Arc::clone(&state.acp_state);
+    let on_notification = Arc::new(move |method: String, params: Value| {
+        handle_notification(method, params, Arc::clone(&zalo_state), Arc::clone(&acp_state));
+    });
+
+    let sidecar = Arc::new(ZaloSidecar::spawn(&script, &session_dir()?, on_notification).await?);
+    sidecar.start().await?;
+    *state.zalo_state.sidecar.lock().await = Some(sidecar);
+    Ok(())
+}
+
+/// Reconnect at app start when a usable session was saved, so the bot is
+/// reachable (and the AI's Zalo tools work) without anyone opening Settings.
+/// Never shows a QR: with no saved session the user connects by hand.
+pub async fn resume_zalo_if_saved(state: &WebServerState) {
+    let saved = session_dir()
+        .ok()
+        .map(|dir| dir.join("session.json"))
+        .and_then(|path| std::fs::read_to_string(path).ok())
+        .and_then(|raw| serde_json::from_str::<Value>(&raw).ok())
+        .is_some_and(|session| session["imei"].is_string() && session["userAgent"].is_string());
+    if !saved {
+        return;
+    }
+    if let Err(e) = start_zalo(state).await {
+        log::warn!("zalo: could not resume the saved session: {e}");
+    }
+}
 
 pub fn handle_notification(
     method: String,

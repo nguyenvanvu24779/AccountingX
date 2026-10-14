@@ -1,24 +1,13 @@
-use std::sync::Arc;
-
 use axum::{Json, extract::State as AxumState};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use codexia_db::zalo_approvers::ZaloApprover;
-use codexia_shared::zalo::ZaloSidecar;
 
 use crate::types::{ErrorResponse, WebServerState};
-use crate::zalo_routing::handle_notification;
 use crate::zalo_state::ZaloAccount;
 
 fn err(e: String) -> ErrorResponse {
     ErrorResponse { error: e }
-}
-
-fn zalo_session_dir() -> Result<std::path::PathBuf, String> {
-    Ok(dirs::home_dir()
-        .ok_or_else(|| "Cannot find home directory".to_string())?
-        .join(".accountingx")
-        .join("zalo"))
 }
 
 #[derive(Serialize)]
@@ -37,35 +26,7 @@ pub(crate) struct ZaloStatus {
 pub(crate) async fn api_zalo_connect(
     AxumState(state): AxumState<WebServerState>,
 ) -> Result<Json<ZaloStatus>, ErrorResponse> {
-    {
-        let existing = state.zalo_state.sidecar.lock().await;
-        if existing.is_some() {
-            return status(&state).await;
-        }
-    }
-
-    // A fresh attempt: no QR, error or account left over from an earlier one.
-    state.zalo_state.reset_login().await;
-
-    let script = codexia_shared::zalo::resolve_sidecar_script().ok_or_else(|| {
-        err("Zalo sidecar script (bots/zalo/index.js) was not found.".to_string())
-    })?;
-    let session_dir = zalo_session_dir().map_err(err)?;
-
-    let zalo_state = Arc::clone(&state.zalo_state);
-    let acp_state = Arc::clone(&state.acp_state);
-    let on_notification = Arc::new(move |method: String, params: serde_json::Value| {
-        handle_notification(method, params, Arc::clone(&zalo_state), Arc::clone(&acp_state));
-    });
-
-    let sidecar = ZaloSidecar::spawn(&script, &session_dir, on_notification)
-        .await
-        .map_err(err)?;
-    let sidecar = Arc::new(sidecar);
-
-    sidecar.start().await.map_err(err)?;
-
-    *state.zalo_state.sidecar.lock().await = Some(sidecar);
+    crate::zalo_routing::start_zalo(&state).await.map_err(err)?;
     status(&state).await
 }
 
@@ -100,4 +61,32 @@ async fn status(state: &WebServerState) -> Result<Json<ZaloStatus>, ErrorRespons
 
 pub(crate) async fn api_zalo_list_approvers() -> Result<Json<Vec<ZaloApprover>>, ErrorResponse> {
     codexia_db::zalo_approvers::list_approvers().map(Json).map_err(err)
+}
+
+#[derive(Deserialize)]
+pub(crate) struct SendMessageParams {
+    /// A Zalo user id or display name from the approver list.
+    to: String,
+    text: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct SendMessageResult {
+    sent_to: String,
+}
+
+/// Message someone on the approver list. Anything on this machine, including
+/// an agent's shell, can reach this route, so the limits (whitelist, length,
+/// rate) are enforced inside `zalo_notify`, not by the caller.
+pub(crate) async fn api_zalo_send(
+    AxumState(state): AxumState<WebServerState>,
+    Json(params): Json<SendMessageParams>,
+) -> Result<Json<SendMessageResult>, ErrorResponse> {
+    let approvers = codexia_db::zalo_approvers::list_approvers().map_err(err)?;
+    let recipient =
+        crate::zalo_notify::send_to_approver(&state.zalo_state, &approvers, &params.to, &params.text)
+            .await
+            .map_err(err)?;
+    Ok(Json(SendMessageResult { sent_to: recipient.display_name }))
 }

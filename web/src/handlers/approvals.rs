@@ -6,13 +6,13 @@
 //! is deliberately not here: the desktop UI does that through a Tauri
 //! command, and Zalo approvers through the in-process Zalo handler.
 
-use axum::Json;
+use axum::{Json, extract::State as AxumState};
 use serde::Deserialize;
 use serde_json::Value;
 
 use codexia_db::approvals::{ApprovalKind, ApprovalTicket, EvidenceRef};
 
-use crate::types::ErrorResponse;
+use crate::types::{ErrorResponse, WebServerState};
 
 fn err(e: String) -> ErrorResponse {
     ErrorResponse { error: e }
@@ -43,9 +43,10 @@ pub(crate) struct ConsumeApprovalParams {
 }
 
 pub(crate) async fn api_create_approval(
+    AxumState(state): AxumState<WebServerState>,
     Json(params): Json<CreateApprovalParams>,
 ) -> Result<Json<ApprovalTicket>, ErrorResponse> {
-    codexia_db::approvals::create_approval(
+    let ticket = codexia_db::approvals::create_approval(
         params.kind,
         params.company_id.as_deref(),
         &params.summary,
@@ -53,8 +54,15 @@ pub(crate) async fn api_create_approval(
         &params.evidence,
         params.requested_by.as_deref(),
     )
-    .map(Json)
-    .map_err(err)
+    .map_err(err)?;
+
+    // Push the request to the approvers' phones; they can answer from there.
+    let zalo_state = std::sync::Arc::clone(&state.zalo_state);
+    let announced = ticket.clone();
+    tokio::spawn(async move {
+        crate::zalo_notify::notify_approvers_of_ticket(&zalo_state, &announced).await;
+    });
+    Ok(Json(ticket))
 }
 
 pub(crate) async fn api_list_pending_approvals() -> Result<Json<Vec<ApprovalTicket>>, ErrorResponse> {

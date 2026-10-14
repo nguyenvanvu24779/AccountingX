@@ -5,6 +5,8 @@ use codexia_shared::zalo::ZaloSidecar;
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 
+use crate::zalo_notify::SendLimiter;
+
 /// The Zalo account the bot is logged in as.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -24,6 +26,7 @@ pub struct ZaloState {
     /// Set once the sidecar reports who it logged in as.
     pub account: Mutex<Option<ZaloAccount>>,
     pub last_error: Mutex<Option<String>>,
+    pub send_limiter: Mutex<SendLimiter>,
     /// Set while the QR has been scanned and the phone is waiting for approval.
     pub qr_scanned_by: Mutex<Option<String>>,
 }

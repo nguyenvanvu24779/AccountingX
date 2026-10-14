@@ -322,3 +322,13 @@ Trước đây phiếu duyệt chỉ là bản ghi; `send_email` chỉ "dặn" A
 - Gỡ khối "Kết nối và cộng đồng" khỏi Cài đặt → Chung.
 - Ổ C từng đầy 100% do `target/` (14 GB). Máy dev nên giữ ≥ 10 GB trống khi build.
 - Workspace: `cargo clippy --workspace --all-targets --locked -- -D warnings` và `cargo test --workspace --locked` đều sạch (đã sửa lỗi `QuietSink` chỉ có trên Windows).
+
+### 13.7 Zalo cho AI dùng (2026-10-14)
+
+Quyết định của người dùng: AI phải dùng được Zalo để tương tác thuận tiện. Làm có kiểm soát:
+- **MCP `accountingx_zalo`** (`bots/zalo/mcp.js`, phụ thuộc `@modelcontextprotocol/sdk` + `zod` cài trong `bots/zalo/`): tool `zalo_status` (chỉ đọc) và `zalo_send_message`. App tự ghi mục `[mcp_servers.accountingx_zalo]` vào `~/.accountingx/codex/config.toml` mỗi lần khởi động (`runtime::register_zalo_mcp`, giữ nguyên cấu hình khác).
+- **Giới hạn nằm trong Rust** (`web/src/zalo_notify.rs`, route `/api/zalo/send`) nên `curl` thẳng cũng bị chặn: chỉ nhắn được người **có trong danh sách người duyệt**, tối đa 1500 ký tự, 20 tin / 10 phút, mọi tin có tiền tố `[AccountingX]`. Tên trùng nhau thì từ chối.
+- **Phiếu duyệt tự đẩy sang Zalo** cho người có quyền duyệt (kèm nội dung thật của payload, hướng dẫn trả lời `<mã> duyệt`).
+- **Tự kết nối lại khi mở app** nếu có phiên lưu hợp lệ (`resume_zalo_if_saved`); không bao giờ tự hiện QR.
+- Rủi ro còn lại: nội dung trang web (prompt injection) có thể khiến AI nhắn người trong danh sách; đã giới hạn bằng whitelist + tần suất, nhưng chưa có phiếu duyệt cho từng tin. Lệnh tự do **gửi vào** từ Zalo (`can_command`) vẫn chạy qua keke, chưa qua phiếu — chưa sửa.
+- Máy khác cần Node trong PATH (hoặc `ACCOUNTINGX_NODE_BIN`) cho `mcp.js` và `index.js`.
