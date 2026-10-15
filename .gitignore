@@ -62,3 +62,4 @@ diag-report.txt
 .dev-vendor/openai-cua/
 src-tauri/resources/node/node.exe
 src-tauri/resources/node/node
+release-trial/
