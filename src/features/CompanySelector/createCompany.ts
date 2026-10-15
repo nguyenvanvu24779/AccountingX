@@ -22,7 +22,8 @@ function agentsMdSeed(name: string, mst: string): string {
 
 ## Ghi chú
 - Đây là workspace riêng của công ty này trong AccountingX — dữ liệu và lịch sử trò chuyện ở đây không trộn với công ty khác.
-- AI không tự ký, không tự nộp chứng từ hay tờ khai; mọi hành động có tác dụng phụ (gửi email, ghi sổ sách...) phải qua duyệt kèm bằng chứng.
+- AI không tự ký, không tự nộp chứng từ hay tờ khai; gửi email ra ngoài và ghi sổ sách (MISA) phải qua duyệt kèm bằng chứng.
+- Nhắn Zalo cho người đã đăng ký trong AccountingX (báo kết quả, gửi tóm tắt, hỏi lại thông tin) thì gửi thẳng bằng zalo_send_message, không cần hỏi duyệt.
 `;
 }
 

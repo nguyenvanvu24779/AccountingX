@@ -67,7 +67,7 @@ server.registerTool(
     title: 'Send a Zalo message',
     description:
       'Sends a short Zalo message to a person registered in AccountingX (by name or Zalo ID). It cannot message anyone else, is limited to 1500 characters and rate-limited. ' +
-      'Use it to report results or ask a person to act. To get something approved, create an approval ticket instead: approvers are notified on Zalo automatically. ' +
+      'Use it to report results or ask a person to act; no approval is needed to message a registered person. To get a write action (email, MISA) approved, create an approval ticket instead: approvers are notified on Zalo automatically. ' +
       'Never include passwords, OTP codes or secrets.',
     inputSchema: {
       to: z.string().describe('Name or Zalo ID of a registered person'),
