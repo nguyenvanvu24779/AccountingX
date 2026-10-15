@@ -3,7 +3,7 @@
 // Zalo session itself — and only exposes what the app lets an agent do:
 //   zalo_status        who the bot is logged in as and who is on the approver list
 //   zalo_send_message  a message to someone ON that list, never anyone else
-//   approval_request  ask the approvers to approve a write (they are told on Zalo)
+//   approval_request  ask the approvers to approve a write or an email (they are told on Zalo)
 //   approval_consume  spend an approval a person gave, right before acting on it
 // The limits (whitelist, length, rate) are enforced by the app, not here.
 
@@ -111,18 +111,19 @@ server.registerTool(
       'Nothing is approved yet: stop here, tell the user the ticket code and that you are waiting, and do not perform the write. ' +
       'When an approver says yes you are woken with the ticket code; then call approval_consume with the SAME payload and only then perform the write.',
     inputSchema: {
+      kind: z.enum(['misaAction', 'emailSend']).optional().describe('misaAction (default) for a MISA write, emailSend for an outgoing email'),
       company: z.string().describe('Company MST (the name of its folder)'),
-      summary: z.string().describe('One Vietnamese line saying what will be written, shown to the approver'),
+      summary: z.string().describe('One Vietnamese line saying what will be written or sent, shown to the approver'),
       payload: z
         .record(z.string(), z.any())
         .describe('The exact action: company, book, voucher type, date, amounts, accounts, description. Shown in full to the approver.'),
       evidence: z.array(evidenceSchema).optional().describe('Files that back the request, such as a screenshot of the filled form'),
     },
   },
-  async ({ company, summary, payload, evidence }) => {
+  async ({ kind, company, summary, payload, evidence }) => {
     try {
       const ticket = await approvals('create', {
-        kind: 'misaAction',
+        kind: kind ?? 'misaAction',
         companyId: company,
         summary,
         payload,
@@ -146,14 +147,15 @@ server.registerTool(
       'Spends an approved ticket right before you perform the write. It succeeds only if a person approved this exact payload within 24 hours and nobody used it yet; it works once. ' +
       'If it fails, do not perform the write and tell the user why.',
     inputSchema: {
+      kind: z.enum(['misaAction', 'emailSend']).optional().describe('The same kind the ticket was created with (default misaAction)'),
       shortCode: z.string().describe('The ticket code'),
       payload: z.record(z.string(), z.any()).describe('Exactly the payload that was approved, unchanged'),
     },
   },
-  async ({ shortCode, payload }) => {
+  async ({ kind, shortCode, payload }) => {
     try {
-      await approvals('consume', { shortCode, kind: 'misaAction', payload });
-      return text('Approval spent. You may now perform exactly the approved write, once.');
+      await approvals('consume', { shortCode, kind: kind ?? 'misaAction', payload });
+      return text('Approval spent. You may now perform exactly the approved action, once.');
     } catch (error) {
       return failure(error);
     }

@@ -115,6 +115,10 @@ const BUNDLED_SKILLS: &[(&str, &str)] = &[
         "accountingx-misa-ghi",
         include_str!("../skills/accountingx-misa-ghi/SKILL.md"),
     ),
+    (
+        "accountingx-gmail",
+        include_str!("../skills/accountingx-gmail/SKILL.md"),
+    ),
 ];
 
 fn install_bundled_skills(home: &Path) -> std::io::Result<()> {

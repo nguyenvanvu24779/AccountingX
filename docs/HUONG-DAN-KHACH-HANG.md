@@ -38,7 +38,15 @@ Trong màn kiểm tra hoặc **Cài đặt → Mức sử dụng AI**, đăng nh
 2. **Thêm người duyệt**: bấm nút, một mã hiện ra. Người duyệt nhắn cho bot đúng dòng đó (`GHEP <mã>`). Người duyệt là người tin cậy: duyệt được và giao việc cho AI.
 3. **Nhóm Zalo:** thêm bot vào nhóm. Trong nhóm, bot chỉ trả lời khi được **@nhắc** hoặc tin bắt đầu bằng `bot `, và chỉ nghe người đã ghép. Mỗi nhóm gắn với một công ty (nhắn `công ty 1`, `công ty 2`...).
 
-## 6. Dùng hằng ngày
+## 6. Gửi email qua Gmail
+
+1. Trong app mở mục **Plugin**, tìm **Gmail** và bấm **Install**.
+2. Đăng nhập tài khoản Google của bạn và đồng ý cho phép. Plugin này do dịch vụ bên ngoài cung cấp và đọc được hộp thư, nên chỉ kết nối Gmail bạn sẵn sàng cho AI truy cập.
+3. Nhờ AI gửi email như nhờ một đồng nghiệp, ví dụ: "gửi báo cáo tồn kho cho a@abc.vn".
+4. AI **soạn trước và chưa gửi**. Người duyệt nhận tin trên Zalo với đủ người nhận, tiêu đề, nội dung và tệp đính kèm, rồi trả lời `ok` hoặc `không`.
+5. Được duyệt thì AI mới gửi đúng email đó, một lần, và báo lại cho bạn. Email chỉ đính kèm tệp nằm trong thư mục công ty.
+
+## 7. Dùng hằng ngày
 
 Nhắn cho bot trên Zalo như nhắn đồng nghiệp:
 
@@ -48,28 +56,26 @@ Nhắn cho bot trên Zalo như nhắn đồng nghiệp:
 
 Trong app, bạn xem lại toàn bộ cuộc trò chuyện và các tệp bằng chứng của từng công ty.
 
-## 7. Cái gì cần duyệt?
+## 8. Cái gì cần duyệt?
 
 | Việc | AI làm thế nào |
 | --- | --- |
 | Xem báo cáo MISA, soạn tóm tắt, nhắn Zalo cho người đã đăng ký | Tự làm |
-| Gửi email ra ngoài (qua plugin Gmail) | AI **hỏi người duyệt trước** theo quy tắc của công ty. Đây là quy tắc, chưa phải khóa cứng như phiếu duyệt |
+| Gửi email ra ngoài (qua plugin Gmail) | Tạo **phiếu duyệt** đủ nội dung; chỉ gửi sau khi được duyệt. Đây là quy trình bắt buộc với AI, nhưng chưa phải khóa cứng vì plugin Gmail do bên ngoài cung cấp |
 | Ghi dữ liệu vào MISA | Như trên |
 | Ký, nộp chứng từ hoặc tờ khai | **AI không bao giờ làm** |
 
-Việc ghi vào MISA đi qua **phiếu duyệt** (dùng được **một lần**, hết hạn sau **24 giờ**).
+Việc ghi vào MISA và gửi email đi qua **phiếu duyệt** (dùng được **một lần**, hết hạn sau **24 giờ**). Xem phiếu đang chờ ở **Cài đặt → Chờ duyệt**.
 
-**Gmail:** cài plugin *Gmail* trong mục Plugin của app và đăng nhập Google. Plugin này đọc được hộp thư và do dịch vụ bên ngoài cung cấp. Chỉ kết nối hộp thư bạn sẵn sàng cho AI truy cập. Xem phiếu đang chờ ở **Cài đặt → Chờ duyệt**.
-
-## 8. Quyền của AI
+## 9. Quyền của AI
 
 **Cài đặt → Quyền của AI** có công tắc *Tự động cho phép thao tác thông thường*. Bật lên thì AI không hỏi "Cho phép" cho lệnh, sửa tệp, truy cập mạng. Nó vẫn hỏi khi cần bạn nhập thông tin hoặc mở liên kết. Việc ghi MISA **luôn phải qua phiếu duyệt** và AI luôn hỏi trước khi gửi email, bất kể công tắc.
 
-## 9. Dữ liệu nằm ở đâu
+## 10. Dữ liệu nằm ở đâu
 
 Mọi dữ liệu ở trên **máy của bạn**, trong thư mục `C:\Users\<tên>\.accountingx`. AccountingX không có máy chủ riêng lưu dữ liệu kế toán. Nội dung bạn nhờ AI xử lý đi qua dịch vụ AI của tài khoản ChatGPT bạn đăng nhập.
 
-## 10. Gặp sự cố?
+## 11. Gặp sự cố?
 
 - Mở **Cài đặt → Kiểm tra hệ thống** và làm theo hướng dẫn ở mục màu đỏ.
 - **Zalo không nhận tin:** vào **Cài đặt → Zalo**, bấm Kết nối lại (mã QR chỉ hiện khi bấm).

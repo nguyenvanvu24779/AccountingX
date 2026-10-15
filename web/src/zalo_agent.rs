@@ -562,17 +562,22 @@ fn pick_waiter(sessions: &[(String, String, bool)], company_id: &str) -> Waiter 
     if busy { Waiter::Busy } else { Waiter::Nobody }
 }
 
-/// Wakes the AI that asked for a MISA write once a person approves its ticket,
+/// Wakes the AI that asked for a MISA write or an email once a person approves its ticket,
 /// wherever they answered (Zalo or the app). The AI then spends the approval and
 /// carries out exactly what was approved.
 pub async fn run_approval_resume_loop(state: WebServerState) {
     let mut handled: HashSet<String> = HashSet::new();
     loop {
         tokio::time::sleep(Duration::from_secs(3)).await;
-        let Ok(tickets) = codexia_db::approvals::list_approved_unspent(codexia_db::approvals::ApprovalKind::MisaAction)
-        else {
-            continue;
-        };
+        let mut tickets = Vec::new();
+        for kind in [
+            codexia_db::approvals::ApprovalKind::MisaAction,
+            codexia_db::approvals::ApprovalKind::EmailSend,
+        ] {
+            if let Ok(mut found) = codexia_db::approvals::list_approved_unspent(kind) {
+                tickets.append(&mut found);
+            }
+        }
         for ticket in tickets {
             if handled.contains(&ticket.id) {
                 continue;
@@ -629,17 +634,24 @@ async fn wake_for_ticket(state: &WebServerState, ticket: &codexia_db::approvals:
         session.guard = Some(guard);
     }
 
-    say(
-        state,
-        &reply_thread,
-        &reply_type,
-        &format!("Phiếu {} đã được duyệt, em thực hiện ghi vào MISA.", ticket.short_code),
-    )
-    .await;
-    let text = format!(
-        "Phiếu duyệt {} đã được duyệt: {}. Làm Giai đoạn 2 của kỹ năng accountingx-misa-ghi: gọi approval_consume với đúng payload đã duyệt, kiểm tra form, lưu một lần rồi kiểm tra kết quả.",
-        ticket.short_code, ticket.summary
-    );
+    let is_email = ticket.kind == codexia_db::approvals::ApprovalKind::EmailSend;
+    let said = if is_email {
+        format!("Phiếu {} đã được duyệt, em gửi email.", ticket.short_code)
+    } else {
+        format!("Phiếu {} đã được duyệt, em thực hiện ghi vào MISA.", ticket.short_code)
+    };
+    say(state, &reply_thread, &reply_type, &said).await;
+    let text = if is_email {
+        format!(
+            "Phiếu duyệt {} đã được duyệt: {}. Làm bước gửi của kỹ năng accountingx-gmail: gọi approval_consume (kind emailSend) với đúng payload đã duyệt, rồi gửi đúng email đó một lần và báo kết quả.",
+            ticket.short_code, ticket.summary
+        )
+    } else {
+        format!(
+            "Phiếu duyệt {} đã được duyệt: {}. Làm Giai đoạn 2 của kỹ năng accountingx-misa-ghi: gọi approval_consume với đúng payload đã duyệt, kiểm tra form, lưu một lần rồi kiểm tra kết quả.",
+            ticket.short_code, ticket.summary
+        )
+    };
     start_turn(state, &codex, &thread_id, &cwd, &text).await;
     true
 }
