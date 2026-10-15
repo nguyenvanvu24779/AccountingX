@@ -79,9 +79,37 @@ pub fn resolve_mcp_script() -> Option<PathBuf> {
     script_candidates_for("mcp.js").into_iter().find(|p| p.is_file())
 }
 
-/// The Node executable the sidecar and MCP server run with.
+#[cfg(windows)]
+const NODE_FILE: &str = "node.exe";
+#[cfg(not(windows))]
+const NODE_FILE: &str = "node";
+
+/// Locations that may hold the Node that ships with the app, most specific first.
+fn bundled_node_candidates() -> Vec<PathBuf> {
+    let mut out = Vec::new();
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(dir) = exe.parent() {
+            out.push(dir.join("resources").join("node").join(NODE_FILE));
+        }
+        // Running from `target/{debug,release}` during development.
+        for ancestor in exe.ancestors().skip(1).take(4) {
+            out.push(ancestor.join("src-tauri").join("resources").join("node").join(NODE_FILE));
+        }
+    }
+    out
+}
+
+/// The Node executable the sidecar and MCP server run with: an explicit
+/// override, then the copy bundled with the app, then whatever `node` is on PATH.
 pub fn node_command() -> String {
-    std::env::var("ACCOUNTINGX_NODE_BIN").unwrap_or_else(|_| "node".to_string())
+    if let Ok(path) = std::env::var("ACCOUNTINGX_NODE_BIN") {
+        return path;
+    }
+    bundled_node_candidates()
+        .into_iter()
+        .find(|p| p.is_file())
+        .map(|p| p.to_string_lossy().into_owned())
+        .unwrap_or_else(|| "node".to_string())
 }
 
 impl ZaloSidecar {

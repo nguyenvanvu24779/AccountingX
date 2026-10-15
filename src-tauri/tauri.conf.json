@@ -6,7 +6,7 @@
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "bun run build",
+    "beforeBuildCommand": "bun scripts/prepare-node.mjs && bun run build",
     "frontendDist": "../dist"
   },
   "app": {
@@ -64,6 +64,7 @@
     "createUpdaterArtifacts": false,
     "resources": {
       "resources/codex/*": "resources/codex/",
+      "resources/node/*": "resources/node/",
       "../bots/zalo/": "resources/bots/zalo/"
     },
     "icon": [

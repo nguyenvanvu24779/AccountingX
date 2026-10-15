@@ -60,3 +60,5 @@ diag-report.txt
 # Local-only prototype copied from an installed Codex Desktop build.
 # Proprietary OpenAI files must never be committed or packaged.
 .dev-vendor/openai-cua/
+src-tauri/resources/node/node.exe
+src-tauri/resources/node/node
