@@ -46,6 +46,9 @@ where
     let zalo_agent_state = state.clone();
     tokio::spawn(crate::zalo_agent::run_event_loop(zalo_agent_state));
 
+    // Wake the AI that is waiting when a person approves its MISA write.
+    tokio::spawn(crate::zalo_agent::run_approval_resume_loop(state.clone()));
+
     let app = create_router(state);
     // A just-exited previous process can hold this port for a moment after
     // its own process has already disappeared (the OS hasn't released the

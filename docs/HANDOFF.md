@@ -363,3 +363,12 @@ Quyết định của người dùng: AI **được tự chuyển** công ty/s�
 - **Gmail:** quyết định dùng **plugin Gmail có sẵn** (đã gửi thử thành công). Plugin đọc được hộp thư và **gửi không qua phiếu duyệt**: quy tắc "email phải duyệt" chỉ nằm trong `AGENTS.md` công ty, không phải khóa cứng. `bots/gmail-send` (chỉ gửi + bắt buộc phiếu) vẫn còn trong repo nhưng chưa đóng gói, chưa có nút Kết nối Gmail; làm sau nếu cần khóa cứng.
 - **Node đóng gói:** `scripts/prepare-node.mjs` (chạy trong `beforeBuildCommand`) chép `node.exe` máy build vào `src-tauri/resources/node/`; `shared::zalo::node_command()` ưu tiên bản này. Sidecar Zalo đóng gói ở `resources/bots/zalo`.
 - **Tài liệu khách:** `docs/HUONG-DAN-KHACH-HANG.md`, `docs/RELEASE-CHECKLIST.md`.
+
+### 13.12 Luồng ghi MISA bằng phiếu duyệt (2026-10-15)
+
+Một khuôn chung hai pha cho mọi nghiệp vụ ghi trong MISA (không code riêng từng loại chứng từ):
+- **Skill `accountingx-misa-ghi`** (`crates/codex/skills/`, tự cài vào `CODEX_HOME/skills`): Pha 1 điền form, **dừng trước nút Lưu**, chụp bằng chứng, gọi `approval_request`; Pha 2 sau khi duyệt: `approval_consume` với đúng payload, kiểm tra form, lưu một lần, chụp lại bản ghi và đối chiếu. Không bao giờ ký/ghi sổ/nộp tờ khai/xóa.
+- **Công cụ MCP** trong `bots/zalo/mcp.js`: `approval_request` (tạo phiếu kind `misaAction`, báo người duyệt trên Zalo) và `approval_consume` (dùng đúng một lần, trong 24 giờ, payload phải khớp).
+- **Đánh thức AI khi được duyệt** (`web/src/zalo_agent.rs::run_approval_resume_loop`, quét mỗi 3 giây): phiếu `misaAction` đã duyệt, chưa dùng → gửi một lượt vào cuộc trò chuyện Zalo đang rảnh của công ty đó (khớp `company_id` = tên thư mục công ty = MST), có giữ khóa trình duyệt. Duyệt ở đâu cũng được (Zalo hoặc app). Không có cuộc trò chuyện Zalo nào của công ty → chỉ ghi log; người dùng nhắn "đã duyệt" cho AI.
+- **Giới hạn thật:** AI điều khiển Chrome bằng cách bấm nút nên **không khóa cứng được nút Lưu**; cổng mạnh ở quy trình + payload khớp + bằng chứng trước/sau, không phải khóa kỹ thuật.
+- **Chưa kiểm sống:** chưa chạy một ca ghi thật trên MISA (cần Codex + MISA + công ty mẫu, việc của người dùng). Đã kiểm: truy vấn phiếu đã duyệt, chọn cuộc trò chuyện để đánh thức, cú pháp MCP, cài skill; clippy + test toàn workspace xanh.

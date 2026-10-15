@@ -3,6 +3,8 @@
 // Zalo session itself — and only exposes what the app lets an agent do:
 //   zalo_status        who the bot is logged in as and who is on the approver list
 //   zalo_send_message  a message to someone ON that list, never anyone else
+//   approval_request  ask the approvers to approve a write (they are told on Zalo)
+//   approval_consume  spend an approval a person gave, right before acting on it
 // The limits (whitelist, length, rate) are enforced by the app, not here.
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -13,6 +15,17 @@ const api = process.env.ACCOUNTINGX_API_URL ?? 'http://127.0.0.1:7419';
 
 async function call(path, body = {}) {
   const response = await fetch(`${api}/api/zalo/${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error ?? `AccountingX returned ${response.status}`);
+  return data;
+}
+
+async function approvals(path, body) {
+  const response = await fetch(`${api}/api/approvals/${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -78,6 +91,69 @@ server.registerTool(
     try {
       const result = await call('send', { to, text: message });
       return text(`Sent to ${result.sentTo}.`);
+    } catch (error) {
+      return failure(error);
+    }
+  }
+);
+
+const evidenceSchema = z.object({
+  label: z.string().describe('Short name, e.g. "Form đã điền"'),
+  path: z.string().describe('Path of a saved file (screenshot, CSV) in the company folder'),
+});
+
+server.registerTool(
+  'approval_request',
+  {
+    title: 'Ask for approval of a write',
+    description:
+      'Creates an approval ticket for a write action (for example saving a voucher in MISA) and tells the approvers on Zalo. ' +
+      'Nothing is approved yet: stop here, tell the user the ticket code and that you are waiting, and do not perform the write. ' +
+      'When an approver says yes you are woken with the ticket code; then call approval_consume with the SAME payload and only then perform the write.',
+    inputSchema: {
+      company: z.string().describe('Company MST (the name of its folder)'),
+      summary: z.string().describe('One Vietnamese line saying what will be written, shown to the approver'),
+      payload: z
+        .record(z.string(), z.any())
+        .describe('The exact action: company, book, voucher type, date, amounts, accounts, description. Shown in full to the approver.'),
+      evidence: z.array(evidenceSchema).optional().describe('Files that back the request, such as a screenshot of the filled form'),
+    },
+  },
+  async ({ company, summary, payload, evidence }) => {
+    try {
+      const ticket = await approvals('create', {
+        kind: 'misaAction',
+        companyId: company,
+        summary,
+        payload,
+        evidence: evidence ?? [],
+        requestedBy: 'ai',
+      });
+      return text(
+        `Approval ticket ${ticket.shortCode} created and sent to the approvers. Do NOT write yet. Tell the user you are waiting for approval of ticket ${ticket.shortCode}.`
+      );
+    } catch (error) {
+      return failure(error);
+    }
+  }
+);
+
+server.registerTool(
+  'approval_consume',
+  {
+    title: 'Spend an approval',
+    description:
+      'Spends an approved ticket right before you perform the write. It succeeds only if a person approved this exact payload within 24 hours and nobody used it yet; it works once. ' +
+      'If it fails, do not perform the write and tell the user why.',
+    inputSchema: {
+      shortCode: z.string().describe('The ticket code'),
+      payload: z.record(z.string(), z.any()).describe('Exactly the payload that was approved, unchanged'),
+    },
+  },
+  async ({ shortCode, payload }) => {
+    try {
+      await approvals('consume', { shortCode, kind: 'misaAction', payload });
+      return text('Approval spent. You may now perform exactly the approved write, once.');
     } catch (error) {
       return failure(error);
     }

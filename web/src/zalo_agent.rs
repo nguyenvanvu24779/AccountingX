@@ -10,8 +10,9 @@
 //! The conversation is an ordinary Codex thread in the company folder, so it
 //! also appears in the app, and every permission Codex asks for still applies.
 
-use std::collections::{HashMap, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::Arc;
+use std::time::Duration;
 
 use codexia_codex::app_server::CodexAppServer;
 use codexia_codex::protocol::RequestId;
@@ -532,6 +533,117 @@ async fn finish_turn(state: &WebServerState, thread_id: &str, params: &Value) {
     }
 }
 
+/// Which live conversation to wake for a ticket of this company.
+#[derive(Debug, PartialEq, Eq)]
+enum Waiter {
+    /// This conversation is idle: send it the approval.
+    Wake(String),
+    /// A conversation for the company is busy; try again shortly.
+    Busy,
+    /// Nobody on Zalo is waiting for this company.
+    Nobody,
+}
+
+/// `sessions` are `(thread id, working directory, running)`. A company's folder
+/// is named after its tax code, which is what a ticket's company id holds.
+fn pick_waiter(sessions: &[(String, String, bool)], company_id: &str) -> Waiter {
+    let mut busy = false;
+    for (thread_id, cwd, running) in sessions {
+        let folder = std::path::Path::new(cwd).file_name().and_then(|n| n.to_str());
+        if folder != Some(company_id) {
+            continue;
+        }
+        if *running {
+            busy = true;
+        } else {
+            return Waiter::Wake(thread_id.clone());
+        }
+    }
+    if busy { Waiter::Busy } else { Waiter::Nobody }
+}
+
+/// Wakes the AI that asked for a MISA write once a person approves its ticket,
+/// wherever they answered (Zalo or the app). The AI then spends the approval and
+/// carries out exactly what was approved.
+pub async fn run_approval_resume_loop(state: WebServerState) {
+    let mut handled: HashSet<String> = HashSet::new();
+    loop {
+        tokio::time::sleep(Duration::from_secs(3)).await;
+        let Ok(tickets) = codexia_db::approvals::list_approved_unspent(codexia_db::approvals::ApprovalKind::MisaAction)
+        else {
+            continue;
+        };
+        for ticket in tickets {
+            if handled.contains(&ticket.id) {
+                continue;
+            }
+            if wake_for_ticket(&state, &ticket).await {
+                handled.insert(ticket.id.clone());
+            }
+        }
+    }
+}
+
+/// `true` when the ticket needs no further attempt (woken, or nobody to wake).
+async fn wake_for_ticket(state: &WebServerState, ticket: &codexia_db::approvals::ApprovalTicket) -> bool {
+    let Some(company_id) = ticket.company_id.as_deref() else {
+        return true;
+    };
+    let Some(codex) = codex(state) else {
+        return false;
+    };
+    let waiter = {
+        let inner = state.zalo_state.agent.inner.lock().await;
+        let sessions: Vec<(String, String, bool)> =
+            inner.sessions.iter().map(|(id, s)| (id.clone(), s.cwd.clone(), s.running)).collect();
+        pick_waiter(&sessions, company_id)
+    };
+    let thread_id = match waiter {
+        Waiter::Wake(id) => id,
+        Waiter::Busy => return false,
+        Waiter::Nobody => {
+            log::info!("approval {} was approved but no Zalo conversation is waiting for it", ticket.short_code);
+            return true;
+        }
+    };
+
+    let (cwd, reply_thread, reply_type) = {
+        let mut inner = state.zalo_state.agent.inner.lock().await;
+        let Some(session) = inner.sessions.get_mut(&thread_id) else {
+            return true;
+        };
+        if session.running {
+            return false;
+        }
+        session.running = true;
+        session.final_text = None;
+        (session.cwd.clone(), session.reply_thread.clone(), session.reply_type.clone())
+    };
+
+    let lock = {
+        let mut inner = state.zalo_state.agent.inner.lock().await;
+        Arc::clone(inner.browser_locks.entry(browser_key(std::path::Path::new(&cwd))).or_default())
+    };
+    let guard = lock.lock_owned().await;
+    if let Some(session) = state.zalo_state.agent.inner.lock().await.sessions.get_mut(&thread_id) {
+        session.guard = Some(guard);
+    }
+
+    say(
+        state,
+        &reply_thread,
+        &reply_type,
+        &format!("Phiếu {} đã được duyệt, em thực hiện ghi vào MISA.", ticket.short_code),
+    )
+    .await;
+    let text = format!(
+        "Phiếu duyệt {} đã được duyệt: {}. Làm Giai đoạn 2 của kỹ năng accountingx-misa-ghi: gọi approval_consume với đúng payload đã duyệt, kiểm tra form, lưu một lần rồi kiểm tra kết quả.",
+        ticket.short_code, ticket.summary
+    );
+    start_turn(state, &codex, &thread_id, &cwd, &text).await;
+    true
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -553,5 +665,17 @@ mod tests {
         assert_eq!(browser_key(&dir), "default");
         std::fs::remove_dir_all(&dir).unwrap();
     }
-}
 
+    #[test]
+    fn the_idle_conversation_of_the_right_company_is_woken() {
+        let sessions = vec![
+            ("a".to_string(), "C:/x/companies/111".to_string(), false),
+            ("b".to_string(), "C:/x/companies/222".to_string(), false),
+            ("c".to_string(), "C:/x/companies/222".to_string(), true),
+        ];
+        assert_eq!(pick_waiter(&sessions, "222"), Waiter::Wake("b".to_string()));
+        assert_eq!(pick_waiter(&sessions, "333"), Waiter::Nobody);
+        let busy = vec![("c".to_string(), "C:/x/companies/222".to_string(), true)];
+        assert_eq!(pick_waiter(&busy, "222"), Waiter::Busy);
+    }
+}

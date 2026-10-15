@@ -344,6 +344,29 @@ pub fn list_pending_approvals() -> Result<Vec<ApprovalTicket>, String> {
         .map_err(|e| format!("Failed to read approvals: {e}"))
 }
 
+fn list_approved_unspent_with(conn: &Connection, kind: ApprovalKind) -> Result<Vec<ApprovalTicket>, String> {
+    let not_before = (Utc::now() - APPROVAL_VALID_FOR).to_rfc3339();
+    let mut stmt = conn
+        .prepare(&format!(
+            "SELECT {COLUMNS} FROM approval_tickets
+             WHERE status = 'approved' AND consumed_at IS NULL AND kind = ?1 AND resolved_at >= ?2
+             ORDER BY resolved_at ASC"
+        ))
+        .map_err(|e| format!("Failed to prepare approved-ticket query: {e}"))?;
+    let rows = stmt
+        .query_map(params![kind.as_str(), not_before], row_to_ticket)
+        .map_err(|e| format!("Failed to query approved tickets: {e}"))?;
+    rows.collect::<Result<Vec<_>, _>>()
+        .map_err(|e| format!("Failed to read approved tickets: {e}"))
+}
+
+/// Tickets of this kind a person has approved and nobody has acted on yet,
+/// oldest first. Used to wake the AI that is waiting for the answer.
+pub fn list_approved_unspent(kind: ApprovalKind) -> Result<Vec<ApprovalTicket>, String> {
+    let conn = get_connection()?;
+    list_approved_unspent_with(&conn, kind)
+}
+
 /// Resolve the pending ticket with this short code. Fails if no pending
 /// ticket has that code — it may have already been resolved, or never
 /// existed — so a caller (the app button or the Zalo handler) can tell the
@@ -412,6 +435,25 @@ mod tests {
 
         // The same code cannot be resolved twice.
         assert!(respond_approval_with(&conn, &resolved.short_code, true, None).is_err());
+    }
+
+    #[test]
+    fn approved_unspent_lists_only_approved_tickets_nobody_has_spent() {
+        let conn = db();
+        let waiting =
+            create_approval_with(&conn, ApprovalKind::MisaAction, None, "wait", Some(&email()), &[], None).unwrap();
+        let approved = approved_email(&conn);
+        let misa = create_approval_with(&conn, ApprovalKind::MisaAction, Some("1"), "ghi", Some(&email()), &[], None)
+            .unwrap();
+        let misa = respond_approval_with(&conn, &misa.short_code, true, Some("p")).unwrap();
+
+        let listed = list_approved_unspent_with(&conn, ApprovalKind::MisaAction).unwrap();
+        assert_eq!(listed.len(), 1, "pending and other kinds are left out");
+        assert_eq!(listed[0].id, misa.id);
+
+        consume_approval_with(&conn, &misa.short_code, ApprovalKind::MisaAction, &email()).unwrap();
+        assert!(list_approved_unspent_with(&conn, ApprovalKind::MisaAction).unwrap().is_empty());
+        let _ = (waiting, approved);
     }
 
     #[test]

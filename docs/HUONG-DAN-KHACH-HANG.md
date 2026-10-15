@@ -6,7 +6,7 @@ AccountingX là trợ lý AI cho kế toán: lấy báo cáo từ MISA AMIS, tr�
 
 - Máy Windows 10 hoặc 11.
 - Trình duyệt **Google Chrome**.
-- Tài khoản **ChatGPT** (để AI hoạt động).
+- Tài khoản **ChatGPT gói Plus (khoảng 20 USD/tháng)** để AI hoạt động. Chi phí này do bạn tự đăng ký và thanh toán với OpenAI, AccountingX không thu thêm.
 - Tài khoản **MISA AMIS** có quyền xem báo cáo của công ty.
 - Một tài khoản **Zalo riêng cho bot** (số điện thoại phụ), và Zalo của người sẽ duyệt.
 
@@ -18,7 +18,7 @@ AccountingX là trợ lý AI cho kế toán: lấy báo cáo từ MISA AMIS, tr�
 
 ## 2. Đăng nhập AI
 
-Trong màn kiểm tra hoặc **Cài đặt → Mức sử dụng AI**, đăng nhập tài khoản ChatGPT. Màn này cũng cho biết còn bao nhiêu lượt sử dụng.
+Trong màn kiểm tra hoặc **Cài đặt → Mức sử dụng AI**, đăng nhập tài khoản ChatGPT Plus của bạn. Màn này cũng cho biết gói đang dùng và còn bao nhiêu lượt sử dụng (theo cửa sổ 5 giờ và theo tuần).
 
 ## 3. Thêm công ty
 
