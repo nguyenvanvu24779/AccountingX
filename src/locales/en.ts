@@ -339,7 +339,7 @@ export const en = {
       description:
         'When on, the AI does not ask before running commands, changing files in the company folder or using tools and websites, so you never press "Allow". When off, it asks every time (recommended while you get started).',
     },
-    note: 'It still asks when the AI wants extra permissions (network, files outside the company folder) or needs you to type something. Sending email and changing MISA still need an approval ticket; this setting does not change that.',
+    note: 'It still asks when the AI needs you to type something or open a link. Sending email and changing MISA still need an approval ticket; this setting does not change that.',
     failed: 'Could not save the setting: {{error}}',
   },
   zalo: {

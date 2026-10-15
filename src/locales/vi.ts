@@ -336,7 +336,7 @@ export const vi = {
       description:
         'Khi bật, AI không hỏi trước khi chạy lệnh, sửa tệp trong thư mục công ty hoặc dùng công cụ, trang web, nên bạn không phải bấm "Cho phép" nữa. Khi tắt, AI hỏi mỗi lần (khuyến nghị lúc mới dùng).',
     },
-    note: 'Vẫn hỏi khi AI xin quyền mở rộng (mạng, tệp ngoài thư mục công ty) hoặc cần bạn nhập thông tin. Gửi email và ghi vào MISA vẫn phải qua phiếu duyệt; cài đặt này không thay đổi điều đó.',
+    note: 'Vẫn hỏi khi AI cần bạn nhập thông tin hoặc mở liên kết. Gửi email và ghi vào MISA vẫn phải qua phiếu duyệt; cài đặt này không thay đổi điều đó.',
     failed: 'Không lưu được cài đặt: {{error}}',
   },
   zalo: {

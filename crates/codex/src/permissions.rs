@@ -2,9 +2,10 @@
 //!
 //! Codex asks before it runs a command, changes a file or uses a tool. In
 //! `Auto` mode the app answers the ordinary ones itself, so nobody has to press
-//! "Allow" over and over. What stays a question for a person, always:
+//! "Allow" over and over. That includes the extra access Codex asks for
+//! (network, files outside the company folder), granted for the session.
+//! What stays a question for a person, always:
 //!
-//! - extra permissions (network, files outside the company folder),
 //! - anything that needs typed input (forms, "which period?"),
 //! - links to open in a browser.
 //!
@@ -80,6 +81,17 @@ pub fn auto_response(method: &str, params: &Value) -> Option<Value> {
         "item/commandExecution/requestApproval" | "item/fileChange/requestApproval" => {
             Some(json!({ "decision": "acceptForSession" }))
         }
+        // Extra network or file access: grant exactly what was asked, for the session.
+        "item/permissions/requestApproval" => {
+            let asked = params.get("permissions")?;
+            let mut granted = serde_json::Map::new();
+            for key in ["network", "fileSystem"] {
+                if let Some(value) = asked.get(key).filter(|v| !v.is_null()) {
+                    granted.insert(key.to_string(), value.clone());
+                }
+            }
+            Some(json!({ "permissions": granted, "scope": "session" }))
+        }
         // A decision-only prompt, such as "may this tool run?" or "may the
         // browser open this site?". A prompt with fields, or a link, needs a person.
         "mcpServer/elicitation/request" => {
@@ -130,6 +142,15 @@ mod tests {
         assert_eq!(auto_response("mcpServer/elicitation/request", &link), None);
         assert_eq!(auto_response("item/permissions/requestApproval", &json!({})), None);
         assert_eq!(auto_response("item/tool/requestUserInput", &json!({})), None);
+    }
+
+    #[test]
+    fn extra_access_is_granted_as_asked_for_the_session() {
+        let params = json!({ "permissions": { "network": { "enabled": true }, "fileSystem": null } });
+        assert_eq!(
+            auto_response("item/permissions/requestApproval", &params),
+            Some(json!({ "permissions": { "network": { "enabled": true } }, "scope": "session" }))
+        );
     }
 
     #[test]
