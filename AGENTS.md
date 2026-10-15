@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Project Info
-- AccountingX: AI-first desktop app for Vietnamese SME accounting (MISA AMIS via browser, Zalo for tasks/approvals). Forked from Codexia — see NOTICE.md and docs/ACCOUNTINGX_PLAN.md
+- AccountingX: AI-first desktop app for Vietnamese SME accounting (MISA AMIS via browser, Zalo for tasks/approvals). See docs/ACCOUNTINGX_PLAN.md
 - AI must never sign or post ledger entries on its own; every write action goes through an approval with evidence
 - App data dir: `~/.accountingx` (never `~/.codexia`)
 - Upstream base: agent os for `codex cli` and `claude code cli` - agent

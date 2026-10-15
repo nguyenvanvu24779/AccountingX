@@ -8,8 +8,6 @@ nhưng chuyên cho nghiệp vụ kế toán trên **MISA AMIS** (thao tác qua t
 - Nguyên tắc: AI **không tự ký / không ghi sổ**; mọi thao tác ghi đều qua **phiếu duyệt + bằng chứng**
 - Dữ liệu ứng dụng: `~/.accountingx/`
 
-> Dự án fork từ [Codexia](https://github.com/milisp/codexia) (MIT). Xem `NOTICE.md` và `LICENSE`.
-
 ## Phát triển (Windows)
 
 Yêu cầu: Rust (MSVC toolchain), Visual Studio Build Tools (C++), WebView2 Runtime, Bun, Codex CLI.
