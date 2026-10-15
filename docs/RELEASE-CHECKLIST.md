@@ -2,7 +2,7 @@
 
 Build: `bun tauri build` (nsis + msi). Bộ cài đã đóng gói: Codex 0.161.0 (`resources/codex`), sidecar Zalo + `node_modules` (`resources/bots/zalo`), skill MISA (nhúng trong binary).
 
-Máy sạch cần có sẵn: **Node.js** (sidecar Zalo chạy bằng `node`), **Chrome** với tiện ích Codex. Màn "Tự kiểm tra" sẽ báo nếu thiếu.
+Máy sạch cần có sẵn **Chrome** với tiện ích ChatGPT (https://chromewebstore.google.com/detail/chatgpt/hehggadaopoacecdllhhajmbjkdcmajg). Node.js đã đóng gói trong bộ cài. Màn "Tự kiểm tra" sẽ báo nếu thiếu.
 
 1. Cài bộ cài, mở app lần đầu: màn tự kiểm tra không có mục đỏ không tự sửa được.
 2. Đăng nhập tài khoản GPT; kiểm tra Cài đặt → Mức sử dụng AI hiện giới hạn.

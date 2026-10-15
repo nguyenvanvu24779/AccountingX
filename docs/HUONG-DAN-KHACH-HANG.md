@@ -5,7 +5,7 @@ AccountingX là trợ lý AI cho kế toán: lấy báo cáo từ MISA AMIS, tr�
 ## Bạn cần có
 
 - Máy Windows 10 hoặc 11.
-- Trình duyệt **Google Chrome**.
+- Trình duyệt **Google Chrome** và tiện ích **ChatGPT** cho Chrome ([cài tại đây](https://chromewebstore.google.com/detail/chatgpt/hehggadaopoacecdllhhajmbjkdcmajg)).
 - Tài khoản **ChatGPT gói Plus (khoảng 20 USD/tháng)** để AI hoạt động. Chi phí này do bạn tự đăng ký và thanh toán với OpenAI, AccountingX không thu thêm.
 - Tài khoản **MISA AMIS** có quyền xem báo cáo của công ty.
 - Một tài khoản **Zalo riêng cho bot** (số điện thoại phụ), và Zalo của người sẽ duyệt.
@@ -27,7 +27,7 @@ Trong màn kiểm tra hoặc **Cài đặt → Mức sử dụng AI**, đăng nh
 
 ## 4. Nối Chrome và MISA
 
-1. Cài tiện ích **Codex** vào profile Chrome bạn dùng cho MISA (màn Kiểm tra hệ thống hướng dẫn).
+1. Cài tiện ích **ChatGPT** cho Chrome vào đúng profile bạn dùng cho MISA. Mở liên kết sau, bấm **Thêm vào Chrome** và cho phép các quyền được hỏi: [Tiện ích ChatGPT trên Chrome Web Store](https://chromewebstore.google.com/detail/chatgpt/hehggadaopoacecdllhhajmbjkdcmajg). Địa chỉ đầy đủ: https://chromewebstore.google.com/detail/chatgpt/hehggadaopoacecdllhhajmbjkdcmajg
 2. Mở MISA AMIS trong profile đó và đăng nhập **bằng tay**. AI không bao giờ nhập hay giữ mật khẩu MISA của bạn.
 3. Mỗi công ty trong MISA nên dùng một profile Chrome. Nhiều profile cho phép các công ty chạy cùng lúc.
 4. Lần đầu AI làm việc với một công ty, nó **đối chiếu mã số thuế trên màn hình MISA** và hỏi bạn xác nhận công ty và sổ. Sau đó nó nhớ.

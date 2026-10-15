@@ -65,7 +65,7 @@ Khách tự trả phí AI cho OpenAI qua tài khoản của họ; AccountingX hi
 | --- | --- |
 | Tài khoản ChatGPT gói Plus | Khoảng 20 USD/tháng, khách tự đăng ký và thanh toán. Chưa kiểm được gói Plus có đủ giới hạn sử dụng khi chạy nhiều báo cáo; ứng dụng có màn hình xem mức đã dùng theo cửa sổ 5 giờ và theo tuần. |
 | Tài khoản MISA AMIS | Có quyền xem báo cáo của công ty. Khách tự đăng nhập MISA trên Chrome. |
-| Google Chrome | Cài tiện ích Codex trong profile dùng cho MISA. |
+| Google Chrome | Cài tiện ích ChatGPT cho Chrome ([Chrome Web Store](https://chromewebstore.google.com/detail/chatgpt/hehggadaopoacecdllhhajmbjkdcmajg)) trong profile dùng cho MISA. |
 | Zalo | Một tài khoản Zalo riêng cho bot (số điện thoại phụ) và Zalo của người duyệt. |
 | Windows 10 hoặc 11 | Bộ cài đã gói sẵn Codex và Node.js nên không cần cài thêm. |
 | Gmail (nếu gửi email) | Cài plugin Gmail và đăng nhập Google. |

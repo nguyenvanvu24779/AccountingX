@@ -5,6 +5,7 @@ const {
   AlignmentType,
   BorderStyle,
   Document,
+  ExternalHyperlink,
   HeadingLevel,
   LevelFormat,
   Packer,
@@ -28,12 +29,20 @@ const TEXT_WIDTH = 9360; // US Letter, 1" margins, in DXA
 
 function runs(text, base = {}) {
   const out = [];
-  const pattern = /(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g;
+  const pattern = /(\[[^\]]+\]\([^)]+\)|\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g;
   let last = 0;
   for (const m of text.matchAll(pattern)) {
     if (m.index > last) out.push(new TextRun({ text: text.slice(last, m.index), font: FONT, ...base }));
     const token = m[0];
-    if (token.startsWith('**')) out.push(new TextRun({ text: token.slice(2, -2), bold: true, font: FONT, ...base }));
+    const link = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (link) {
+      out.push(
+        new ExternalHyperlink({
+          link: link[2],
+          children: [new TextRun({ text: link[1], font: FONT, color: '0563C1', underline: {}, ...base })],
+        })
+      );
+    } else if (token.startsWith('**')) out.push(new TextRun({ text: token.slice(2, -2), bold: true, font: FONT, ...base }));
     else if (token.startsWith('`'))
       out.push(new TextRun({ text: token.slice(1, -1), font: 'Consolas', ...base, shading: { type: ShadingType.CLEAR, fill: 'F0F0F0' } }));
     else out.push(new TextRun({ text: token.slice(1, -1), italics: true, font: FONT, ...base }));
