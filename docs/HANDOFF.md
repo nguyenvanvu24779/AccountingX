@@ -357,3 +357,9 @@ Quyết định của người dùng: AI **được tự chuyển** công ty/s�
 - **Quyền của AI** (`crates/codex/src/permissions.rs`): chế độ `Ask` (mặc định) hoặc `Auto`. `Auto` tự trả lời yêu cầu quyền của Codex (lệnh, sửa tệp, quyền mạng, xác nhận công cụ). Đổi chế độ chỉ qua lệnh Tauri `permission_mode_set` (người dùng bấm trong app); HTTP loopback chỉ đọc vì agent chạy shell có thể gọi loopback. **Phiếu duyệt ghi email/MISA vẫn bắt buộc** và AI không bao giờ tự ký/ghi sổ.
 - **Đã gỡ khỏi Codexia**: Claude Code, ACP, bot Discord/Telegram/keke, điều khiển từ xa + tailscale + ghép điện thoại, telemetry, crate `git` (còn `shared::gitcli` chỉ để clone skill), terminal, publish, xem trước web, chạy dự án, đọc giọng nói, cập nhật tự động, cờ `EDITION`. Khung phải chỉ còn Tệp / Công việc / Việc cần làm (persist layout v8). Cổng API cục bộ là `127.0.0.1:7419`. Bộ cài chỉ nsis + msi.
 - Còn lại: chuỗi locale cũ (en/fr/ja/zh/vi vẫn có khóa dictation, v.v.), `shared::skills` còn đường dẫn cài từ GitHub cho skill cũ của Claude.
+
+### 13.11 Gmail, Node, bản dùng thử (2026-10-15)
+
+- **Gmail:** quyết định dùng **plugin Gmail có sẵn** (đã gửi thử thành công). Plugin đọc được hộp thư và **gửi không qua phiếu duyệt**: quy tắc "email phải duyệt" chỉ nằm trong `AGENTS.md` công ty, không phải khóa cứng. `bots/gmail-send` (chỉ gửi + bắt buộc phiếu) vẫn còn trong repo nhưng chưa đóng gói, chưa có nút Kết nối Gmail; làm sau nếu cần khóa cứng.
+- **Node đóng gói:** `scripts/prepare-node.mjs` (chạy trong `beforeBuildCommand`) chép `node.exe` máy build vào `src-tauri/resources/node/`; `shared::zalo::node_command()` ưu tiên bản này. Sidecar Zalo đóng gói ở `resources/bots/zalo`.
+- **Tài liệu khách:** `docs/HUONG-DAN-KHACH-HANG.md`, `docs/RELEASE-CHECKLIST.md`.

@@ -53,15 +53,17 @@ Trong app, bạn xem lại toàn bộ cuộc trò chuyện và các tệp bằng
 | Việc | AI làm thế nào |
 | --- | --- |
 | Xem báo cáo MISA, soạn tóm tắt, nhắn Zalo cho người đã đăng ký | Tự làm |
-| Gửi email ra ngoài | Tạo **phiếu duyệt** kèm bằng chứng, người duyệt đồng ý mới gửi |
+| Gửi email ra ngoài (qua plugin Gmail) | AI **hỏi người duyệt trước** theo quy tắc của công ty. Đây là quy tắc, chưa phải khóa cứng như phiếu duyệt |
 | Ghi dữ liệu vào MISA | Như trên |
 | Ký, nộp chứng từ hoặc tờ khai | **AI không bao giờ làm** |
 
-Phiếu duyệt dùng được **một lần** và hết hạn sau **24 giờ**. Xem phiếu đang chờ ở **Cài đặt → Chờ duyệt**.
+Việc ghi vào MISA đi qua **phiếu duyệt** (dùng được **một lần**, hết hạn sau **24 giờ**).
+
+**Gmail:** cài plugin *Gmail* trong mục Plugin của app và đăng nhập Google. Plugin này đọc được hộp thư và do dịch vụ bên ngoài cung cấp. Chỉ kết nối hộp thư bạn sẵn sàng cho AI truy cập. Xem phiếu đang chờ ở **Cài đặt → Chờ duyệt**.
 
 ## 8. Quyền của AI
 
-**Cài đặt → Quyền của AI** có công tắc *Tự động cho phép thao tác thông thường*. Bật lên thì AI không hỏi "Cho phép" cho lệnh, sửa tệp, truy cập mạng. Nó vẫn hỏi khi cần bạn nhập thông tin hoặc mở liên kết. Phiếu duyệt gửi email và ghi MISA **luôn bắt buộc**, bất kể công tắc.
+**Cài đặt → Quyền của AI** có công tắc *Tự động cho phép thao tác thông thường*. Bật lên thì AI không hỏi "Cho phép" cho lệnh, sửa tệp, truy cập mạng. Nó vẫn hỏi khi cần bạn nhập thông tin hoặc mở liên kết. Việc ghi MISA **luôn phải qua phiếu duyệt** và AI luôn hỏi trước khi gửi email, bất kể công tắc.
 
 ## 9. Dữ liệu nằm ở đâu
 
